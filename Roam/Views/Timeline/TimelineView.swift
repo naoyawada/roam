@@ -57,6 +57,7 @@ struct TimelineView: View {
 
                 Spacer()
             }
+            .grainBackground()
             .navigationTitle("Timeline")
             .sheet(item: $selectedLog) { log in
                 DayDetailSheet(log: log)
