@@ -12,8 +12,10 @@
 		5D9A8E5059726FB1889BCAF6 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA84F0D90EF31DFF1AA98C14 /* UserSettings.swift */; };
 		66BE6A447C410D3C146E0E8B /* CityColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EA9C47D3A9C41530AB4684 /* CityColor.swift */; };
 		6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5CA8FAA3547C6DCBCBBE01 /* LogStatus.swift */; };
+		71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */; };
 		89BD48C7D72221F9B4F0A7D4 /* RoamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */; };
 		9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */; };
+		E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +36,8 @@
 		4F5CA8FAA3547C6DCBCBBE01 /* LogStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStatus.swift; sourceTree = "<group>"; };
 		5F2C0E40B4FC1B5F9764031C /* NightLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NightLog.swift; sourceTree = "<group>"; };
 		6D050F4B9DC635F3333C47DA /* Roam.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Roam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalization.swift; sourceTree = "<group>"; };
+		911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalizationTests.swift; sourceTree = "<group>"; };
 		A24B7CDA85945C212A2CD117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamApp.swift; sourceTree = "<group>"; };
 		BA84F0D90EF31DFF1AA98C14 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
@@ -44,6 +48,7 @@
 		135A3CAE881E126451D14CB9 /* RoamTests */ = {
 			isa = PBXGroup;
 			children = (
+				911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */,
 				DCB87FA04018026E1981F420 /* RoamTests.swift */,
 			);
 			path = RoamTests;
@@ -52,6 +57,7 @@
 		377AE598509A96B7AE553197 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -236,6 +242,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */,
 				57C6A2A2F4154CFF796A4F06 /* RoamTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -246,6 +253,7 @@
 			files = (
 				9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */,
 				66BE6A447C410D3C146E0E8B /* CityColor.swift in Sources */,
+				71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */,
 				6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */,
 				0DE13100F7E1CDD4A848244C /* NightLog.swift in Sources */,
 				89BD48C7D72221F9B4F0A7D4 /* RoamApp.swift in Sources */,
