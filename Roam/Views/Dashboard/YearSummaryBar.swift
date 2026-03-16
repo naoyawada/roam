@@ -8,11 +8,13 @@ struct YearSummaryBar: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(String(Calendar.current.component(.year, from: .now)))
-                    .fontWeight(.semibold)
+                    .fontWeight(.medium)
+                    .font(.subheadline)
+                    .foregroundStyle(RoamTheme.textPrimary)
                 Spacer()
                 Text("\(totalDays) days logged")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RoamTheme.textSecondary)
             }
 
             GeometryReader { geo in
@@ -21,21 +23,13 @@ struct YearSummaryBar: View {
                         let width = totalDays > 0
                             ? geo.size.width * CGFloat(entry.days) / CGFloat(totalDays)
                             : 0
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: RoamTheme.yearBarCornerRadius)
                             .fill(entry.color)
                             .frame(width: max(width, 4))
-                            .overlay {
-                                if width > 40 {
-                                    Text(entry.name)
-                                        .font(.caption2)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.white)
-                                }
-                            }
                     }
                 }
             }
-            .frame(height: 28)
+            .frame(height: RoamTheme.yearBarHeight)
         }
     }
 }
