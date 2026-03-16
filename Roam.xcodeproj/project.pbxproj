@@ -44,6 +44,7 @@
 		BB6552613AEC50EEF56580EC /* UnresolvedResolutionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */; };
 		C27430F9DF134273B166D771 /* YearPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE09179968A6F28486086605 /* YearPicker.swift */; };
 		CBA165938F38E9E4E20CFA92 /* BackfillServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB43CA9A1D9486ED5637742C /* BackfillServiceTests.swift */; };
+		CDDAA3EE818A11ED0D9337AC /* AllCitiesSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23864012AE9AA4481A21698F /* AllCitiesSheet.swift */; };
 		D9F49F2A3DD709A589C88C59 /* TopCitiesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96D54A9086E7CD8A895B1455 /* TopCitiesList.swift */; };
 		E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */; };
 		EAAF522E19A47CE945C3D35C /* MonthlyBreakdownChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */; };
@@ -68,6 +69,7 @@
 		108AE1705F106288F46ED85B /* Roam.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Roam.entitlements; sourceTree = "<group>"; };
 		161355E300E961AC6947F70E /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		213B5349FB94E1A2C401CC74 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
+		23864012AE9AA4481A21698F /* AllCitiesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllCitiesSheet.swift; sourceTree = "<group>"; };
 		29A77B7801B9C1F699E56789 /* CityDisplayFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatterTests.swift; sourceTree = "<group>"; };
 		2D00E3E6D01547CE9B679052 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		31F25DCF3A3939AD86AD4553 /* HighlightsGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightsGrid.swift; sourceTree = "<group>"; };
@@ -155,6 +157,7 @@
 		62C5C29B34C364583E31ADCD /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				23864012AE9AA4481A21698F /* AllCitiesSheet.swift */,
 				F6D7CA43E45C39FC47382F99 /* GrainBackground.swift */,
 				F9FCD0FC937244CF77D549C4 /* UnresolvedBanner.swift */,
 				64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */,
@@ -354,6 +357,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDDAA3EE818A11ED0D9337AC /* AllCitiesSheet.swift in Sources */,
 				9208A7F0FA8A35FC62430A99 /* AnalyticsService.swift in Sources */,
 				022AE66EED110DA6E22524B9 /* BackfillService.swift in Sources */,
 				29141037D2B4F8B207C1EFE2 /* BackgroundTaskService.swift in Sources */,
