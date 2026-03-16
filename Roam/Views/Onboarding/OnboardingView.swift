@@ -32,6 +32,8 @@ struct OnboardingView: View {
             Spacer()
         }
         .padding(32)
+        .grainBackground()
+        .tint(RoamTheme.accent)
     }
 
     private var welcomeView: some View {

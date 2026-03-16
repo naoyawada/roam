@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 
 struct UnresolvedBanner: View {
     let unresolvedCount: Int
@@ -10,17 +9,18 @@ struct UnresolvedBanner: View {
             Button(action: onTap) {
                 HStack {
                     Image(systemName: "exclamationmark.circle.fill")
-                        .foregroundStyle(.yellow)
+                        .foregroundStyle(RoamTheme.accent)
                     Text("\(unresolvedCount) night\(unresolvedCount == 1 ? "" : "s") need\(unresolvedCount == 1 ? "s" : "") your input")
                         .font(.subheadline)
+                        .foregroundStyle(RoamTheme.textPrimary)
                     Spacer()
                     Image(systemName: "chevron.right")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(RoamTheme.textTertiary)
                 }
                 .padding()
-                .background(Color.yellow.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(RoamTheme.accentLight)
+                .clipShape(RoundedRectangle(cornerRadius: RoamTheme.cornerRadiusSmall))
             }
             .buttonStyle(.plain)
         }

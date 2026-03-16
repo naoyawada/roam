@@ -65,6 +65,7 @@ struct ContentView: View {
                     InsightsView()
                 }
             }
+            .tint(RoamTheme.accent)
             .sheet(isPresented: $showingSettings) {
                 NavigationStack {
                     SettingsView()

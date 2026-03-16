@@ -62,6 +62,7 @@ struct UnresolvedResolutionView: View {
                     selectedCountry: $selectedCountry
                 )
             }
+            .tint(RoamTheme.accent)
         }
     }
 }

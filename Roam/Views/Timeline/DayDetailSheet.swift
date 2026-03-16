@@ -76,6 +76,7 @@ struct DayDetailSheet: View {
                 try? context.save()
             }
         }
+        .tint(RoamTheme.accent)
         .presentationDetents([.medium, .large])
     }
 }

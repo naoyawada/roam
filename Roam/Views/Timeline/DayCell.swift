@@ -14,21 +14,24 @@ struct DayCell: View {
                     .fill(color)
             } else if isUnresolved {
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(ColorPalette.unresolvedColor)
+                    .fill(RoamTheme.unresolvedFill)
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(Color.yellow.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [4]))
+                            .strokeBorder(RoamTheme.unresolvedBorder, style: StrokeStyle(lineWidth: 1, dash: [4]))
                     )
             } else {
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(.ultraThinMaterial)
-                    .opacity(isFuture ? 0.3 : 0.5)
+                    .fill(RoamTheme.surfaceSubtle)
+                    .opacity(isFuture ? 0.5 : 1)
             }
 
             Text("\(day)")
                 .font(.caption)
-                .fontWeight(isToday ? .bold : .semibold)
-                .foregroundStyle(isFuture ? .secondary : .primary)
+                .fontWeight(isToday ? .bold : .medium)
+                .foregroundStyle(
+                    (color != nil && !isFuture) ? .white :
+                    isFuture ? RoamTheme.textTertiary : RoamTheme.textSecondary
+                )
         }
         .aspectRatio(1, contentMode: .fit)
     }

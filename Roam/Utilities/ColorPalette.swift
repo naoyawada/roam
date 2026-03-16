@@ -1,22 +1,32 @@
 import SwiftUI
 
 enum ColorPalette {
+    /// Top 5 city colors — earthy, warm, distinguishable
     static let colors: [Color] = [
-        Color(red: 0.39, green: 0.40, blue: 0.95),  // indigo
-        Color(red: 0.55, green: 0.36, blue: 0.96),  // violet
-        Color(red: 0.66, green: 0.33, blue: 0.97),  // purple
-        Color(red: 0.75, green: 0.52, blue: 0.99),  // light purple
-        Color(red: 0.24, green: 0.64, blue: 0.96),  // blue
-        Color(red: 0.20, green: 0.78, blue: 0.82),  // teal
-        Color(red: 0.30, green: 0.80, blue: 0.47),  // green
-        Color(red: 0.96, green: 0.68, blue: 0.20),  // amber
-        Color(red: 0.95, green: 0.45, blue: 0.32),  // coral
-        Color(red: 0.92, green: 0.30, blue: 0.48),  // pink
+        Color(red: 0.478, green: 0.361, blue: 0.267),  // leather  #7A5C44
+        Color(red: 0.604, green: 0.494, blue: 0.392),  // tan      #9A7E64
+        Color(red: 0.369, green: 0.490, blue: 0.431),  // sage     #5E7D6E
+        Color(red: 0.690, green: 0.604, blue: 0.525),  // sand     #B09A86
+        Color(red: 0.545, green: 0.420, blue: 0.353),  // umber    #8B6B5A
     ]
 
-    static let unresolvedColor = Color.yellow.opacity(0.3)
+    /// Color for cities ranked 6+
+    static let otherColor = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(white: 0.9, alpha: 0.12)
+            : UIColor(red: 0.149, green: 0.145, blue: 0.118, alpha: 0.1)
+    })
+
+    /// Unresolved: uses theme tokens
+    static let unresolvedColor = RoamTheme.unresolvedFill
+
+    /// Max number of individually colored cities
+    static let maxColoredCities = 5
 
     static func color(for index: Int) -> Color {
-        colors[index % colors.count]
+        if index < colors.count {
+            return colors[index]
+        }
+        return otherColor
     }
 }
