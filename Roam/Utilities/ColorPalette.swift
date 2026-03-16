@@ -11,7 +11,11 @@ enum ColorPalette {
     ]
 
     /// Color for cities ranked 6+
-    static let otherColor = Color(red: 0.149, green: 0.145, blue: 0.118).opacity(0.1)
+    static let otherColor = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(white: 0.9, alpha: 0.12)
+            : UIColor(red: 0.149, green: 0.145, blue: 0.118, alpha: 0.1)
+    })
 
     /// Unresolved: uses theme tokens
     static let unresolvedColor = RoamTheme.unresolvedFill

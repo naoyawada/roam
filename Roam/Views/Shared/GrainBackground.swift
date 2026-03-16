@@ -14,7 +14,7 @@ struct GrainBackground: ViewModifier {
                         let dotSize = CGFloat.random(in: 0.5...1.5)
                         context.fill(
                             Path(ellipseIn: CGRect(x: x, y: y, width: dotSize, height: dotSize)),
-                            with: .color(RoamTheme.textPrimary.opacity(opacity))
+                            with: .color(RoamTheme.grainColor.opacity(opacity))
                         )
                     }
                 }

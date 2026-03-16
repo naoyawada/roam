@@ -13,7 +13,7 @@ struct HighlightsGrid: View {
                 .font(.subheadline)
                 .foregroundStyle(RoamTheme.textPrimary)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+            LazyVGrid(columns: [GridItem(.flexible(), alignment: .top), GridItem(.flexible(), alignment: .top)], spacing: 10) {
                 HighlightCard(
                     label: "Most visited",
                     value: mostVisited.city,
