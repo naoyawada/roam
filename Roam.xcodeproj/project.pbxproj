@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		022AE66EED110DA6E22524B9 /* BackfillService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A185E3DABE45BFB2A2841296 /* BackfillService.swift */; };
 		0DE13100F7E1CDD4A848244C /* NightLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2C0E40B4FC1B5F9764031C /* NightLog.swift */; };
 		2293862100765F7BA574183A /* LocationValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */; };
 		57C6A2A2F4154CFF796A4F06 /* RoamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCB87FA04018026E1981F420 /* RoamTests.swift */; };
@@ -20,6 +21,7 @@
 		879C5CD335AA4ACA9C45DD85 /* LocationCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */; };
 		89BD48C7D72221F9B4F0A7D4 /* RoamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */; };
 		9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */; };
+		CBA165938F38E9E4E20CFA92 /* BackfillServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB43CA9A1D9486ED5637742C /* BackfillServiceTests.swift */; };
 		E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -47,17 +49,20 @@
 		7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalization.swift; sourceTree = "<group>"; };
 		88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationValidationTests.swift; sourceTree = "<group>"; };
 		911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalizationTests.swift; sourceTree = "<group>"; };
+		A185E3DABE45BFB2A2841296 /* BackfillService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackfillService.swift; sourceTree = "<group>"; };
 		A24B7CDA85945C212A2CD117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamApp.swift; sourceTree = "<group>"; };
 		BA84F0D90EF31DFF1AA98C14 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationCaptureService.swift; sourceTree = "<group>"; };
 		DCB87FA04018026E1981F420 /* RoamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamTests.swift; sourceTree = "<group>"; };
+		FB43CA9A1D9486ED5637742C /* BackfillServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackfillServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		135A3CAE881E126451D14CB9 /* RoamTests */ = {
 			isa = PBXGroup;
 			children = (
+				FB43CA9A1D9486ED5637742C /* BackfillServiceTests.swift */,
 				29A77B7801B9C1F699E56789 /* CityDisplayFormatterTests.swift */,
 				911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */,
 				88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */,
@@ -69,6 +74,7 @@
 		377AE598509A96B7AE553197 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A185E3DABE45BFB2A2841296 /* BackfillService.swift */,
 				7627FC571437D796D019472E /* CityDisplayFormatter.swift */,
 				7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */,
 				BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */,
@@ -257,6 +263,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CBA165938F38E9E4E20CFA92 /* BackfillServiceTests.swift in Sources */,
 				5992C8E61D86C6986D989164 /* CityDisplayFormatterTests.swift in Sources */,
 				E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */,
 				2293862100765F7BA574183A /* LocationValidationTests.swift in Sources */,
@@ -268,6 +275,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				022AE66EED110DA6E22524B9 /* BackfillService.swift in Sources */,
 				9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */,
 				66BE6A447C410D3C146E0E8B /* CityColor.swift in Sources */,
 				679A4B2690C44253292E39A6 /* CityDisplayFormatter.swift in Sources */,
