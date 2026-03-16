@@ -7,12 +7,7 @@ struct RoamApp: App {
 
     init() {
         do {
-            let schema = Schema([NightLog.self, CityColor.self, UserSettings.self])
-            let config = ModelConfiguration(
-                schema: schema,
-                cloudKitDatabase: .automatic
-            )
-            modelContainer = try ModelContainer(for: schema, configurations: [config])
+            modelContainer = try ModelContainer(for: NightLog.self, CityColor.self, UserSettings.self)
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }

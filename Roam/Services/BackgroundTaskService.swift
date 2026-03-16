@@ -96,7 +96,7 @@ enum BackgroundTaskService {
         ).first
 
         let unresolvedRaw = LogStatus.unresolvedRaw
-        if let existing, existing.status.rawValue != unresolvedRaw {
+        if let existing, existing.statusRaw != unresolvedRaw {
             // Already have a confirmed/manual entry — don't overwrite
             task.setTaskCompleted(success: true)
             return

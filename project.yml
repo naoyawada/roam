@@ -1,6 +1,6 @@
 name: Roam
 options:
-  bundleIdPrefix: com.roamapp
+  bundleIdPrefix: com.naoyawada
   deploymentTarget:
     iOS: "26.0"
   xcodeVersion: "16.0"
@@ -21,15 +21,7 @@ targets:
       base:
         INFOPLIST_FILE: Roam/Info.plist
         GENERATE_INFOPLIST_FILE: "YES"
-        CODE_SIGN_ENTITLEMENTS: Roam/Roam.entitlements
-        PRODUCT_BUNDLE_IDENTIFIER: com.roamapp.Roam
-    entitlements:
-      path: Roam/Roam.entitlements
-      properties:
-        com.apple.developer.icloud-container-identifiers:
-          - "iCloud.com.roamapp.Roam"
-        com.apple.developer.icloud-services:
-          - "CloudKit"
+        PRODUCT_BUNDLE_IDENTIFIER: com.naoyawada.roam
 
   RoamTests:
     type: bundle.unit-test
@@ -43,3 +35,12 @@ targets:
         GENERATE_INFOPLIST_FILE: "YES"
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Roam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Roam"
         BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  Roam:
+    build:
+      targets:
+        Roam: all
+    test:
+      targets:
+        - RoamTests

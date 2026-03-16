@@ -9,22 +9,44 @@
 /* Begin PBXBuildFile section */
 		022AE66EED110DA6E22524B9 /* BackfillService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A185E3DABE45BFB2A2841296 /* BackfillService.swift */; };
 		0DE13100F7E1CDD4A848244C /* NightLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F2C0E40B4FC1B5F9764031C /* NightLog.swift */; };
+		184B69BA26427783634B861B /* QuickStatsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67CDC698821F03244B048F9 /* QuickStatsRow.swift */; };
+		1F83049070C1A069782B8963 /* HighlightsGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31F25DCF3A3939AD86AD4553 /* HighlightsGrid.swift */; };
+		207CFA38EBC84291A829F85A /* CalendarGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E630A600F22424A78983ED2A /* CalendarGridView.swift */; };
 		2293862100765F7BA574183A /* LocationValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */; };
+		2710B99F9426F221581461E0 /* DayDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6EF82EA5D64961C0618FD /* DayDetailSheet.swift */; };
 		29141037D2B4F8B207C1EFE2 /* BackgroundTaskService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D67A2307B78BB5B0130643 /* BackgroundTaskService.swift */; };
+		2F58DFD0E9141CE4608A77D9 /* YearOverYearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E0F64E8EA98CCC7B86A87F1 /* YearOverYearView.swift */; };
+		45FEA24C9A0F3D0977A94A82 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161355E300E961AC6947F70E /* InsightsView.swift */; };
+		4AB82FA66BB533444D897559 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9D868ACDE0717F8AD4523DD /* OnboardingView.swift */; };
 		548F7A9523DFD7FB13D6995E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A1D3A9470466B0ACE9F8CE3 /* ContentView.swift */; };
 		57C6A2A2F4154CFF796A4F06 /* RoamTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCB87FA04018026E1981F420 /* RoamTests.swift */; };
 		5992C8E61D86C6986D989164 /* CityDisplayFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A77B7801B9C1F699E56789 /* CityDisplayFormatterTests.swift */; };
 		5D9A8E5059726FB1889BCAF6 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA84F0D90EF31DFF1AA98C14 /* UserSettings.swift */; };
+		6649802A162459FB3173D0C3 /* YearSummaryBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECD3C287711CA628B9824D9 /* YearSummaryBar.swift */; };
 		66BE6A447C410D3C146E0E8B /* CityColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EA9C47D3A9C41530AB4684 /* CityColor.swift */; };
+		66CDD90D71C97B0E216E75F7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73B468CC1768479756B40354 /* SettingsView.swift */; };
 		679A4B2690C44253292E39A6 /* CityDisplayFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7627FC571437D796D019472E /* CityDisplayFormatter.swift */; };
 		6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5CA8FAA3547C6DCBCBBE01 /* LogStatus.swift */; };
+		6FE146D73EA61052BC262C22 /* CitySearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BFA8009A22BA4D8C7357FF /* CitySearchView.swift */; };
 		71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */; };
 		7B4E9326C95605459F6895A1 /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213B5349FB94E1A2C401CC74 /* ColorPalette.swift */; };
 		879C5CD335AA4ACA9C45DD85 /* LocationCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */; };
 		89BD48C7D72221F9B4F0A7D4 /* RoamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */; };
+		90FDDDF4C2346380FBFD0837 /* DayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D7FF89B107B4B4154B20D9C /* DayCell.swift */; };
+		9208A7F0FA8A35FC62430A99 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 778687BCAF748015DFE68915 /* AnalyticsService.swift */; };
+		9F33C43995795018E6000775 /* AnalyticsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63DDD65758488CE7F62C1F58 /* AnalyticsServiceTests.swift */; };
 		9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */; };
+		AC25A9DF61146D6642C14EB8 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D00E3E6D01547CE9B679052 /* DashboardView.swift */; };
+		B3B65F4760C913CB20F71ABF /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72CE241E3B8CDD29B35059E /* TimelineView.swift */; };
+		B9EEE152B2DA6466212A6164 /* UnresolvedBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCD0FC937244CF77D549C4 /* UnresolvedBanner.swift */; };
+		BB6552613AEC50EEF56580EC /* UnresolvedResolutionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */; };
+		C27430F9DF134273B166D771 /* YearPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE09179968A6F28486086605 /* YearPicker.swift */; };
 		CBA165938F38E9E4E20CFA92 /* BackfillServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB43CA9A1D9486ED5637742C /* BackfillServiceTests.swift */; };
+		D9F49F2A3DD709A589C88C59 /* TopCitiesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96D54A9086E7CD8A895B1455 /* TopCitiesList.swift */; };
 		E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */; };
+		EAAF522E19A47CE945C3D35C /* MonthlyBreakdownChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */; };
+		F064E26ED7FCC1A9353B8FE2 /* DataExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EC93ED423B3CE8910B4C61 /* DataExportView.swift */; };
+		F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,33 +61,56 @@
 
 /* Begin PBXFileReference section */
 		04EA9C47D3A9C41530AB4684 /* CityColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityColor.swift; sourceTree = "<group>"; };
+		06BFA8009A22BA4D8C7357FF /* CitySearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CitySearchView.swift; sourceTree = "<group>"; };
+		0E0F64E8EA98CCC7B86A87F1 /* YearOverYearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearOverYearView.swift; sourceTree = "<group>"; };
 		108AE1705F106288F46ED85B /* Roam.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Roam.entitlements; sourceTree = "<group>"; };
+		161355E300E961AC6947F70E /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		213B5349FB94E1A2C401CC74 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		29A77B7801B9C1F699E56789 /* CityDisplayFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatterTests.swift; sourceTree = "<group>"; };
+		2D00E3E6D01547CE9B679052 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		31F25DCF3A3939AD86AD4553 /* HighlightsGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightsGrid.swift; sourceTree = "<group>"; };
 		3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSource.swift; sourceTree = "<group>"; };
-		451BDBADFD229CF00F91E911 /* RoamTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RoamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		451BDBADFD229CF00F91E911 /* RoamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RoamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D7FF89B107B4B4154B20D9C /* DayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCell.swift; sourceTree = "<group>"; };
 		4F5CA8FAA3547C6DCBCBBE01 /* LogStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStatus.swift; sourceTree = "<group>"; };
+		4FC6EF82EA5D64961C0618FD /* DayDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailSheet.swift; sourceTree = "<group>"; };
 		5F2C0E40B4FC1B5F9764031C /* NightLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NightLog.swift; sourceTree = "<group>"; };
-		6D050F4B9DC635F3333C47DA /* Roam.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Roam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		63DDD65758488CE7F62C1F58 /* AnalyticsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsServiceTests.swift; sourceTree = "<group>"; };
+		64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnresolvedResolutionView.swift; sourceTree = "<group>"; };
+		6D050F4B9DC635F3333C47DA /* Roam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Roam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		73B468CC1768479756B40354 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7627FC571437D796D019472E /* CityDisplayFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatter.swift; sourceTree = "<group>"; };
+		76EC93ED423B3CE8910B4C61 /* DataExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportView.swift; sourceTree = "<group>"; };
+		778687BCAF748015DFE68915 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		7A1D3A9470466B0ACE9F8CE3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalization.swift; sourceTree = "<group>"; };
 		81D67A2307B78BB5B0130643 /* BackgroundTaskService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskService.swift; sourceTree = "<group>"; };
 		88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationValidationTests.swift; sourceTree = "<group>"; };
 		911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalizationTests.swift; sourceTree = "<group>"; };
+		96D54A9086E7CD8A895B1455 /* TopCitiesList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopCitiesList.swift; sourceTree = "<group>"; };
 		A185E3DABE45BFB2A2841296 /* BackfillService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackfillService.swift; sourceTree = "<group>"; };
 		A24B7CDA85945C212A2CD117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamApp.swift; sourceTree = "<group>"; };
+		AECD3C287711CA628B9824D9 /* YearSummaryBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearSummaryBar.swift; sourceTree = "<group>"; };
 		BA84F0D90EF31DFF1AA98C14 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
+		BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentCityBanner.swift; sourceTree = "<group>"; };
 		BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationCaptureService.swift; sourceTree = "<group>"; };
+		C72CE241E3B8CDD29B35059E /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyBreakdownChart.swift; sourceTree = "<group>"; };
 		DCB87FA04018026E1981F420 /* RoamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamTests.swift; sourceTree = "<group>"; };
+		E630A600F22424A78983ED2A /* CalendarGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarGridView.swift; sourceTree = "<group>"; };
+		F67CDC698821F03244B048F9 /* QuickStatsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStatsRow.swift; sourceTree = "<group>"; };
+		F9D868ACDE0717F8AD4523DD /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		F9FCD0FC937244CF77D549C4 /* UnresolvedBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnresolvedBanner.swift; sourceTree = "<group>"; };
 		FB43CA9A1D9486ED5637742C /* BackfillServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackfillServiceTests.swift; sourceTree = "<group>"; };
+		FE09179968A6F28486086605 /* YearPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearPicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		135A3CAE881E126451D14CB9 /* RoamTests */ = {
 			isa = PBXGroup;
 			children = (
+				63DDD65758488CE7F62C1F58 /* AnalyticsServiceTests.swift */,
 				FB43CA9A1D9486ED5637742C /* BackfillServiceTests.swift */,
 				29A77B7801B9C1F699E56789 /* CityDisplayFormatterTests.swift */,
 				911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */,
@@ -78,6 +123,7 @@
 		377AE598509A96B7AE553197 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				778687BCAF748015DFE68915 /* AnalyticsService.swift */,
 				A185E3DABE45BFB2A2841296 /* BackfillService.swift */,
 				81D67A2307B78BB5B0130643 /* BackgroundTaskService.swift */,
 				7627FC571437D796D019472E /* CityDisplayFormatter.swift */,
@@ -105,6 +151,8 @@
 		62C5C29B34C364583E31ADCD /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				F9FCD0FC937244CF77D549C4 /* UnresolvedBanner.swift */,
+				64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -112,6 +160,7 @@
 		6508110B36B56700C7AE3BCD /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
+				F9D868ACDE0717F8AD4523DD /* OnboardingView.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -119,6 +168,9 @@
 		72250E95136D29A8DB60CEFF /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				06BFA8009A22BA4D8C7357FF /* CitySearchView.swift */,
+				76EC93ED423B3CE8910B4C61 /* DataExportView.swift */,
+				73B468CC1768479756B40354 /* SettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -156,6 +208,10 @@
 		AB797D1AD10F5BED17516B74 /* Timeline */ = {
 			isa = PBXGroup;
 			children = (
+				E630A600F22424A78983ED2A /* CalendarGridView.swift */,
+				4D7FF89B107B4B4154B20D9C /* DayCell.swift */,
+				4FC6EF82EA5D64961C0618FD /* DayDetailSheet.swift */,
+				C72CE241E3B8CDD29B35059E /* TimelineView.swift */,
 			);
 			path = Timeline;
 			sourceTree = "<group>";
@@ -163,6 +219,11 @@
 		AFAB2C4AD0C8279DBF838EA5 /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */,
+				2D00E3E6D01547CE9B679052 /* DashboardView.swift */,
+				F67CDC698821F03244B048F9 /* QuickStatsRow.swift */,
+				96D54A9086E7CD8A895B1455 /* TopCitiesList.swift */,
+				AECD3C287711CA628B9824D9 /* YearSummaryBar.swift */,
 			);
 			path = Dashboard;
 			sourceTree = "<group>";
@@ -178,6 +239,11 @@
 		E434D46ED5F58232E1C1E082 /* Insights */ = {
 			isa = PBXGroup;
 			children = (
+				31F25DCF3A3939AD86AD4553 /* HighlightsGrid.swift */,
+				161355E300E961AC6947F70E /* InsightsView.swift */,
+				D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */,
+				0E0F64E8EA98CCC7B86A87F1 /* YearOverYearView.swift */,
+				FE09179968A6F28486086605 /* YearPicker.swift */,
 			);
 			path = Insights;
 			sourceTree = "<group>";
@@ -240,9 +306,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-				};
+				LastUpgradeCheck = 2630;
 			};
 			buildConfigurationList = CEABB1BC301B9627E62F06FE /* Build configuration list for PBXProject "Roam" */;
 			developmentRegion = en;
@@ -269,6 +333,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9F33C43995795018E6000775 /* AnalyticsServiceTests.swift in Sources */,
 				CBA165938F38E9E4E20CFA92 /* BackfillServiceTests.swift in Sources */,
 				5992C8E61D86C6986D989164 /* CityDisplayFormatterTests.swift in Sources */,
 				E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */,
@@ -281,19 +346,40 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9208A7F0FA8A35FC62430A99 /* AnalyticsService.swift in Sources */,
 				022AE66EED110DA6E22524B9 /* BackfillService.swift in Sources */,
 				29141037D2B4F8B207C1EFE2 /* BackgroundTaskService.swift in Sources */,
+				207CFA38EBC84291A829F85A /* CalendarGridView.swift in Sources */,
 				9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */,
 				66BE6A447C410D3C146E0E8B /* CityColor.swift in Sources */,
 				679A4B2690C44253292E39A6 /* CityDisplayFormatter.swift in Sources */,
+				6FE146D73EA61052BC262C22 /* CitySearchView.swift in Sources */,
 				7B4E9326C95605459F6895A1 /* ColorPalette.swift in Sources */,
 				548F7A9523DFD7FB13D6995E /* ContentView.swift in Sources */,
+				F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */,
+				AC25A9DF61146D6642C14EB8 /* DashboardView.swift in Sources */,
+				F064E26ED7FCC1A9353B8FE2 /* DataExportView.swift in Sources */,
 				71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */,
+				90FDDDF4C2346380FBFD0837 /* DayCell.swift in Sources */,
+				2710B99F9426F221581461E0 /* DayDetailSheet.swift in Sources */,
+				1F83049070C1A069782B8963 /* HighlightsGrid.swift in Sources */,
+				45FEA24C9A0F3D0977A94A82 /* InsightsView.swift in Sources */,
 				879C5CD335AA4ACA9C45DD85 /* LocationCaptureService.swift in Sources */,
 				6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */,
+				EAAF522E19A47CE945C3D35C /* MonthlyBreakdownChart.swift in Sources */,
 				0DE13100F7E1CDD4A848244C /* NightLog.swift in Sources */,
+				4AB82FA66BB533444D897559 /* OnboardingView.swift in Sources */,
+				184B69BA26427783634B861B /* QuickStatsRow.swift in Sources */,
 				89BD48C7D72221F9B4F0A7D4 /* RoamApp.swift in Sources */,
+				66CDD90D71C97B0E216E75F7 /* SettingsView.swift in Sources */,
+				B3B65F4760C913CB20F71ABF /* TimelineView.swift in Sources */,
+				D9F49F2A3DD709A589C88C59 /* TopCitiesList.swift in Sources */,
+				B9EEE152B2DA6466212A6164 /* UnresolvedBanner.swift in Sources */,
+				BB6552613AEC50EEF56580EC /* UnresolvedResolutionView.swift in Sources */,
 				5D9A8E5059726FB1889BCAF6 /* UserSettings.swift in Sources */,
+				2F58DFD0E9141CE4608A77D9 /* YearOverYearView.swift in Sources */,
+				C27430F9DF134273B166D771 /* YearPicker.swift in Sources */,
+				6649802A162459FB3173D0C3 /* YearSummaryBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -345,6 +431,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -358,6 +445,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -375,7 +463,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.roamapp.RoamTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.naoyawada.RoamTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Roam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Roam";
@@ -419,6 +507,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -439,6 +528,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -456,7 +546,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.roamapp.RoamTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.naoyawada.RoamTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Roam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Roam";
@@ -467,15 +557,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Roam/Roam.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = VSB9363427;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Roam/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.roamapp.Roam;
+				PRODUCT_BUNDLE_IDENTIFIER = com.naoyawada.roam;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -485,15 +577,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Roam/Roam.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = VSB9363427;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Roam/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.roamapp.Roam;
+				PRODUCT_BUNDLE_IDENTIFIER = com.naoyawada.roam;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

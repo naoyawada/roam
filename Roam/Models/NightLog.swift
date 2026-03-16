@@ -2,18 +2,28 @@ import Foundation
 import SwiftData
 
 @Model
-final class NightLog {
+final class NightLog: Identifiable {
     var id: UUID = UUID()
-    @Attribute(.unique) var date: Date
+    var date: Date = Date.distantPast
     var city: String?
     var state: String?
     var country: String?
     var latitude: Double?
     var longitude: Double?
-    var capturedAt: Date
+    var capturedAt: Date = Date.now
     var horizontalAccuracy: Double?
-    var source: CaptureSource
-    var status: LogStatus
+    var sourceRaw: String = CaptureSource.automaticRaw
+    var statusRaw: String = LogStatus.confirmedRaw
+
+    var source: CaptureSource {
+        get { CaptureSource(rawValue: sourceRaw) ?? .automatic }
+        set { sourceRaw = newValue.rawValue }
+    }
+
+    var status: LogStatus {
+        get { LogStatus(rawValue: statusRaw) ?? .confirmed }
+        set { statusRaw = newValue.rawValue }
+    }
 
     init(
         id: UUID = UUID(),
@@ -37,7 +47,7 @@ final class NightLog {
         self.longitude = longitude
         self.capturedAt = capturedAt
         self.horizontalAccuracy = horizontalAccuracy
-        self.source = source
-        self.status = status
+        self.sourceRaw = source.rawValue
+        self.statusRaw = status.rawValue
     }
 }

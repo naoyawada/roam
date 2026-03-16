@@ -36,12 +36,13 @@ RoamTests/      — Unit tests for pure logic (date normalization, analytics, di
 SwiftData `#Predicate` macros cannot compare enum cases directly. Always compare against raw value strings:
 
 ```swift
-// WRONG — will crash at runtime
+// WRONG — will crash at runtime (computed property in #Predicate)
 #Predicate<NightLog> { $0.status != .unresolved }
-
-// CORRECT
-let unresolvedRaw = LogStatus.unresolvedRaw
 #Predicate<NightLog> { $0.status.rawValue != unresolvedRaw }
+
+// CORRECT — use the stored String property directly
+let unresolvedRaw = LogStatus.unresolvedRaw
+#Predicate<NightLog> { $0.statusRaw != unresolvedRaw }
 ```
 
 ## Build & Test
@@ -51,10 +52,10 @@ let unresolvedRaw = LogStatus.unresolvedRaw
 xcodegen generate
 
 # Build
-xcodebuild build -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 16' -quiet
+xcodebuild build -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -quiet
 
 # Run all tests
-xcodebuild test -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 16' -quiet
+xcodebuild test -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -quiet
 
 # Run specific test class
 xcodebuild test -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:RoamTests/DateNormalizationTests -quiet

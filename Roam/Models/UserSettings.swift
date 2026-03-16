@@ -4,13 +4,13 @@ import SwiftData
 @Model
 final class UserSettings {
     var homeCityKey: String?
-    var primaryCheckHour: Int
-    var primaryCheckMinute: Int
-    var retryCheckHour: Int
-    var retryCheckMinute: Int
-    var hasCompletedOnboarding: Bool
-    var iCloudSyncEnabled: Bool
-    var notificationsEnabled: Bool
+    var primaryCheckHour: Int = 2
+    var primaryCheckMinute: Int = 0
+    var retryCheckHour: Int = 5
+    var retryCheckMinute: Int = 0
+    var hasCompletedOnboarding: Bool = false
+    var iCloudSyncEnabled: Bool = true
+    var notificationsEnabled: Bool = true
 
     init(
         homeCityKey: String? = nil,

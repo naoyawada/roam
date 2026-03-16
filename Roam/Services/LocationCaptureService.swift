@@ -14,6 +14,7 @@ final class LocationCaptureService: NSObject, ObservableObject {
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.allowsBackgroundLocationUpdates = true
         locationManager.pausesLocationUpdatesAutomatically = false
+        authorizationStatus = locationManager.authorizationStatus
     }
 
     /// Validate whether a location reading meets quality thresholds.
@@ -78,9 +79,7 @@ final class LocationCaptureService: NSObject, ObservableObject {
         )
     }
 
-    var authorizationStatus: CLAuthorizationStatus {
-        locationManager.authorizationStatus
-    }
+    @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
 
     func requestWhenInUseAuthorization() {
         locationManager.requestWhenInUseAuthorization()
@@ -96,6 +95,13 @@ extension LocationCaptureService: CLLocationManagerDelegate {
         Task { @MainActor in
             captureCompletion?(locations.last)
             captureCompletion = nil
+        }
+    }
+
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        let status = manager.authorizationStatus
+        Task { @MainActor in
+            authorizationStatus = status
         }
     }
 

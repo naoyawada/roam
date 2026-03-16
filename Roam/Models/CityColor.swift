@@ -3,8 +3,8 @@ import SwiftData
 
 @Model
 final class CityColor {
-    @Attribute(.unique) var cityKey: String
-    var colorIndex: Int
+    var cityKey: String = ""
+    var colorIndex: Int = 0
 
     init(cityKey: String, colorIndex: Int) {
         self.cityKey = cityKey
