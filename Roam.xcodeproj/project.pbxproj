@@ -31,6 +31,7 @@
 		6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5CA8FAA3547C6DCBCBBE01 /* LogStatus.swift */; };
 		6FE146D73EA61052BC262C22 /* CitySearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BFA8009A22BA4D8C7357FF /* CitySearchView.swift */; };
 		71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */; };
+		73C9DC7552AD43AE7FFE2DE0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2856C63FFED2930C5E15AF5 /* Assets.xcassets */; };
 		7B4E9326C95605459F6895A1 /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213B5349FB94E1A2C401CC74 /* ColorPalette.swift */; };
 		879C5CD335AA4ACA9C45DD85 /* LocationCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */; };
 		89BD48C7D72221F9B4F0A7D4 /* RoamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */; };
@@ -97,6 +98,7 @@
 		A24B7CDA85945C212A2CD117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamApp.swift; sourceTree = "<group>"; };
 		AECD3C287711CA628B9824D9 /* YearSummaryBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearSummaryBar.swift; sourceTree = "<group>"; };
+		B2856C63FFED2930C5E15AF5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BA84F0D90EF31DFF1AA98C14 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentCityBanner.swift; sourceTree = "<group>"; };
 		BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationCaptureService.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 		438C33047979288FBE168EC8 /* Roam */ = {
 			isa = PBXGroup;
 			children = (
+				B2856C63FFED2930C5E15AF5 /* Assets.xcassets */,
 				7A1D3A9470466B0ACE9F8CE3 /* ContentView.swift */,
 				A24B7CDA85945C212A2CD117 /* Info.plist */,
 				108AE1705F106288F46ED85B /* Roam.entitlements */,
@@ -296,6 +299,7 @@
 			buildConfigurationList = 737077FD0E13D691AA91C275 /* Build configuration list for PBXNativeTarget "Roam" */;
 			buildPhases = (
 				D799E5C55723969E260F9A2B /* Sources */,
+				9ED31B9E58168803ADAB20C1 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -338,6 +342,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9ED31B9E58168803ADAB20C1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				73C9DC7552AD43AE7FFE2DE0 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		C3D7277942EC6938A94D1DF2 /* Sources */ = {
