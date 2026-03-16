@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>location</string>
+    </array>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Roam uses your location to automatically log which city you sleep in each night.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Roam uses your location to log which city you are in.</string>
+    <key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.roamapp.nightCapture</string>
+        <string>com.roamapp.nightCaptureRetry</string>
+    </array>
+</dict>
+</plist>

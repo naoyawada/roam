@@ -1,0 +1,45 @@
+name: Roam
+options:
+  bundleIdPrefix: com.roamapp
+  deploymentTarget:
+    iOS: "26.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    TARGETED_DEVICE_FAMILY: "1"
+
+targets:
+  Roam:
+    type: application
+    platform: iOS
+    sources:
+      - path: Roam
+    settings:
+      base:
+        INFOPLIST_FILE: Roam/Info.plist
+        GENERATE_INFOPLIST_FILE: "YES"
+        CODE_SIGN_ENTITLEMENTS: Roam/Roam.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.roamapp.Roam
+    entitlements:
+      path: Roam/Roam.entitlements
+      properties:
+        com.apple.developer.icloud-container-identifiers:
+          - "iCloud.com.roamapp.Roam"
+        com.apple.developer.icloud-services:
+          - "CloudKit"
+
+  RoamTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: RoamTests
+    dependencies:
+      - target: Roam
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: "YES"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Roam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Roam"
+        BUNDLE_LOADER: "$(TEST_HOST)"
