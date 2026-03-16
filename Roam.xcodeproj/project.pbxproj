@@ -15,6 +15,7 @@
 		679A4B2690C44253292E39A6 /* CityDisplayFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7627FC571437D796D019472E /* CityDisplayFormatter.swift */; };
 		6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5CA8FAA3547C6DCBCBBE01 /* LogStatus.swift */; };
 		71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */; };
+		7B4E9326C95605459F6895A1 /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213B5349FB94E1A2C401CC74 /* ColorPalette.swift */; };
 		89BD48C7D72221F9B4F0A7D4 /* RoamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */; };
 		9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */; };
 		E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */; };
@@ -33,6 +34,7 @@
 /* Begin PBXFileReference section */
 		04EA9C47D3A9C41530AB4684 /* CityColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityColor.swift; sourceTree = "<group>"; };
 		108AE1705F106288F46ED85B /* Roam.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Roam.entitlements; sourceTree = "<group>"; };
+		213B5349FB94E1A2C401CC74 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		29A77B7801B9C1F699E56789 /* CityDisplayFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatterTests.swift; sourceTree = "<group>"; };
 		3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSource.swift; sourceTree = "<group>"; };
 		451BDBADFD229CF00F91E911 /* RoamTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RoamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -150,6 +152,7 @@
 		BDF6605B0377EFF74EDA7BD8 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				213B5349FB94E1A2C401CC74 /* ColorPalette.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -261,6 +264,7 @@
 				9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */,
 				66BE6A447C410D3C146E0E8B /* CityColor.swift in Sources */,
 				679A4B2690C44253292E39A6 /* CityDisplayFormatter.swift in Sources */,
+				7B4E9326C95605459F6895A1 /* ColorPalette.swift in Sources */,
 				71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */,
 				6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */,
 				0DE13100F7E1CDD4A848244C /* NightLog.swift in Sources */,
