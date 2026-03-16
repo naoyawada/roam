@@ -2570,7 +2570,7 @@ struct InsightsView: View {
     @Query private var cityColors: [CityColor]
     @Query private var settings: [UserSettings]
 
-    @State private var selectedYear: Int?
+    @State private var selectedYear: Int? = Calendar.current.component(.year, from: .now)
 
     private var currentYear: Int {
         Calendar.current.component(.year, from: .now)
@@ -2637,11 +2637,6 @@ struct InsightsView: View {
                 .padding()
             }
             .navigationTitle("Insights")
-            .onAppear {
-                if selectedYear == nil {
-                    selectedYear = currentYear
-                }
-            }
         }
     }
 }
@@ -3242,6 +3237,7 @@ git commit -m "feat: add onboarding flow with location permission request"
 
 **Files:**
 - Create: `Roam/Views/Shared/UnresolvedBanner.swift`
+- Create: `Roam/Views/Shared/UnresolvedResolutionView.swift`
 - Modify: `Roam/RoamApp.swift`
 - Modify: `Roam/ContentView.swift`
 
@@ -3339,6 +3335,15 @@ struct ContentView: View {
                     InsightsView()
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
@@ -3378,8 +3383,15 @@ struct ContentView: View {
         }
     }
 }
+```
 
-/// View shown when user taps the unresolved banner — lets them pick a city for the unresolved night.
+- [ ] **Step 3: Create UnresolvedResolutionView**
+
+```swift
+// Roam/Views/Shared/UnresolvedResolutionView.swift
+import SwiftUI
+import SwiftData
+
 struct UnresolvedResolutionView: View {
     let log: NightLog
     @Environment(\.modelContext) private var context
@@ -3446,55 +3458,23 @@ struct UnresolvedResolutionView: View {
 }
 ```
 
-- [ ] **Step 3: Update RoamApp to add backfill on launch**
+- [ ] **Step 4: Update RoamApp (no changes needed — already correct from Task 9)**
 
-```swift
-// Roam/RoamApp.swift
-import SwiftUI
-import SwiftData
+RoamApp.swift from Task 9 already registers background tasks and sets up the model container. No changes needed here. The backfill is triggered in ContentView's `.onAppear`.
 
-@main
-struct RoamApp: App {
-    let modelContainer: ModelContainer
-
-    init() {
-        do {
-            let schema = Schema([NightLog.self, CityColor.self, UserSettings.self])
-            let config = ModelConfiguration(
-                schema: schema,
-                cloudKitDatabase: .automatic
-            )
-            modelContainer = try ModelContainer(for: schema, configurations: [config])
-        } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
-        }
-
-        BackgroundTaskService.register(modelContainer: modelContainer)
-        BackgroundTaskService.schedulePrimaryCapture()
-    }
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-        .modelContainer(modelContainer)
-    }
-}
-```
-
-- [ ] **Step 4: Verify full build**
+- [ ] **Step 5: Verify full build**
 
 Run: `xcodebuild build -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 16' -quiet`
 Expected: BUILD SUCCEEDED
 
-- [ ] **Step 5: Run all tests**
+- [ ] **Step 6: Run all tests**
 
 Run: `xcodebuild test -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 16' -quiet 2>&1 | tail -30`
 Expected: All tests PASS
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add Roam/Views/Shared/UnresolvedBanner.swift Roam/ContentView.swift Roam/RoamApp.swift
-git commit -m "feat: add onboarding gate, unresolved banner, color assignment, and backfill on launch"
+git add Roam/Views/Shared/UnresolvedBanner.swift Roam/Views/Shared/UnresolvedResolutionView.swift Roam/ContentView.swift
+git commit -m "feat: add onboarding gate, unresolved banner and resolution, color assignment, and backfill on launch"
 ```
