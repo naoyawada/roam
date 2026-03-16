@@ -74,6 +74,7 @@ struct DashboardView: View {
                 }
                 .padding()
             }
+            .grainBackground()
             .navigationTitle("Roam")
     }
 }
