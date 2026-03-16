@@ -6,7 +6,9 @@ struct YearOverYearView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Year over Year")
-                .fontWeight(.semibold)
+                .fontWeight(.medium)
+                .font(.subheadline)
+                .foregroundStyle(RoamTheme.textPrimary)
 
             VStack(spacing: 12) {
                 comparisonRow(label: "Total cities") { "\($0.totalCities)" }
@@ -14,8 +16,10 @@ struct YearOverYearView: View {
                 comparisonRow(label: "Avg trip length") { String(format: "%.1fd", $0.avgTrip) }
             }
             .padding()
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: RoamTheme.cornerRadiusSmall)
+                    .stroke(RoamTheme.border, lineWidth: 1)
+            )
         }
     }
 
@@ -26,6 +30,7 @@ struct YearOverYearView: View {
         HStack {
             Text(label)
                 .font(.subheadline)
+                .foregroundStyle(RoamTheme.textSecondary)
             Spacer()
             HStack(spacing: 16) {
                 ForEach(years, id: \.year) { yearData in
@@ -33,7 +38,7 @@ struct YearOverYearView: View {
                         Text(value(yearData))
                             .font(.subheadline)
                             .fontWeight(yearData.year == years.last?.year ? .semibold : .regular)
-                            .foregroundStyle(yearData.year == years.last?.year ? .primary : .secondary)
+                            .foregroundStyle(yearData.year == years.last?.year ? RoamTheme.textPrimary : RoamTheme.textSecondary)
                     }
                     .frame(width: 50, alignment: .trailing)
                 }

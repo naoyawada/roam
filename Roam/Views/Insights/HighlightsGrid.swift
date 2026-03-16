@@ -9,9 +9,11 @@ struct HighlightsGrid: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Highlights")
-                .fontWeight(.semibold)
+                .fontWeight(.medium)
+                .font(.subheadline)
+                .foregroundStyle(RoamTheme.textPrimary)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 HighlightCard(
                     label: "Most visited",
                     value: mostVisited.city,
@@ -46,18 +48,23 @@ private struct HighlightCard: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+                .tracking(0.3)
+                .foregroundStyle(RoamTheme.textTertiary)
             Text(value)
-                .fontWeight(.semibold)
+                .fontWeight(.medium)
+                .foregroundStyle(RoamTheme.textPrimary)
             if !detail.isEmpty {
                 Text(detail)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(RoamTheme.textSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(RoamTheme.cardPadding)
+        .overlay(
+            RoundedRectangle(cornerRadius: RoamTheme.cornerRadiusSmall)
+                .stroke(RoamTheme.border, lineWidth: 1)
+        )
     }
 }
