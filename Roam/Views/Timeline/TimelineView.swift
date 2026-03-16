@@ -106,10 +106,10 @@ struct TimelineView: View {
                 }
                 HStack(spacing: 4) {
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(ColorPalette.unresolvedColor)
+                        .fill(RoamTheme.unresolvedFill)
                         .overlay(
                             RoundedRectangle(cornerRadius: 2)
-                                .strokeBorder(Color.yellow.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [2]))
+                                .strokeBorder(RoamTheme.unresolvedBorder, style: StrokeStyle(lineWidth: 1, dash: [2]))
                         )
                         .frame(width: 10, height: 10)
                     Text("Unresolved")
