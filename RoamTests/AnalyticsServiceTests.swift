@@ -9,9 +9,22 @@ final class AnalyticsServiceTests: XCTestCase {
     var context: ModelContext!
 
     override func setUp() async throws {
-        let schema = Schema([NightLog.self, CityColor.self, UserSettings.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        container = try ModelContainer(for: schema, configurations: [config])
+        let cloudConfig = ModelConfiguration(
+            "cloud",
+            schema: Schema([NightLog.self, CityColor.self]),
+            isStoredInMemoryOnly: true,
+            cloudKitDatabase: .none
+        )
+        let localConfig = ModelConfiguration(
+            "local",
+            schema: Schema([UserSettings.self]),
+            isStoredInMemoryOnly: true,
+            cloudKitDatabase: .none
+        )
+        container = try ModelContainer(
+            for: NightLog.self, CityColor.self, UserSettings.self,
+            configurations: cloudConfig, localConfig
+        )
         context = container.mainContext
     }
 
