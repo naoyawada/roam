@@ -1,19 +1,26 @@
 import SwiftUI
 import SwiftData
-import UniformTypeIdentifiers
 
 struct DataExportView: View {
-    @Environment(\.modelContext) private var context
     @Query(sort: \NightLog.date) private var allLogs: [NightLog]
 
     @State private var exportFormat: ExportFormat = .csv
     @State private var filterYear: Int? = nil
-    @State private var showingShareSheet = false
-    @State private var exportURL: URL?
+    @State private var isExporting = false
+    @State private var exportError: String?
+    @State private var showingError = false
+    @State private var exportFileURL: URL?
 
     enum ExportFormat: String, CaseIterable {
         case csv = "CSV"
         case json = "JSON"
+
+        var fileExtension: String {
+            switch self {
+            case .csv: "csv"
+            case .json: "json"
+            }
+        }
     }
 
     private var filteredLogs: [NightLog] {
@@ -51,76 +58,69 @@ struct DataExportView: View {
             }
 
             Section {
-                Button("Export \(filteredLogs.count) entries") {
+                Button {
                     exportData()
+                } label: {
+                    HStack {
+                        Text("Export \(filteredLogs.count) entries")
+                        if isExporting {
+                            Spacer()
+                            ProgressView()
+                        }
+                    }
                 }
+                .disabled(filteredLogs.isEmpty || isExporting)
             }
         }
         .navigationTitle("Export Data")
-        .sheet(isPresented: $showingShareSheet) {
-            if let url = exportURL {
-                ShareLink(item: url)
-            }
+        .sheet(item: $exportFileURL) { url in
+            ActivityView(activityItems: [url])
+        }
+        .alert("Export Failed", isPresented: $showingError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(exportError ?? "An unknown error occurred.")
         }
     }
 
     private func exportData() {
-        let tempDir = FileManager.default.temporaryDirectory
+        isExporting = true
+        let logs = filteredLogs
+        let format = exportFormat
 
-        switch exportFormat {
+        let content: String
+        switch format {
         case .csv:
-            let csv = generateCSV()
-            let url = tempDir.appendingPathComponent("roam-export.csv")
-            try? csv.write(to: url, atomically: true, encoding: .utf8)
-            exportURL = url
+            content = DataExportService.generateCSV(from: logs)
         case .json:
-            let json = generateJSON()
-            let url = tempDir.appendingPathComponent("roam-export.json")
-            try? json.write(to: url, atomically: true, encoding: .utf8)
-            exportURL = url
+            content = DataExportService.generateJSON(from: logs)
         }
-        showingShareSheet = true
+
+        let fileName = "roam-export.\(format.fileExtension)"
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileName)
+
+        do {
+            try content.write(to: tempURL, atomically: true, encoding: .utf8)
+            exportFileURL = tempURL
+        } catch {
+            exportError = error.localizedDescription
+            showingError = true
+        }
+
+        isExporting = false
+    }
+}
+
+extension URL: @retroactive Identifiable {
+    public var id: String { absoluteString }
+}
+
+struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
 
-    private func generateCSV() -> String {
-        var lines = ["date,city,state,country,latitude,longitude,source,status,captured_at,accuracy"]
-        let formatter = ISO8601DateFormatter()
-        for log in filteredLogs {
-            let fields = [
-                formatter.string(from: log.date),
-                log.city ?? "",
-                log.state ?? "",
-                log.country ?? "",
-                log.latitude.map { String($0) } ?? "",
-                log.longitude.map { String($0) } ?? "",
-                log.source.rawValue,
-                log.status.rawValue,
-                formatter.string(from: log.capturedAt),
-                log.horizontalAccuracy.map { String(Int($0)) } ?? ""
-            ]
-            lines.append(fields.map { "\"\($0)\"" }.joined(separator: ","))
-        }
-        return lines.joined(separator: "\n")
-    }
-
-    private func generateJSON() -> String {
-        let formatter = ISO8601DateFormatter()
-        let entries = filteredLogs.map { log -> [String: Any] in
-            var dict: [String: Any] = [
-                "date": formatter.string(from: log.date),
-                "source": log.source.rawValue,
-                "status": log.status.rawValue,
-                "captured_at": formatter.string(from: log.capturedAt)
-            ]
-            if let city = log.city { dict["city"] = city }
-            if let state = log.state { dict["state"] = state }
-            if let country = log.country { dict["country"] = country }
-            if let lat = log.latitude { dict["latitude"] = lat }
-            if let lon = log.longitude { dict["longitude"] = lon }
-            if let acc = log.horizontalAccuracy { dict["accuracy"] = acc }
-            return dict
-        }
-        let data = try? JSONSerialization.data(withJSONObject: entries, options: .prettyPrinted)
-        return data.flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
-    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
