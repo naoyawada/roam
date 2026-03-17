@@ -3,7 +3,8 @@ import SwiftUI
 struct GrainBackground: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .background(RoamTheme.background)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(RoamTheme.background.ignoresSafeArea())
             .overlay {
                 Canvas { context, size in
                     // Draw subtle noise grain
@@ -18,6 +19,7 @@ struct GrainBackground: ViewModifier {
                         )
                     }
                 }
+                .ignoresSafeArea()
                 .allowsHitTesting(false)
                 .drawingGroup()
             }
