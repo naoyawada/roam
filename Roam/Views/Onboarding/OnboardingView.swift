@@ -34,6 +34,22 @@ struct OnboardingView: View {
         .padding(32)
         .grainBackground()
         .tint(RoamTheme.accent)
+        .onChange(of: locationService.authorizationStatus) { oldStatus, newStatus in
+            guard oldStatus != newStatus else { return }
+            switch newStatus {
+            case .authorizedWhenInUse:
+                // Request Always upgrade — iOS grants it provisionally in the background.
+                // Don't wait for .authorizedAlways; it won't arrive during onboarding.
+                locationService.requestAlwaysAuthorization()
+                step = .complete
+            case .authorizedAlways:
+                step = .complete
+            case .denied, .restricted:
+                step = .complete
+            default:
+                break
+            }
+        }
     }
 
     private var welcomeView: some View {
@@ -85,22 +101,6 @@ struct OnboardingView: View {
                 step = .complete
             }
             .foregroundStyle(.secondary)
-        }
-        .onChange(of: locationService.authorizationStatus) { oldStatus, newStatus in
-            guard oldStatus != newStatus else { return }
-            switch newStatus {
-            case .authorizedWhenInUse:
-                // Got "While Using" — now request upgrade to "Always"
-                locationService.requestAlwaysAuthorization()
-            case .authorizedAlways:
-                // Got "Always" — done
-                step = .complete
-            case .denied, .restricted:
-                // User denied — move on
-                step = .complete
-            default:
-                break
-            }
         }
     }
 
