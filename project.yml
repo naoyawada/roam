@@ -10,6 +10,9 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: "NO"
+    SWIFT_EMIT_LOC_STRINGS: "YES"
+    ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOL_EXTENSIONS: "YES"
 
 targets:
   Roam:
@@ -27,6 +30,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.naoyawada.roam
         MARKETING_VERSION_BASE: "1.0"
         CODE_SIGN_ENTITLEMENTS: Roam/Roam.entitlements
+        DEVELOPMENT_TEAM: VSB9363427
+        SWIFT_EMIT_LOC_STRINGS: "YES"
+        ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOL_EXTENSIONS: "YES"
     attributes:
       SystemCapabilities:
         com.apple.iCloud:
