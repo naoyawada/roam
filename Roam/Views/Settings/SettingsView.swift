@@ -4,6 +4,13 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Query private var settingsArray: [UserSettings]
+    @Query(
+        filter: #Predicate<NightLog> {
+            $0.statusRaw != "unresolved"
+        },
+        sort: \NightLog.capturedAt,
+        order: .reverse
+    ) private var confirmedLogs: [NightLog]
     @State private var showingCitySearch = false
     @State private var selectedCity: String?
     @State private var selectedState: String?
@@ -66,6 +73,26 @@ struct SettingsView: View {
                     )
                 }
 
+                Section("Capture Status") {
+                    if let latest = confirmedLogs.first {
+                        LabeledContent("Last capture") {
+                            VStack(alignment: .trailing) {
+                                Text(latest.capturedAt.formatted(date: .abbreviated, time: .shortened))
+                                if let city = latest.city {
+                                    Text(city)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    } else {
+                        LabeledContent("Last capture", value: "None yet")
+                    }
+                    LabeledContent("Next scheduled") {
+                        Text(nextScheduledTime)
+                    }
+                }
+
                 Section("Data") {
                     Toggle("iCloud Sync", isOn: Binding(
                         get: { settings.iCloudSyncEnabled },
@@ -111,6 +138,13 @@ struct SettingsView: View {
         let state = parts.count > 1 ? String(parts[1]) : nil
         let country = parts.count > 2 ? String(parts[2]) : nil
         return CityDisplayFormatter.format(city: String(city), state: state, country: country)
+    }
+
+    private var nextScheduledTime: String {
+        let hour = settings.primaryCheckHour
+        let minute = settings.primaryCheckMinute
+        let time = Calendar.current.date(from: DateComponents(hour: hour, minute: minute)) ?? .now
+        return "Tonight, \(time.formatted(date: .omitted, time: .shortened))"
     }
 
     private func timeFromComponents(hour: Int, minute: Int) -> Date {

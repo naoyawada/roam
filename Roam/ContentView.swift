@@ -1,7 +1,10 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct ContentView: View {
+    private static let logger = Logger(subsystem: "com.naoyawada.roam", category: "ForegroundCatch")
+
     @Environment(\.modelContext) private var context
     @Query private var settings: [UserSettings]
     @Query private var allLogs: [NightLog]
@@ -74,11 +77,38 @@ struct ContentView: View {
             .sheet(item: $unresolvedToResolve) { log in
                 UnresolvedResolutionView(log: log)
             }
-            .onAppear {
+            .task {
+                await attemptForegroundCapture()
                 BackfillService.backfillMissedNights(context: context)
                 assignMissingColors()
             }
         }
+    }
+
+    private func attemptForegroundCapture() async {
+        let nightDate = DateNormalization.normalizedNightDate(from: .now)
+
+        let existing = try? context.fetch(
+            FetchDescriptor<NightLog>(predicate: #Predicate { $0.date == nightDate })
+        ).first
+
+        let unresolvedRaw = LogStatus.unresolvedRaw
+        if let existing, existing.statusRaw != unresolvedRaw {
+            return
+        }
+
+        guard locationService.authorizationStatus == .authorizedAlways else {
+            return
+        }
+
+        Self.logger.info("Attempting foreground capture for \(nightDate)")
+        guard let result = await locationService.captureNight() else {
+            Self.logger.error("Foreground capture failed")
+            return
+        }
+
+        CaptureResultSaver.save(result: result, context: context)
+        Self.logger.info("Foreground capture succeeded: \(result.city)")
     }
 
     private func assignMissingColors() {
