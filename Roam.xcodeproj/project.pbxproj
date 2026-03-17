@@ -76,14 +76,14 @@
 		31F25DCF3A3939AD86AD4553 /* HighlightsGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightsGrid.swift; sourceTree = "<group>"; };
 		3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSource.swift; sourceTree = "<group>"; };
 		42F6EFE5C04BBCDEF9BFDDF1 /* RoamTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamTheme.swift; sourceTree = "<group>"; };
-		451BDBADFD229CF00F91E911 /* RoamTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RoamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		451BDBADFD229CF00F91E911 /* RoamTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RoamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D7FF89B107B4B4154B20D9C /* DayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCell.swift; sourceTree = "<group>"; };
 		4F5CA8FAA3547C6DCBCBBE01 /* LogStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStatus.swift; sourceTree = "<group>"; };
 		4FC6EF82EA5D64961C0618FD /* DayDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDetailSheet.swift; sourceTree = "<group>"; };
 		5F2C0E40B4FC1B5F9764031C /* NightLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NightLog.swift; sourceTree = "<group>"; };
 		63DDD65758488CE7F62C1F58 /* AnalyticsServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsServiceTests.swift; sourceTree = "<group>"; };
 		64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnresolvedResolutionView.swift; sourceTree = "<group>"; };
-		6D050F4B9DC635F3333C47DA /* Roam.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Roam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D050F4B9DC635F3333C47DA /* Roam.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Roam.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		73B468CC1768479756B40354 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7627FC571437D796D019472E /* CityDisplayFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatter.swift; sourceTree = "<group>"; };
 		76EC93ED423B3CE8910B4C61 /* DataExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportView.swift; sourceTree = "<group>"; };
@@ -105,6 +105,7 @@
 		C72CE241E3B8CDD29B35059E /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
 		D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyBreakdownChart.swift; sourceTree = "<group>"; };
 		DCB87FA04018026E1981F420 /* RoamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamTests.swift; sourceTree = "<group>"; };
+		DE7CBA279D973D46AF45F0DE /* BuildNumber.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BuildNumber.xcconfig; sourceTree = "<group>"; };
 		E630A600F22424A78983ED2A /* CalendarGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarGridView.swift; sourceTree = "<group>"; };
 		F67CDC698821F03244B048F9 /* QuickStatsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStatsRow.swift; sourceTree = "<group>"; };
 		F6D7CA43E45C39FC47382F99 /* GrainBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrainBackground.swift; sourceTree = "<group>"; };
@@ -198,6 +199,14 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		8F18D0BE5C77A9D484926A28 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				DE7CBA279D973D46AF45F0DE /* BuildNumber.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		8FCEAE4E62B1AEB4E4093DDC /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -210,6 +219,7 @@
 		A9C3AF2C3746CFCBC346EEB4 = {
 			isa = PBXGroup;
 			children = (
+				8F18D0BE5C77A9D484926A28 /* Config */,
 				438C33047979288FBE168EC8 /* Roam */,
 				135A3CAE881E126451D14CB9 /* RoamTests */,
 				8FCEAE4E62B1AEB4E4093DDC /* Products */,
@@ -319,9 +329,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-				};
+				LastUpgradeCheck = 2630;
 			};
 			buildConfigurationList = CEABB1BC301B9627E62F06FE /* Build configuration list for PBXProject "Roam" */;
 			developmentRegion = en;
@@ -460,6 +468,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -473,6 +482,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 6.0;
@@ -534,6 +544,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -554,6 +565,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -580,10 +592,11 @@
 		};
 		B1D65047A3913D5FD52140A6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE7CBA279D973D46AF45F0DE /* BuildNumber.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VSB9363427;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Roam/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -599,10 +612,11 @@
 		};
 		C9491C470E6469D8702495FC /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DE7CBA279D973D46AF45F0DE /* BuildNumber.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VSB9363427;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Roam/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

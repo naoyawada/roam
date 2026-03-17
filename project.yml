@@ -17,13 +17,15 @@ targets:
     platform: iOS
     sources:
       - path: Roam
+    configFiles:
+      Debug: Config/BuildNumber.xcconfig
+      Release: Config/BuildNumber.xcconfig
     settings:
       base:
         INFOPLIST_FILE: Roam/Info.plist
         GENERATE_INFOPLIST_FILE: "YES"
         PRODUCT_BUNDLE_IDENTIFIER: com.naoyawada.roam
         MARKETING_VERSION: "1.0.0"
-        CURRENT_PROJECT_VERSION: "1"
 
   RoamTests:
     type: bundle.unit-test
@@ -41,6 +43,13 @@ targets:
 schemes:
   Roam:
     build:
+      preActions:
+        - script: |
+            cd "${PROJECT_DIR}"
+            BUILD_NUMBER=$(git rev-list --count HEAD)
+            echo "CURRENT_PROJECT_VERSION = ${BUILD_NUMBER}" > Config/BuildNumber.xcconfig
+          name: Set Build Number from Git
+          settingsTarget: Roam
       targets:
         Roam: all
     test:
