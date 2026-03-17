@@ -5,6 +5,7 @@ import SwiftData
 struct RoamApp: App {
     @Environment(\.scenePhase) private var scenePhase
     let modelContainer: ModelContainer
+    let significantLocationService: SignificantLocationService
 
     init() {
         do {
@@ -13,8 +14,11 @@ struct RoamApp: App {
             fatalError("Failed to create ModelContainer: \(error)")
         }
 
+        significantLocationService = SignificantLocationService(modelContainer: modelContainer)
+
         BackgroundTaskService.register(modelContainer: modelContainer)
         BackgroundTaskService.schedulePrimaryCapture()
+        significantLocationService.startMonitoring()
     }
 
     var body: some Scene {
