@@ -9,7 +9,6 @@ final class UserSettings {
     var retryCheckHour: Int = 5
     var retryCheckMinute: Int = 0
     var hasCompletedOnboarding: Bool = false
-    var iCloudSyncEnabled: Bool = true
     var notificationsEnabled: Bool = true
 
     init(
@@ -19,7 +18,6 @@ final class UserSettings {
         retryCheckHour: Int = 5,
         retryCheckMinute: Int = 0,
         hasCompletedOnboarding: Bool = false,
-        iCloudSyncEnabled: Bool = true,
         notificationsEnabled: Bool = true
     ) {
         self.homeCityKey = homeCityKey
@@ -28,7 +26,6 @@ final class UserSettings {
         self.retryCheckHour = retryCheckHour
         self.retryCheckMinute = retryCheckMinute
         self.hasCompletedOnboarding = hasCompletedOnboarding
-        self.iCloudSyncEnabled = iCloudSyncEnabled
         self.notificationsEnabled = notificationsEnabled
     }
 }

@@ -15,6 +15,8 @@ struct SettingsView: View {
     @State private var selectedCity: String?
     @State private var selectedState: String?
     @State private var selectedCountry: String?
+    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled: Bool = true
+    @State private var showSyncRestartAlert = false
 
     private var settings: UserSettings {
         if let existing = settingsArray.first {
@@ -94,10 +96,11 @@ struct SettingsView: View {
                 }
 
                 Section("Data") {
-                    Toggle("iCloud Sync", isOn: Binding(
-                        get: { settings.iCloudSyncEnabled },
-                        set: { settings.iCloudSyncEnabled = $0 }
-                    ))
+                    Toggle("iCloud Sync", isOn: $iCloudSyncEnabled)
+                        .onChange(of: iCloudSyncEnabled) { oldValue, newValue in
+                            guard oldValue != newValue else { return }
+                            showSyncRestartAlert = true
+                        }
                     Toggle("Unresolved Night Notifications", isOn: Binding(
                         get: { settings.notificationsEnabled },
                         set: { settings.notificationsEnabled = $0 }
@@ -127,6 +130,11 @@ struct SettingsView: View {
                 let key = CityDisplayFormatter.cityKey(city: newCity, state: selectedState, country: selectedCountry)
                 settings.homeCityKey = key
                 try? context.save()
+            }
+            .alert("Restart Required", isPresented: $showSyncRestartAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("iCloud sync change takes effect next time you open the app.")
             }
         }
     }

@@ -8,8 +8,28 @@ struct RoamApp: App {
     let significantLocationService: SignificantLocationService
 
     init() {
+        let iCloudSyncEnabled = UserDefaults.standard.object(forKey: "iCloudSyncEnabled") as? Bool ?? true
+
         do {
-            modelContainer = try ModelContainer(for: NightLog.self, CityColor.self, UserSettings.self)
+            // "cloud" config: NightLog + CityColor
+            // Uses the same store name regardless of toggle so data is preserved when switching.
+            let cloudConfig = ModelConfiguration(
+                "cloud",
+                schema: Schema([NightLog.self, CityColor.self]),
+                cloudKitDatabase: iCloudSyncEnabled ? .automatic : .none
+            )
+
+            // "local" config: UserSettings — always local, never syncs
+            let localConfig = ModelConfiguration(
+                "local",
+                schema: Schema([UserSettings.self]),
+                cloudKitDatabase: .none
+            )
+
+            modelContainer = try ModelContainer(
+                for: NightLog.self, CityColor.self, UserSettings.self,
+                configurations: cloudConfig, localConfig
+            )
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
