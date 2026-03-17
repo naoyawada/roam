@@ -102,13 +102,18 @@ struct TimelineView: View {
     }
 
     private var legend: some View {
-        let usedKeys = Set(allLogs.compactMap {
-            $0.status != .unresolved ? CityDisplayFormatter.cityKey(city: $0.city, state: $0.state, country: $0.country) : nil
-        })
+        var keyCounts: [String: Int] = [:]
+        for log in allLogs where log.status != .unresolved {
+            let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
+            keyCounts[key, default: 0] += 1
+        }
+        let sorted = cityColors
+            .filter { keyCounts[$0.cityKey] != nil }
+            .sorted { keyCounts[$0.cityKey, default: 0] > keyCounts[$1.cityKey, default: 0] }
 
         return ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                ForEach(cityColors.filter { usedKeys.contains($0.cityKey) }, id: \.cityKey) { cc in
+                ForEach(sorted, id: \.cityKey) { cc in
                     HStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(ColorPalette.color(for: cc.colorIndex))
