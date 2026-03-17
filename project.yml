@@ -26,6 +26,11 @@ targets:
         GENERATE_INFOPLIST_FILE: "YES"
         PRODUCT_BUNDLE_IDENTIFIER: com.naoyawada.roam
         MARKETING_VERSION_BASE: "1.0"
+        CODE_SIGN_ENTITLEMENTS: Roam/Roam.entitlements
+    attributes:
+      SystemCapabilities:
+        com.apple.iCloud:
+          enabled: 1
 
   RoamTests:
     type: bundle.unit-test
