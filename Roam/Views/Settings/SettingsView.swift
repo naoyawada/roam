@@ -108,7 +108,7 @@ struct SettingsView: View {
                 }
 
                 Section("About") {
-                    LabeledContent("Version", value: "1.0.0")
+                    LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                     Text("Roam tracks your location once nightly to log which city you sleep in. Location data is stored on-device and synced via iCloud. Your data is never shared with third parties.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
