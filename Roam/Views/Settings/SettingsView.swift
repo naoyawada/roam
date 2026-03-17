@@ -108,6 +108,9 @@ struct SettingsView: View {
                     NavigationLink("Export Data") {
                         DataExportView()
                     }
+                    NavigationLink("Import Data") {
+                        DataImportView()
+                    }
                 }
 
                 Section("About") {
