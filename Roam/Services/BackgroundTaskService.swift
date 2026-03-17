@@ -112,60 +112,7 @@ enum BackgroundTaskService {
             return
         }
 
-        // Save confirmed entry
-        let nightDate = DateNormalization.normalizedNightDate(from: result.capturedAt)
-        let existing = try? context.fetch(
-            FetchDescriptor<NightLog>(predicate: #Predicate { $0.date == nightDate })
-        ).first
-
-        let unresolvedRaw = LogStatus.unresolvedRaw
-        if let existing, existing.statusRaw != unresolvedRaw {
-            // Already have a confirmed/manual entry — don't overwrite
-            task.setTaskCompleted(success: true)
-            return
-        }
-
-        if let existing {
-            // Update unresolved entry
-            existing.city = result.city
-            existing.state = result.state
-            existing.country = result.country
-            existing.latitude = result.latitude
-            existing.longitude = result.longitude
-            existing.capturedAt = result.capturedAt
-            existing.horizontalAccuracy = result.horizontalAccuracy
-            existing.source = .automatic
-            existing.status = .confirmed
-        } else {
-            let log = NightLog(
-                date: nightDate,
-                city: result.city,
-                state: result.state,
-                country: result.country,
-                latitude: result.latitude,
-                longitude: result.longitude,
-                capturedAt: result.capturedAt,
-                horizontalAccuracy: result.horizontalAccuracy,
-                source: .automatic,
-                status: .confirmed
-            )
-            context.insert(log)
-        }
-
-        // Assign city color if new
-        let cityKey = CityDisplayFormatter.cityKey(city: result.city, state: result.state, country: result.country)
-        let existingColors = (try? context.fetch(FetchDescriptor<CityColor>())) ?? []
-        if !existingColors.contains(where: { $0.cityKey == cityKey }) {
-            let nextIndex = (existingColors.map(\.colorIndex).max() ?? -1) + 1
-            context.insert(CityColor(cityKey: cityKey, colorIndex: nextIndex))
-        }
-
-        do {
-            try context.save()
-            logger.info("Confirmed entry saved for \(result.city)")
-        } catch {
-            logger.error("Failed to save confirmed entry: \(error.localizedDescription)")
-        }
+        CaptureResultSaver.save(result: result, context: context)
         task.setTaskCompleted(success: true)
     }
 
