@@ -1,10 +1,14 @@
 import BackgroundTasks
+import CoreLocation
+import os
 import SwiftData
 
 enum BackgroundTaskService {
 
     static let primaryTaskID = "com.roamapp.nightCapture"
     static let retryTaskID = "com.roamapp.nightCaptureRetry"
+
+    private static let logger = Logger(subsystem: "com.naoyawada.roam", category: "BackgroundTask")
 
     /// Register background task handlers. Call once at app launch.
     @MainActor
@@ -34,20 +38,32 @@ enum BackgroundTaskService {
                 await handleCapture(task: refreshTask, isRetry: true, modelContainer: modelContainer)
             }
         }
+
+        logger.info("Background task handlers registered")
     }
 
     /// Schedule the primary capture task.
     static func schedulePrimaryCapture(hour: Int = 2, minute: Int = 0) {
         let request = BGAppRefreshTaskRequest(identifier: primaryTaskID)
         request.earliestBeginDate = nextDate(hour: hour, minute: minute)
-        try? BGTaskScheduler.shared.submit(request)
+        do {
+            try BGTaskScheduler.shared.submit(request)
+            logger.info("Primary capture scheduled for \(request.earliestBeginDate?.description ?? "nil")")
+        } catch {
+            logger.error("Failed to schedule primary capture: \(error.localizedDescription)")
+        }
     }
 
     /// Schedule the retry capture task.
     static func scheduleRetryCapture(hour: Int = 5, minute: Int = 0) {
         let request = BGAppRefreshTaskRequest(identifier: retryTaskID)
         request.earliestBeginDate = nextDate(hour: hour, minute: minute)
-        try? BGTaskScheduler.shared.submit(request)
+        do {
+            try BGTaskScheduler.shared.submit(request)
+            logger.info("Retry capture scheduled for \(request.earliestBeginDate?.description ?? "nil")")
+        } catch {
+            logger.error("Failed to schedule retry capture: \(error.localizedDescription)")
+        }
     }
 
     @MainActor
@@ -56,32 +72,39 @@ enum BackgroundTaskService {
         isRetry: Bool,
         modelContainer: ModelContainer
     ) async {
+        let label = isRetry ? "retry" : "primary"
+        logger.info("[\(label)] Background capture starting")
+
         // Schedule next primary capture regardless of outcome
         schedulePrimaryCapture()
+
+        // Check location authorization before attempting capture
+        let authStatus = CLLocationManager().authorizationStatus
+        guard authStatus == .authorizedAlways else {
+            logger.error("[\(label)] Location not authorized (.authorizedAlways required, got \(String(describing: authStatus)))")
+            if isRetry {
+                saveUnresolvedEntry(context: modelContainer.mainContext)
+            } else {
+                scheduleRetryCapture()
+            }
+            task.setTaskCompleted(success: false)
+            return
+        }
 
         let service = LocationCaptureService()
         let context = modelContainer.mainContext
 
         task.expirationHandler = {
-            // Task ran out of time — if not retry, schedule retry
+            logger.warning("[\(label)] Task expired before capture completed")
             if !isRetry {
                 scheduleRetryCapture()
             }
         }
 
         guard let result = await service.captureNight() else {
-            // Capture failed
+            logger.error("[\(label)] Capture returned nil")
             if isRetry {
-                // Both attempts failed — save unresolved
-                let nightDate = DateNormalization.normalizedNightDate(from: .now)
-                let existing = try? context.fetch(
-                    FetchDescriptor<NightLog>(predicate: #Predicate { $0.date == nightDate })
-                ).first
-                if existing == nil {
-                    let log = NightLog(date: nightDate, capturedAt: .now, source: .automatic, status: .unresolved)
-                    context.insert(log)
-                    try? context.save()
-                }
+                saveUnresolvedEntry(context: context)
             } else {
                 scheduleRetryCapture()
             }
@@ -137,8 +160,31 @@ enum BackgroundTaskService {
             context.insert(CityColor(cityKey: cityKey, colorIndex: nextIndex))
         }
 
-        try? context.save()
+        do {
+            try context.save()
+            logger.info("Confirmed entry saved for \(result.city)")
+        } catch {
+            logger.error("Failed to save confirmed entry: \(error.localizedDescription)")
+        }
         task.setTaskCompleted(success: true)
+    }
+
+    @MainActor
+    private static func saveUnresolvedEntry(context: ModelContext) {
+        let nightDate = DateNormalization.normalizedNightDate(from: .now)
+        let existing = try? context.fetch(
+            FetchDescriptor<NightLog>(predicate: #Predicate { $0.date == nightDate })
+        ).first
+        if existing == nil {
+            let log = NightLog(date: nightDate, capturedAt: .now, source: .automatic, status: .unresolved)
+            context.insert(log)
+            do {
+                try context.save()
+                logger.info("Unresolved entry saved for \(nightDate)")
+            } catch {
+                logger.error("Failed to save unresolved entry: \(error.localizedDescription)")
+            }
+        }
     }
 
     private static func nextDate(hour: Int, minute: Int) -> Date {

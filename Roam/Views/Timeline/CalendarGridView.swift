@@ -6,7 +6,7 @@ struct CalendarGridView: View {
     let month: Int
     let logs: [NightLog]
     let cityColors: [CityColor]
-    let onDayTapped: (NightLog?) -> Void
+    let onDayTapped: (NightLog?, Date) -> Void
 
     private var calendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
@@ -30,7 +30,7 @@ struct CalendarGridView: View {
     private var today: DateComponents {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        return cal.dateComponents([.year, .month, .day], from: DateNormalization.normalizedNightDate(from: .now))
+        return cal.dateComponents([.year, .month, .day], from: BackfillService.calendarTodayNoonUTC())
     }
 
     private func logFor(day: Int) -> NightLog? {
@@ -61,6 +61,8 @@ struct CalendarGridView: View {
                                (year == today.year! && month == today.month! && day > today.day!))
                 let isToday = (year == today.year! && month == today.month! && day == today.day!)
 
+                let dayDate = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
+
                 DayCell(
                     day: day,
                     color: colorFor(log: log),
@@ -70,7 +72,7 @@ struct CalendarGridView: View {
                 )
                 .onTapGesture {
                     if !isFuture {
-                        onDayTapped(log)
+                        onDayTapped(log, dayDate)
                     }
                 }
             }

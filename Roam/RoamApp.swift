@@ -3,6 +3,7 @@ import SwiftData
 
 @main
 struct RoamApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     let modelContainer: ModelContainer
 
     init() {
@@ -21,5 +22,12 @@ struct RoamApp: App {
             ContentView()
         }
         .modelContainer(modelContainer)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                // Reschedule on every foreground return — ensures the task
+                // survives force-quits, reboots, and iOS pruning the schedule.
+                BackgroundTaskService.schedulePrimaryCapture()
+            }
+        }
     }
 }

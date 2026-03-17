@@ -47,8 +47,16 @@ struct TimelineView: View {
                     month: displayedMonth,
                     logs: allLogs,
                     cityColors: cityColors
-                ) { log in
-                    selectedLog = log
+                ) { log, date in
+                    if let log {
+                        selectedLog = log
+                    } else {
+                        // Create an unresolved entry for this empty day
+                        let newLog = NightLog(date: date, capturedAt: .now, source: .manual, status: .unresolved)
+                        context.insert(newLog)
+                        try? context.save()
+                        selectedLog = newLog
+                    }
                 }
                 .padding(.horizontal)
 

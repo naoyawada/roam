@@ -1,7 +1,10 @@
 import Foundation
+import os
 import SwiftData
 
 enum BackfillService {
+
+    private static let logger = Logger(subsystem: "com.naoyawada.roam", category: "Backfill")
 
     /// Calculate which nights are missing entries.
     /// Returns normalized dates (noon UTC) for each missed night.
@@ -50,7 +53,11 @@ enum BackfillService {
     /// Run backfill on foreground launch. Creates .unresolved entries for missed nights.
     @MainActor
     static func backfillMissedNights(context: ModelContext) {
-        let today = DateNormalization.normalizedNightDate(from: .now)
+        // Use the actual local calendar date (not normalizedNightDate) so we don't
+        // accidentally skip last night during the 12AM-6AM window.
+        // normalizedNightDate rolls back before 6 AM, which would make "today"
+        // equal to last night's date, causing the backfill loop to skip it.
+        let today = calendarTodayNoonUTC()
 
         let allLogs = (try? context.fetch(FetchDescriptor<NightLog>())) ?? []
         let existingDates = allLogs.map(\.date)
@@ -63,7 +70,24 @@ enum BackfillService {
         }
 
         if !missed.isEmpty {
+            logger.info("Backfilled \(missed.count) missed night(s)")
             try? context.save()
         }
+    }
+
+    /// The actual calendar date at noon UTC, using the user's local timezone
+    /// to determine what "today" is. This avoids the before-6AM rollback
+    /// that normalizedNightDate applies (which is for capture timestamps, not backfill).
+    static func calendarTodayNoonUTC(now: Date = .now, timeZone: TimeZone = .current) -> Date {
+        var localCal = Calendar(identifier: .gregorian)
+        localCal.timeZone = timeZone
+        let comps = localCal.dateComponents([.year, .month, .day], from: now)
+
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(identifier: "UTC")!
+        return utcCal.date(from: DateComponents(
+            year: comps.year, month: comps.month, day: comps.day,
+            hour: 12, minute: 0, second: 0
+        ))!
     }
 }

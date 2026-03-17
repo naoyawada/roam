@@ -59,6 +59,7 @@ struct SettingsView: View {
                                 let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)
                                 settings.retryCheckHour = comps.hour ?? 5
                                 settings.retryCheckMinute = comps.minute ?? 0
+                                BackgroundTaskService.scheduleRetryCapture(hour: settings.retryCheckHour, minute: settings.retryCheckMinute)
                             }
                         ),
                         displayedComponents: .hourAndMinute

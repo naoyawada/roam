@@ -1,5 +1,6 @@
 import CoreLocation
 @preconcurrency import MapKit
+import os
 import SwiftData
 
 @MainActor
@@ -7,6 +8,7 @@ final class LocationCaptureService: NSObject, ObservableObject {
 
     private let locationManager = CLLocationManager()
     private var captureCompletion: ((CLLocation?) -> Void)?
+    private nonisolated static let logger = Logger(subsystem: "com.naoyawada.roam", category: "LocationCapture")
 
     override init() {
         super.init()
@@ -51,11 +53,26 @@ final class LocationCaptureService: NSObject, ObservableObject {
 
     /// Full capture flow: get location, validate, geocode, return result.
     func captureNight() async -> CaptureResult? {
-        guard let location = await requestLocation() else { return nil }
-        guard Self.isValidReading(location) else { return nil }
-        guard let mapItem = await reverseGeocode(location) else { return nil }
-        guard let reps = mapItem.addressRepresentations else { return nil }
-        guard let city = reps.cityName else { return nil }
+        guard let location = await requestLocation() else {
+            Self.logger.error("captureNight: requestLocation returned nil")
+            return nil
+        }
+        guard Self.isValidReading(location) else {
+            Self.logger.error("captureNight: invalid reading (accuracy=\(location.horizontalAccuracy), speed=\(location.speed))")
+            return nil
+        }
+        guard let mapItem = await reverseGeocode(location) else {
+            Self.logger.error("captureNight: reverse geocode failed for (\(location.coordinate.latitude), \(location.coordinate.longitude))")
+            return nil
+        }
+        guard let reps = mapItem.addressRepresentations else {
+            Self.logger.error("captureNight: no address representations")
+            return nil
+        }
+        guard let city = reps.cityName else {
+            Self.logger.error("captureNight: no city name in address representations")
+            return nil
+        }
 
         // Extract state from cityWithContext by removing the city prefix
         // e.g. "Austin, TX" -> "TX", "Tokyo, Tokyo" -> "Tokyo"
@@ -106,6 +123,7 @@ extension LocationCaptureService: CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        LocationCaptureService.logger.error("CLLocationManager error: \(error.localizedDescription)")
         Task { @MainActor in
             captureCompletion?(nil)
             captureCompletion = nil
