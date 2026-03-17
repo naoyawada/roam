@@ -23,8 +23,9 @@ struct CalendarGridView: View {
     }
 
     private var firstWeekday: Int {
-        // 1 = Sunday in Calendar
-        calendar.component(.weekday, from: firstDayOfMonth) - 1
+        let weekday = calendar.component(.weekday, from: firstDayOfMonth)
+        let offset = (weekday - calendar.firstWeekday + 7) % 7
+        return offset
     }
 
     private var today: DateComponents {
@@ -49,8 +50,8 @@ struct CalendarGridView: View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
         LazyVGrid(columns: columns, spacing: 4) {
-            // Empty cells before first day
-            ForEach(0..<firstWeekday, id: \.self) { _ in
+            // Empty cells before first day (negative IDs to avoid collision with day numbers)
+            ForEach((-firstWeekday)..<0, id: \.self) { _ in
                 Color.clear.aspectRatio(1, contentMode: .fit)
             }
 

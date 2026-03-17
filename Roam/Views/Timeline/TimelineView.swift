@@ -10,7 +10,11 @@ struct TimelineView: View {
     @State private var displayedYear = Calendar.current.component(.year, from: Date())
     @State private var selectedLog: NightLog?
 
-    private let weekdaySymbols = Calendar.current.veryShortWeekdaySymbols
+    private var weekdaySymbols: [String] {
+        let symbols = Calendar.current.veryShortWeekdaySymbols
+        let firstWeekday = Calendar.current.firstWeekday - 1
+        return Array(symbols[firstWeekday...]) + Array(symbols[..<firstWeekday])
+    }
 
     var body: some View {
         NavigationStack {
@@ -32,7 +36,7 @@ struct TimelineView: View {
 
                 // Weekday headers
                 HStack(spacing: 4) {
-                    ForEach(weekdaySymbols, id: \.self) { symbol in
+                    ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                         Text(symbol)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
