@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=400">
+<title>Roam – Timeline Views Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+    background: #f7f7f4;
+    color: #2C2C2C;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    padding: 20px;
+  }
+  .phone-frame {
+    width: 393px;
+    background: #f7f7f4;
+    border-radius: 40px;
+    border: 3px solid #ddd;
+    padding: 60px 0 40px;
+    min-height: 852px;
+    position: relative;
+    overflow: hidden;
+  }
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 32px;
+    background: #222;
+    border-radius: 20px;
+  }
+  .phone-label {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  .nav-bar { padding: 8px 20px 0; }
+  .nav-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2C2C2C;
+    margin-bottom: 12px;
+  }
+
+  /* Month navigation */
+  .month-nav {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    margin-bottom: 12px;
+  }
+  .month-nav .arrow {
+    font-size: 16px;
+    color: #7A5C44;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .month-nav .label {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2C2C2C;
+  }
+
+  /* Year navigation */
+  .year-nav {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    margin-bottom: 16px;
+  }
+  .year-nav .arrow {
+    font-size: 16px;
+    color: #7A5C44;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .year-nav .label {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2C2C2C;
+  }
+
+  /* Gesture hint */
+  .gesture-hint {
+    text-align: center;
+    font-size: 11px;
+    color: #ADADAD;
+    padding: 0 20px;
+    margin-bottom: 12px;
+  }
+
+  /* Weekday header (month view) */
+  .weekday-header-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 0 20px;
+    margin-bottom: 4px;
+  }
+  .weekday-header-row span {
+    font-size: 11px;
+    color: #8E8E93;
+    text-align: center;
+    font-weight: 500;
+  }
+
+  /* Month view calendar grid */
+  .month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    padding: 0 20px;
+  }
+  .day-cell {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .day-cell.filled { color: white; }
+  .day-cell.empty-cell { background: transparent; }
+  .day-cell.future-cell {
+    background: rgba(232, 228, 223, 0.5);
+    color: #ADADAD;
+  }
+  .day-cell.unresolved-cell {
+    background: rgba(173, 173, 173, 0.10);
+    border: 1px dashed rgba(173, 173, 173, 0.5);
+    color: #8E8E93;
+  }
+  .day-cell.today-cell { font-weight: 700; }
+
+  /* Year view dot grid */
+  .dot-grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px 10px;
+    padding: 0 20px;
+  }
+  .mini-month {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+  }
+  .mini-month:hover {
+    opacity: 0.8;
+  }
+  .month-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #8E8E93;
+    margin-bottom: 3px;
+  }
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1.5px;
+  }
+  .dot {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 2.5px;
+  }
+  .dot.empty { background: transparent; }
+  .dot.future { background: rgba(232, 228, 223, 0.4); }
+  .dot.unresolved {
+    background: rgba(173, 173, 173, 0.10);
+    border: 1px dashed rgba(173, 173, 173, 0.5);
+    box-sizing: border-box;
+  }
+
+  /* City colors */
+  .city-0, .bg-0 { background-color: #7A5C44; }
+  .city-1, .bg-1 { background-color: #9A7E64; }
+  .city-2, .bg-2 { background-color: #5E7D6E; }
+  .city-3, .bg-3 { background-color: #B09A86; }
+  .city-4, .bg-4 { background-color: #8B6B5A; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px 0;
+    overflow-x: auto;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .legend-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .legend-swatch.unresolved-swatch {
+    background: rgba(173, 173, 173, 0.10);
+    border: 1px dashed rgba(173, 173, 173, 0.5);
+    box-sizing: border-box;
+  }
+  .legend-label {
+    font-size: 11px;
+    color: #8E8E93;
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 24px;
+    background: #f7f7f4;
+    border-top: 0.5px solid #D4CFC8;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    color: #ADADAD;
+  }
+  .tab-item.active { color: #7A5C44; }
+  .tab-icon { font-size: 20px; }
+</style>
+</head>
+<body>
+
+<!-- MONTH VIEW -->
+<div>
+  <div class="phone-label">Month View (pinch out → year)</div>
+  <div class="phone-frame">
+    <div class="nav-bar">
+      <div class="nav-title">Timeline</div>
+    </div>
+
+    <div class="month-nav">
+      <span class="arrow">&lsaquo;</span>
+      <span class="label">March 2026</span>
+      <span class="arrow">&rsaquo;</span>
+    </div>
+
+    <div class="weekday-header-row">
+      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+    </div>
+
+    <div class="month-grid" id="monthGrid"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-swatch bg-0"></div>
+        <span class="legend-label">San Francisco, CA</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch bg-3"></div>
+        <span class="legend-label">Los Angeles, CA</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch bg-4"></div>
+        <span class="legend-label">Portland, OR</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch unresolved-swatch"></div>
+        <span class="legend-label">Unresolved</span>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item"><span class="tab-icon">&#9679;</span>Dashboard</div>
+      <div class="tab-item active"><span class="tab-icon">&#9632;</span>Timeline</div>
+      <div class="tab-item"><span class="tab-icon">&#9650;</span>Insights</div>
+    </div>
+  </div>
+</div>
+
+<!-- YEAR VIEW -->
+<div>
+  <div class="phone-label">Year View (tap month → zoom in)</div>
+  <div class="phone-frame">
+    <div class="nav-bar">
+      <div class="nav-title">Timeline</div>
+    </div>
+
+    <div class="year-nav">
+      <span class="arrow">&lsaquo;</span>
+      <span class="label">2026</span>
+      <span class="arrow">&rsaquo;</span>
+    </div>
+
+    <div class="dot-grid-container" id="dotGrid"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-swatch bg-0"></div>
+        <span class="legend-label">San Francisco, CA</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch bg-1"></div>
+        <span class="legend-label">New York, NY</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch bg-2"></div>
+        <span class="legend-label">Tokyo, Japan</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch bg-3"></div>
+        <span class="legend-label">Los Angeles, CA</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch bg-4"></div>
+        <span class="legend-label">Portland, OR</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch unresolved-swatch"></div>
+        <span class="legend-label">Unresolved</span>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item"><span class="tab-icon">&#9679;</span>Dashboard</div>
+      <div class="tab-item active"><span class="tab-icon">&#9632;</span>Timeline</div>
+      <div class="tab-item"><span class="tab-icon">&#9650;</span>Insights</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// === MONTH VIEW (March 2026) ===
+const MARCH_OFFSET = 0;
+const MARCH_DAYS = 31;
+const TODAY = 18;
+
+function getMonthCity(day) {
+  if (day > TODAY) return 'future';
+  if (day === 4) return 'unresolved';
+  if (day >= 6 && day <= 8) return 3;
+  if (day >= 13 && day <= 15) return 4;
+  return 0;
+}
+
+const monthGrid = document.getElementById('monthGrid');
+for (let i = 0; i < MARCH_OFFSET; i++) {
+  const cell = document.createElement('div');
+  cell.className = 'day-cell empty-cell';
+  monthGrid.appendChild(cell);
+}
+for (let d = 1; d <= MARCH_DAYS; d++) {
+  const cell = document.createElement('div');
+  const city = getMonthCity(d);
+  if (city === 'future') {
+    cell.className = 'day-cell future-cell';
+  } else if (city === 'unresolved') {
+    cell.className = 'day-cell unresolved-cell';
+  } else {
+    cell.className = `day-cell filled bg-${city}`;
+  }
+  if (d === TODAY) cell.classList.add('today-cell');
+  cell.textContent = d;
+  monthGrid.appendChild(cell);
+}
+
+// === YEAR VIEW ===
+const MONTHS_2026 = [
+  { name: 'Jan', days: 31, offset: 4 },
+  { name: 'Feb', days: 28, offset: 0 },
+  { name: 'Mar', days: 31, offset: 0 },
+  { name: 'Apr', days: 30, offset: 3 },
+  { name: 'May', days: 31, offset: 5 },
+  { name: 'Jun', days: 30, offset: 1 },
+  { name: 'Jul', days: 31, offset: 3 },
+  { name: 'Aug', days: 31, offset: 6 },
+  { name: 'Sep', days: 30, offset: 2 },
+  { name: 'Oct', days: 31, offset: 4 },
+  { name: 'Nov', days: 30, offset: 0 },
+  { name: 'Dec', days: 31, offset: 2 },
+];
+const TODAY_MONTH = 2;
+const TODAY_DAY = 18;
+
+function getCityForDay(month, day) {
+  if (month > TODAY_MONTH || (month === TODAY_MONTH && day > TODAY_DAY)) return 'future';
+  if ((month === 0 && day === 15) || (month === 1 && day === 3) || (month === 2 && day === 4)) return 'unresolved';
+  if (month === 0 && day >= 20 && day <= 27) return 'city-1';
+  if (month === 1 && day >= 10 && day <= 22) return 'city-2';
+  if (month === 2 && day >= 6 && day <= 8) return 'city-3';
+  if (month === 2 && day >= 13 && day <= 15) return 'city-4';
+  return 'city-0';
+}
+
+const dotGrid = document.getElementById('dotGrid');
+MONTHS_2026.forEach((m, mi) => {
+  const miniMonth = document.createElement('div');
+  miniMonth.className = 'mini-month';
+
+  const label = document.createElement('div');
+  label.className = 'month-label';
+  label.textContent = m.name;
+  miniMonth.appendChild(label);
+
+  const daysGrid = document.createElement('div');
+  daysGrid.className = 'days-grid';
+
+  for (let i = 0; i < m.offset; i++) {
+    const blank = document.createElement('div');
+    blank.className = 'dot empty';
+    daysGrid.appendChild(blank);
+  }
+
+  for (let d = 1; d <= m.days; d++) {
+    const dot = document.createElement('div');
+    const city = getCityForDay(mi, d);
+    if (city === 'future') {
+      dot.className = 'dot future';
+    } else if (city === 'unresolved') {
+      dot.className = 'dot unresolved';
+    } else {
+      dot.className = `dot ${city}`;
+    }
+    daysGrid.appendChild(dot);
+  }
+
+  miniMonth.appendChild(daysGrid);
+  dotGrid.appendChild(miniMonth);
+});
+</script>
+
+</body>
+</html>
