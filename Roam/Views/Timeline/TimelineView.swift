@@ -221,15 +221,10 @@ struct TimelineView: View {
     // MARK: - Legend
 
     private var legendLogs: [NightLog] {
-        switch mode {
-        case .month:
-            return allLogs
-        case .year:
-            var cal = Calendar(identifier: .gregorian)
-            cal.timeZone = TimeZone(identifier: "UTC")!
-            return allLogs.filter {
-                cal.component(.year, from: $0.date) == displayedYear
-            }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        return allLogs.filter {
+            cal.component(.year, from: $0.date) == displayedYear
         }
     }
 
