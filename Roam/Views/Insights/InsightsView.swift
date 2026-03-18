@@ -51,7 +51,7 @@ struct InsightsView: View {
                     HighlightsGrid(
                         mostVisited: (city: topCityName, nights: topCity?.value ?? 0),
                         longestStreak: analytics.longestStreak(year: displayYear),
-                        newCities: analytics.newCities(year: displayYear),
+                        newCityCount: analytics.newCities(year: displayYear).count,
                         homeAwayRatio: analytics.homeAwayRatio(year: displayYear, homeCityKey: homeCityKey)
                     )
 

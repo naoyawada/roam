@@ -3,7 +3,7 @@ import SwiftUI
 struct HighlightsGrid: View {
     let mostVisited: (city: String, nights: Int)
     let longestStreak: StreakInfo
-    let newCities: [String]
+    let newCityCount: Int
     let homeAwayRatio: HomeAwayRatio
 
     var body: some View {
@@ -26,8 +26,8 @@ struct HighlightsGrid: View {
                 )
                 HighlightCard(
                     label: "New cities this year",
-                    value: "\(newCities.count)",
-                    detail: newCities.prefix(3).joined(separator: ", ")
+                    value: "\(newCityCount)",
+                    detail: ""
                 )
                 HighlightCard(
                     label: "Home vs. away",
