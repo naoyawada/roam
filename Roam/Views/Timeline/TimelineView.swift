@@ -1,6 +1,11 @@
 import SwiftUI
 import SwiftData
 
+enum TimelineMode {
+    case month
+    case year
+}
+
 struct TimelineView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \NightLog.date) private var allLogs: [NightLog]
@@ -9,6 +14,8 @@ struct TimelineView: View {
     @State private var displayedMonth = Calendar.current.component(.month, from: Date())
     @State private var displayedYear = Calendar.current.component(.year, from: Date())
     @State private var selectedLog: NightLog?
+    @State private var mode: TimelineMode = .month
+    @State private var navigatingForward = true
 
     private var weekdaySymbols: [String] {
         let symbols = Calendar.current.veryShortWeekdaySymbols
@@ -19,52 +26,13 @@ struct TimelineView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 16) {
-                // Month navigation
-                HStack {
-                    Button(action: previousMonth) {
-                        Image(systemName: "chevron.left")
-                    }
-                    Spacer()
-                    Text(monthYearString)
-                        .font(.headline)
-                    Spacer()
-                    Button(action: nextMonth) {
-                        Image(systemName: "chevron.right")
-                    }
+                switch mode {
+                case .month:
+                    monthContent
+                case .year:
+                    yearContent
                 }
-                .padding(.horizontal)
 
-                // Weekday headers
-                HStack(spacing: 4) {
-                    ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
-                        Text(symbol)
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-                .padding(.horizontal)
-
-                // Calendar grid
-                CalendarGridView(
-                    year: displayedYear,
-                    month: displayedMonth,
-                    logs: allLogs,
-                    cityColors: cityColors
-                ) { log, date in
-                    if let log {
-                        selectedLog = log
-                    } else {
-                        // Create an unresolved entry for this empty day
-                        let newLog = NightLog(date: date, capturedAt: .now, source: .manual, status: .unresolved)
-                        context.insert(newLog)
-                        try? context.save()
-                        selectedLog = newLog
-                    }
-                }
-                .padding(.horizontal)
-
-                // Legend
                 legend
 
                 Spacer()
@@ -76,6 +44,147 @@ struct TimelineView: View {
             }
         }
     }
+
+    // MARK: - Month View
+
+    private var monthContent: some View {
+        VStack(spacing: 16) {
+            // Month navigation
+            HStack {
+                Button {
+                    navigatingForward = false
+                    withAnimation { previousMonth() }
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                Spacer()
+                Text(monthYearString)
+                    .font(.headline)
+                Spacer()
+                Button {
+                    navigatingForward = true
+                    withAnimation { nextMonth() }
+                } label: {
+                    Image(systemName: "chevron.right")
+                }
+            }
+            .padding(.horizontal)
+
+            // Weekday headers
+            HStack(spacing: 4) {
+                ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
+                    Text(symbol)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.horizontal)
+
+            // Calendar grid with slide transition
+            CalendarGridView(
+                year: displayedYear,
+                month: displayedMonth,
+                logs: allLogs,
+                cityColors: cityColors
+            ) { log, date in
+                if let log {
+                    selectedLog = log
+                } else {
+                    let newLog = NightLog(date: date, capturedAt: .now, source: .manual, status: .unresolved)
+                    context.insert(newLog)
+                    try? context.save()
+                    selectedLog = newLog
+                }
+            }
+            .id("\(displayedYear)-\(displayedMonth)")
+            .transition(.asymmetric(
+                insertion: .move(edge: navigatingForward ? .trailing : .leading),
+                removal: .move(edge: navigatingForward ? .leading : .trailing)
+            ))
+            .padding(.horizontal)
+            .gesture(
+                MagnifyGesture()
+                    .onEnded { value in
+                        if value.magnification < 0.7 {
+                            withAnimation {
+                                mode = .year
+                            }
+                        }
+                    }
+            )
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 50)
+                    .onEnded { value in
+                        if value.translation.width < -50 {
+                            navigatingForward = true
+                            withAnimation { nextMonth() }
+                        } else if value.translation.width > 50 {
+                            navigatingForward = false
+                            withAnimation { previousMonth() }
+                        }
+                    }
+            )
+        }
+        .clipped()
+    }
+
+    // MARK: - Year View
+
+    private var yearContent: some View {
+        VStack(spacing: 16) {
+            // Year navigation
+            HStack {
+                Button(action: previousYear) {
+                    Image(systemName: "chevron.left")
+                }
+                Spacer()
+                Text(String(displayedYear))
+                    .font(.headline)
+                Spacer()
+                Button(action: nextYear) {
+                    Image(systemName: "chevron.right")
+                }
+            }
+            .padding(.horizontal)
+
+            YearDotGridView(
+                year: displayedYear,
+                logs: allLogs,
+                cityColors: cityColors
+            ) { month in
+                displayedMonth = month
+                withAnimation {
+                    mode = .month
+                }
+            }
+            .gesture(
+                MagnifyGesture()
+                    .onEnded { value in
+                        if value.magnification > 1.3 {
+                            let currentMonth = Calendar.current.component(.month, from: Date())
+                            let currentYear = Calendar.current.component(.year, from: Date())
+                            displayedMonth = (displayedYear == currentYear) ? currentMonth : 1
+                            withAnimation {
+                                mode = .month
+                            }
+                        }
+                    }
+            )
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 50)
+                    .onEnded { value in
+                        if value.translation.width < -50 {
+                            withAnimation { nextYear() }
+                        } else if value.translation.width > 50 {
+                            withAnimation { previousYear() }
+                        }
+                    }
+            )
+        }
+    }
+
+    // MARK: - Navigation
 
     private var monthYearString: String {
         let components = DateComponents(year: displayedYear, month: displayedMonth)
@@ -101,9 +210,27 @@ struct TimelineView: View {
         }
     }
 
+    private func previousYear() {
+        displayedYear -= 1
+    }
+
+    private func nextYear() {
+        displayedYear += 1
+    }
+
+    // MARK: - Legend
+
+    private var legendLogs: [NightLog] {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        return allLogs.filter {
+            cal.component(.year, from: $0.date) == displayedYear
+        }
+    }
+
     private var legend: some View {
         var keyCounts: [String: Int] = [:]
-        for log in allLogs where log.status != .unresolved {
+        for log in legendLogs where log.status != .unresolved {
             let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
             keyCounts[key, default: 0] += 1
         }

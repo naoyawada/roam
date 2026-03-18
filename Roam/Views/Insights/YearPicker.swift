@@ -2,7 +2,7 @@ import SwiftUI
 
 struct YearPicker: View {
     let years: [Int]
-    @Binding var selectedYear: Int?
+    @Binding var selectedYear: Int
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -11,9 +11,6 @@ struct YearPicker: View {
                     chipButton(label: String(year), isSelected: selectedYear == year) {
                         selectedYear = year
                     }
-                }
-                chipButton(label: "All Time", isSelected: selectedYear == nil) {
-                    selectedYear = nil
                 }
             }
         }
