@@ -6,7 +6,7 @@ struct InsightsView: View {
     @Query private var cityColors: [CityColor]
     @Query private var settings: [UserSettings]
 
-    @State private var selectedYear: Int? = Calendar.current.component(.year, from: .now)
+    @State private var selectedYear: Int = Calendar.current.component(.year, from: .now)
 
     private var currentYear: Int {
         Calendar.current.component(.year, from: .now)
@@ -21,38 +21,21 @@ struct InsightsView: View {
 
                     YearPicker(years: years.isEmpty ? [currentYear] : years, selectedYear: $selectedYear)
 
-                    // When selectedYear is nil, show all-time data using current year for monthly chart
-                    let displayYear = selectedYear ?? currentYear
-
                     MonthlyBreakdownChart(
-                        breakdown: analytics.monthlyBreakdown(year: displayYear),
+                        breakdown: analytics.monthlyBreakdown(year: selectedYear),
                         cityColors: cityColors
                     )
 
-                    // For "All Time", aggregate across all years
-                    let cityDays: [String: Int] = {
-                        if let year = selectedYear {
-                            return analytics.daysPerCity(year: year)
-                        } else {
-                            var allTimeDays: [String: Int] = [:]
-                            for year in analytics.availableYears() {
-                                for (key, count) in analytics.daysPerCity(year: year) {
-                                    allTimeDays[key, default: 0] += count
-                                }
-                            }
-                            return allTimeDays
-                        }
-                    }()
-
+                    let cityDays = analytics.daysPerCity(year: selectedYear)
                     let topCity = cityDays.max(by: { $0.value < $1.value })
                     let topCityName = topCity?.key.split(separator: "|").first.map(String.init) ?? ""
                     let homeCityKey = settings.first?.homeCityKey ?? ""
 
                     HighlightsGrid(
                         mostVisited: (city: topCityName, nights: topCity?.value ?? 0),
-                        longestStreak: analytics.longestStreak(year: displayYear),
-                        newCityCount: analytics.newCities(year: displayYear).count,
-                        homeAwayRatio: analytics.homeAwayRatio(year: displayYear, homeCityKey: homeCityKey)
+                        longestStreak: analytics.longestStreak(year: selectedYear),
+                        newCityCount: analytics.newCities(year: selectedYear).count,
+                        homeAwayRatio: analytics.homeAwayRatio(year: selectedYear, homeCityKey: homeCityKey)
                     )
 
                     let yoyData = years.suffix(2).map { year in
