@@ -118,7 +118,11 @@ struct TimelineView: View {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(ColorPalette.color(for: cc.colorIndex))
                             .frame(width: 10, height: 10)
-                        Text(cc.cityKey.split(separator: "|").first.map(String.init) ?? "")
+                        let parts = cc.cityKey.split(separator: "|")
+                        let city = parts.first.map(String.init)
+                        let state = parts.count > 1 ? String(parts[1]) : nil
+                        let country = parts.count > 2 ? String(parts[2]) : nil
+                        Text(CityDisplayFormatter.format(city: city, state: state, country: country))
                             .font(.caption2)
                     }
                 }
