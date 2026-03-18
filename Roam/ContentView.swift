@@ -86,6 +86,8 @@ struct ContentView: View {
     }
 
     private func attemptForegroundCapture() async {
+        guard SignificantLocationService.isInCaptureWindow(date: .now) else { return }
+
         let nightDate = DateNormalization.normalizedNightDate(from: .now)
 
         let existing = try? context.fetch(
