@@ -15,7 +15,7 @@ struct TimelineView: View {
     @State private var displayedYear = Calendar.current.component(.year, from: Date())
     @State private var selectedLog: NightLog?
     @State private var mode: TimelineMode = .month
-    @State private var swipeDirection: Edge = .trailing
+    @State private var navigatingForward = true
 
     private var weekdaySymbols: [String] {
         let symbols = Calendar.current.veryShortWeekdaySymbols
@@ -52,7 +52,7 @@ struct TimelineView: View {
             // Month navigation
             HStack {
                 Button {
-                    swipeDirection = .leading
+                    navigatingForward = false
                     withAnimation { previousMonth() }
                 } label: {
                     Image(systemName: "chevron.left")
@@ -62,7 +62,7 @@ struct TimelineView: View {
                     .font(.headline)
                 Spacer()
                 Button {
-                    swipeDirection = .trailing
+                    navigatingForward = true
                     withAnimation { nextMonth() }
                 } label: {
                     Image(systemName: "chevron.right")
@@ -98,7 +98,10 @@ struct TimelineView: View {
                 }
             }
             .id("\(displayedYear)-\(displayedMonth)")
-            .transition(.move(edge: swipeDirection))
+            .transition(.asymmetric(
+                insertion: .move(edge: navigatingForward ? .trailing : .leading),
+                removal: .move(edge: navigatingForward ? .leading : .trailing)
+            ))
             .padding(.horizontal)
             .gesture(
                 MagnifyGesture()
@@ -114,10 +117,10 @@ struct TimelineView: View {
                 DragGesture(minimumDistance: 50)
                     .onEnded { value in
                         if value.translation.width < -50 {
-                            swipeDirection = .trailing
+                            navigatingForward = true
                             withAnimation { nextMonth() }
                         } else if value.translation.width > 50 {
-                            swipeDirection = .leading
+                            navigatingForward = false
                             withAnimation { previousMonth() }
                         }
                     }
