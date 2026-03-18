@@ -124,6 +124,7 @@ struct TimelineView: View {
                         let country = parts.count > 2 ? String(parts[2]) : nil
                         Text(CityDisplayFormatter.format(city: city, state: state, country: country))
                             .font(.caption2)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 HStack(spacing: 4) {
