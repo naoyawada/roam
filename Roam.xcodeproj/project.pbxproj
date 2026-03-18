@@ -18,6 +18,7 @@
 		2710B99F9426F221581461E0 /* DayDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6EF82EA5D64961C0618FD /* DayDetailSheet.swift */; };
 		29141037D2B4F8B207C1EFE2 /* BackgroundTaskService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D67A2307B78BB5B0130643 /* BackgroundTaskService.swift */; };
 		2F58DFD0E9141CE4608A77D9 /* YearOverYearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E0F64E8EA98CCC7B86A87F1 /* YearOverYearView.swift */; };
+		387D97B9C9C5FADEE96010F6 /* MiniMonthGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85746F2EC5BF766F57464131 /* MiniMonthGridView.swift */; };
 		45FEA24C9A0F3D0977A94A82 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161355E300E961AC6947F70E /* InsightsView.swift */; };
 		4AB82FA66BB533444D897559 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9D868ACDE0717F8AD4523DD /* OnboardingView.swift */; };
 		5481C098BC3D13AC24D7EBC3 /* DataImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7743148F503481970D52BA /* DataImportServiceTests.swift */; };
@@ -59,6 +60,7 @@
 		EAAF522E19A47CE945C3D35C /* MonthlyBreakdownChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */; };
 		EF6A4CE9DEB6D2FAB1FB1F17 /* CaptureResultSaver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA6369ADD7129C74EDC04D7 /* CaptureResultSaver.swift */; };
 		F064E26ED7FCC1A9353B8FE2 /* DataExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EC93ED423B3CE8910B4C61 /* DataExportView.swift */; };
+		F4787C5C6FC3DD7F1544085E /* YearDotGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409B51C0F0DD1105703B77C0 /* YearDotGridView.swift */; };
 		F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */; };
 /* End PBXBuildFile section */
 
@@ -87,6 +89,7 @@
 		31F25DCF3A3939AD86AD4553 /* HighlightsGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightsGrid.swift; sourceTree = "<group>"; };
 		34FFB29728864E0F7D0EF52E /* DataImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataImportView.swift; sourceTree = "<group>"; };
 		3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSource.swift; sourceTree = "<group>"; };
+		409B51C0F0DD1105703B77C0 /* YearDotGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearDotGridView.swift; sourceTree = "<group>"; };
 		42F6EFE5C04BBCDEF9BFDDF1 /* RoamTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamTheme.swift; sourceTree = "<group>"; };
 		451BDBADFD229CF00F91E911 /* RoamTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RoamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D7FF89B107B4B4154B20D9C /* DayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCell.swift; sourceTree = "<group>"; };
@@ -105,6 +108,7 @@
 		7A1D3A9470466B0ACE9F8CE3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalization.swift; sourceTree = "<group>"; };
 		81D67A2307B78BB5B0130643 /* BackgroundTaskService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskService.swift; sourceTree = "<group>"; };
+		85746F2EC5BF766F57464131 /* MiniMonthGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniMonthGridView.swift; sourceTree = "<group>"; };
 		869AEC55168DE37DD3EC5624 /* DataImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataImportService.swift; sourceTree = "<group>"; };
 		88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationValidationTests.swift; sourceTree = "<group>"; };
 		911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalizationTests.swift; sourceTree = "<group>"; };
@@ -259,7 +263,9 @@
 				E630A600F22424A78983ED2A /* CalendarGridView.swift */,
 				4D7FF89B107B4B4154B20D9C /* DayCell.swift */,
 				4FC6EF82EA5D64961C0618FD /* DayDetailSheet.swift */,
+				85746F2EC5BF766F57464131 /* MiniMonthGridView.swift */,
 				C72CE241E3B8CDD29B35059E /* TimelineView.swift */,
+				409B51C0F0DD1105703B77C0 /* YearDotGridView.swift */,
 			);
 			path = Timeline;
 			sourceTree = "<group>";
@@ -443,6 +449,7 @@
 				45FEA24C9A0F3D0977A94A82 /* InsightsView.swift in Sources */,
 				879C5CD335AA4ACA9C45DD85 /* LocationCaptureService.swift in Sources */,
 				6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */,
+				387D97B9C9C5FADEE96010F6 /* MiniMonthGridView.swift in Sources */,
 				EAAF522E19A47CE945C3D35C /* MonthlyBreakdownChart.swift in Sources */,
 				0DE13100F7E1CDD4A848244C /* NightLog.swift in Sources */,
 				4AB82FA66BB533444D897559 /* OnboardingView.swift in Sources */,
@@ -456,6 +463,7 @@
 				B9EEE152B2DA6466212A6164 /* UnresolvedBanner.swift in Sources */,
 				BB6552613AEC50EEF56580EC /* UnresolvedResolutionView.swift in Sources */,
 				5D9A8E5059726FB1889BCAF6 /* UserSettings.swift in Sources */,
+				F4787C5C6FC3DD7F1544085E /* YearDotGridView.swift in Sources */,
 				2F58DFD0E9141CE4608A77D9 /* YearOverYearView.swift in Sources */,
 				C27430F9DF134273B166D771 /* YearPicker.swift in Sources */,
 				6649802A162459FB3173D0C3 /* YearSummaryBar.swift in Sources */,
