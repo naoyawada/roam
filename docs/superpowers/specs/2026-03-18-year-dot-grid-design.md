@@ -15,7 +15,7 @@ Insights tab is unchanged. "All Time" is removed from the year picker.
 - **Swipe left/right** in year view → prev/next year
 - **Pinch out** on month view → transition to year view (for the displayed year)
 - **Tap a mini-month** in year view → transition to that month in month view
-- **Pinch in** on year view → transition to month view (current/center month)
+- **Pinch in** on year view → transition to month view (today's month if viewing current year, otherwise January of the displayed year)
 - **Arrow nav** still available as secondary navigation in both views
 - Uses `MagnifyGesture` for pinch, `DragGesture` or `TabView(.page)` for swipe
 
@@ -68,7 +68,7 @@ The year dot-grid is read-only except for tapping a mini-month to navigate. No d
 
 ## Out of Scope
 
-- "All Time" view — removed entirely
+- "All Time" in Insights — removed from year picker only. `DataExportView` keeps its "All Time" option so users can export full history.
 - Animated transitions between month/year (nice-to-have, not required)
 - Changes to Insights tab visualizations
 
