@@ -15,6 +15,7 @@ struct TimelineView: View {
     @State private var displayedYear = Calendar.current.component(.year, from: Date())
     @State private var selectedLog: NightLog?
     @State private var mode: TimelineMode = .month
+    @State private var swipeDirection: Edge = .trailing
 
     private var weekdaySymbols: [String] {
         let symbols = Calendar.current.veryShortWeekdaySymbols
@@ -50,14 +51,20 @@ struct TimelineView: View {
         VStack(spacing: 16) {
             // Month navigation
             HStack {
-                Button(action: previousMonth) {
+                Button {
+                    swipeDirection = .leading
+                    withAnimation { previousMonth() }
+                } label: {
                     Image(systemName: "chevron.left")
                 }
                 Spacer()
                 Text(monthYearString)
                     .font(.headline)
                 Spacer()
-                Button(action: nextMonth) {
+                Button {
+                    swipeDirection = .trailing
+                    withAnimation { nextMonth() }
+                } label: {
                     Image(systemName: "chevron.right")
                 }
             }
@@ -74,7 +81,7 @@ struct TimelineView: View {
             }
             .padding(.horizontal)
 
-            // Calendar grid
+            // Calendar grid with slide transition
             CalendarGridView(
                 year: displayedYear,
                 month: displayedMonth,
@@ -90,6 +97,8 @@ struct TimelineView: View {
                     selectedLog = newLog
                 }
             }
+            .id("\(displayedYear)-\(displayedMonth)")
+            .transition(.move(edge: swipeDirection))
             .padding(.horizontal)
             .gesture(
                 MagnifyGesture()
@@ -105,13 +114,16 @@ struct TimelineView: View {
                 DragGesture(minimumDistance: 50)
                     .onEnded { value in
                         if value.translation.width < -50 {
+                            swipeDirection = .trailing
                             withAnimation { nextMonth() }
                         } else if value.translation.width > 50 {
+                            swipeDirection = .leading
                             withAnimation { previousMonth() }
                         }
                     }
             )
         }
+        .clipped()
     }
 
     // MARK: - Year View

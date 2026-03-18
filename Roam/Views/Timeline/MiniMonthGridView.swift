@@ -25,6 +25,13 @@ struct MiniMonthGridView: View {
         return (weekday - calendar.firstWeekday + 7) % 7
     }
 
+    /// Total cells used (offset + days). Pad to 42 (6 rows × 7) for uniform grid height.
+    private var trailingPadCount: Int {
+        let totalUsed = firstWeekdayOffset + daysInMonth
+        let maxCells = 42 // 6 rows
+        return maxCells - totalUsed
+    }
+
     private var today: DateComponents {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
@@ -44,7 +51,7 @@ struct MiniMonthGridView: View {
     }
 
     var body: some View {
-        let monthName = calendar.shortMonthSymbols[month - 1]
+        let monthName = Calendar.current.shortMonthSymbols[month - 1]
         let columns = Array(repeating: GridItem(.flexible(), spacing: 1.5), count: 7)
 
         VStack(alignment: .leading, spacing: 3) {
@@ -54,10 +61,12 @@ struct MiniMonthGridView: View {
                 .foregroundStyle(.secondary)
 
             LazyVGrid(columns: columns, spacing: 1.5) {
+                // Leading offset
                 ForEach((-firstWeekdayOffset)..<0, id: \.self) { _ in
                     Color.clear.aspectRatio(1, contentMode: .fit)
                 }
 
+                // Day cells
                 ForEach(1...daysInMonth, id: \.self) { day in
                     let log = logFor(day: day)
                     let isFuture = (year > today.year! || (year == today.year! && month > today.month!) ||
@@ -83,6 +92,11 @@ struct MiniMonthGridView: View {
                     } else {
                         Color.clear.aspectRatio(1, contentMode: .fit)
                     }
+                }
+
+                // Trailing pad to fill 6 rows
+                ForEach(0..<trailingPadCount, id: \.self) { _ in
+                    Color.clear.aspectRatio(1, contentMode: .fit)
                 }
             }
         }
