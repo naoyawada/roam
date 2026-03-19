@@ -78,6 +78,14 @@ enum BackgroundTaskService {
         // Schedule next primary capture regardless of outcome
         schedulePrimaryCapture()
 
+        // If the task fired outside the capture window (iOS delayed it past 6 AM),
+        // skip capture to avoid creating entries for the wrong date.
+        guard SignificantLocationService.isInCaptureWindow(date: .now) else {
+            logger.warning("[\(label)] Outside capture window, skipping")
+            task.setTaskCompleted(success: false)
+            return
+        }
+
         // Check location authorization before attempting capture
         let authStatus = CLLocationManager().authorizationStatus
         guard authStatus == .authorizedAlways else {
