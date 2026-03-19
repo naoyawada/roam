@@ -26,17 +26,20 @@ struct YearSummaryBar: View {
                 let availableWidth = geo.size.width - totalSpacing
                 HStack(spacing: spacing) {
                     ForEach(Array(cityDays.enumerated()), id: \.offset) { _, entry in
-                        let targetWidth = totalDays > 0
+                        let width = totalDays > 0
                             ? availableWidth * CGFloat(entry.days) / CGFloat(totalDays)
                             : 0
                         RoundedRectangle(cornerRadius: RoamTheme.yearBarCornerRadius)
                             .fill(entry.color)
-                            .frame(width: animated ? max(targetWidth, 4) : 0)
+                            .frame(width: max(width, 4))
                     }
+                }
+                .mask(alignment: .leading) {
+                    Rectangle()
+                        .frame(width: animated ? geo.size.width : 0)
                 }
             }
             .frame(height: RoamTheme.yearBarHeight)
-            .clipped()
         }
         .onAppear {
             guard !animated else { return }
