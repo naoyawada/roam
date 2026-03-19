@@ -18,10 +18,13 @@ struct YearSummaryBar: View {
             }
 
             GeometryReader { geo in
-                HStack(spacing: 2) {
+                let spacing: CGFloat = 2
+                let totalSpacing = spacing * CGFloat(max(cityDays.count - 1, 0))
+                let availableWidth = geo.size.width - totalSpacing
+                HStack(spacing: spacing) {
                     ForEach(Array(cityDays.enumerated()), id: \.offset) { _, entry in
                         let width = totalDays > 0
-                            ? geo.size.width * CGFloat(entry.days) / CGFloat(totalDays)
+                            ? availableWidth * CGFloat(entry.days) / CGFloat(totalDays)
                             : 0
                         RoundedRectangle(cornerRadius: RoamTheme.yearBarCornerRadius)
                             .fill(entry.color)
