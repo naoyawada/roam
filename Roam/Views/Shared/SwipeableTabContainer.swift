@@ -9,7 +9,6 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @GestureState private var dragOffset: CGFloat = 0
-    @State private var isDragging = false
     @State private var animatedSelection: Int
 
     private let tabCount = 3
@@ -49,7 +48,6 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                         guard isInEdgeZone(startX: value.startLocation.x, screenWidth: width) else {
                             return
                         }
-                        isDragging = true
                         guard !reduceMotion else { return }
 
                         let translation = value.translation.width
@@ -63,8 +61,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                         }
                     }
                     .onEnded { value in
-                        guard isDragging else { return }
-                        isDragging = false
+                        guard isInEdgeZone(startX: value.startLocation.x, screenWidth: width) else { return }
 
                         let translation = value.translation.width
                         let velocity = value.velocity.width
@@ -73,11 +70,11 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
 
                         var newSelection = selection
 
-                        if translation < -commitThreshold || velocity < -velocityThreshold {
+                        if translation < -commitThreshold || (velocity < -velocityThreshold && translation < 0) {
                             if selection < tabCount - 1 {
                                 newSelection = selection + 1
                             }
-                        } else if translation > commitThreshold || velocity > velocityThreshold {
+                        } else if translation > commitThreshold || (velocity > velocityThreshold && translation > 0) {
                             if selection > 0 {
                                 newSelection = selection - 1
                             }
@@ -91,10 +88,6 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                     }
             )
             .onChange(of: selection) { oldValue, newValue in
-                guard !isDragging else {
-                    animatedSelection = newValue
-                    return
-                }
                 if reduceMotion {
                     withAnimation(.easeInOut(duration: 0.15)) {
                         animatedSelection = newValue
