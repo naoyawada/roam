@@ -25,13 +25,12 @@ struct TimelineView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 20) {
                 HStack {
                     Text("Timeline")
                         .font(.largeTitle.bold())
                     Spacer()
                 }
-                .padding(.horizontal)
                 .padding(.top, 8)
 
                 switch mode {
