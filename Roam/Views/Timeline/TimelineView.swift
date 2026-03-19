@@ -32,6 +32,7 @@ struct TimelineView: View {
             }
             .padding(.horizontal)
             .padding(.top, 8)
+            .padding(.bottom, 4)
 
             switch mode {
             case .month:

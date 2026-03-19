@@ -14,11 +14,18 @@ struct InsightsView: View {
 
     var body: some View {
         let analytics = AnalyticsService(context: context)
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+        VStack(spacing: 0) {
+            HStack {
                 Text("Insights")
                     .font(.largeTitle.bold())
-                    .padding(.top, 8)
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
                     let years = analytics.availableYears()
 
                     YearPicker(years: years.isEmpty ? [currentYear] : years, selectedYear: $selectedYear)
@@ -59,5 +66,6 @@ struct InsightsView: View {
                 .padding()
             }
             .grainBackground()
+        }
     }
 }
