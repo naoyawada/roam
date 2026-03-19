@@ -50,6 +50,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                             return
                         }
                         isDragging = true
+                        guard !reduceMotion else { return }
 
                         let translation = value.translation.width
                         let isAtLeadingEdge = selection == 0 && translation > 0
@@ -82,7 +83,8 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                             }
                         }
 
-                        withAnimation(.spring(duration: 0.3)) {
+                        let animation: Animation = reduceMotion ? .easeInOut(duration: 0.15) : .spring(duration: 0.3)
+                        withAnimation(animation) {
                             selection = newSelection
                             animatedSelection = newSelection
                         }
@@ -93,8 +95,14 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                     animatedSelection = newValue
                     return
                 }
-                withAnimation(.spring(duration: 0.3)) {
-                    animatedSelection = newValue
+                if reduceMotion {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        animatedSelection = newValue
+                    }
+                } else {
+                    withAnimation(.spring(duration: 0.3)) {
+                        animatedSelection = newValue
+                    }
                 }
             }
         }
