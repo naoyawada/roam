@@ -4,7 +4,7 @@ struct GrainBackground: ViewModifier {
     func body(content: Content) -> some View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(RoamTheme.background.ignoresSafeArea(edges: [.top, .horizontal]))
+            .background(RoamTheme.background.ignoresSafeArea())
             .overlay {
                 Canvas { context, size in
                     // Draw subtle noise grain
@@ -19,7 +19,7 @@ struct GrainBackground: ViewModifier {
                         )
                     }
                 }
-                .ignoresSafeArea(edges: [.top, .horizontal])
+                .ignoresSafeArea()
                 .allowsHitTesting(false)
                 .drawingGroup()
             }
