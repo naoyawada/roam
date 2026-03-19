@@ -31,6 +31,7 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
         tabBarController.viewControllers = [vc0, vc1, vc2]
         tabBarController.delegate = context.coordinator
         tabBarController.tabBar.tintColor = UIColor(RoamTheme.accent)
+        tabBarController.view.backgroundColor = UIColor(RoamTheme.background)
 
         // Host the SwiftUI paging content behind the tab bar
         let hostingController = UIHostingController(rootView: content)
