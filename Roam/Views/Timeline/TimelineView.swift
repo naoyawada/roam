@@ -31,7 +31,6 @@ struct TimelineView: View {
                         .font(.largeTitle.bold())
                     Spacer()
                 }
-                .padding(.top, 8)
 
                 switch mode {
                 case .month:
