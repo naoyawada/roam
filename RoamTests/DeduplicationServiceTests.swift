@@ -118,6 +118,35 @@ final class DeduplicationServiceTests: XCTestCase {
         XCTAssertEqual(logs[1].capturedAt, d2newer.capturedAt)
     }
 
+    // MARK: - CityColor deduplication
+
+    func testDuplicateCityColors_keepsLowestColorIndex() {
+        let color1 = CityColor(cityKey: "Atlanta|GA|US", colorIndex: 0)
+        let color2 = CityColor(cityKey: "Atlanta|GA|US", colorIndex: 3)
+        context.insert(color1)
+        context.insert(color2)
+        try! context.save()
+
+        DeduplicationService.deduplicateCityColors(context: context)
+
+        let colors = try! context.fetch(FetchDescriptor<CityColor>())
+        XCTAssertEqual(colors.count, 1)
+        XCTAssertEqual(colors[0].colorIndex, 0)
+    }
+
+    func testNoDuplicateCityColors_noChanges() {
+        let color1 = CityColor(cityKey: "Atlanta|GA|US", colorIndex: 0)
+        let color2 = CityColor(cityKey: "Asheville|NC|US", colorIndex: 1)
+        context.insert(color1)
+        context.insert(color2)
+        try! context.save()
+
+        DeduplicationService.deduplicateCityColors(context: context)
+
+        let colors = try! context.fetch(FetchDescriptor<CityColor>())
+        XCTAssertEqual(colors.count, 2)
+    }
+
     // MARK: - Helpers
 
     private func noonUTC(_ year: Int, _ month: Int, _ day: Int) -> Date {

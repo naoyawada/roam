@@ -81,6 +81,7 @@ struct ContentView: View {
                 await attemptForegroundCapture()
                 BackfillService.backfillMissedNights(context: context)
                 DeduplicationService.deduplicateNightLogs(context: context)
+                DeduplicationService.deduplicateCityColors(context: context)
                 assignMissingColors()
             }
         }
