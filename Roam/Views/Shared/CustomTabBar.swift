@@ -4,15 +4,16 @@ struct CustomTabBar: View {
     @Binding var selection: Int
 
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
             tabButton(title: "Dashboard", icon: "chart.bar.fill", index: 0)
             tabButton(title: "Timeline", icon: "calendar", index: 1)
             tabButton(title: "Insights", icon: "lightbulb.fill", index: 2)
         }
-        .padding(.top, 12)
-        .padding(.bottom, 4)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 24)
+        .glassEffect(.regular)
+        .padding(.bottom, 8)
         .frame(maxWidth: .infinity)
-        .background(.bar)
     }
 
     private func tabButton(title: String, icon: String, index: Int) -> some View {
