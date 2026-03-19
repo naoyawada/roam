@@ -39,19 +39,7 @@ struct ContentView: View {
                 )
             )
         } else {
-            TabView(selection: $selectedTab) {
-                Tab("Dashboard", systemImage: "chart.bar.fill", value: 0) {
-                    RoamTheme.background.ignoresSafeArea()
-                }
-                Tab("Timeline", systemImage: "calendar", value: 1) {
-                    RoamTheme.background.ignoresSafeArea()
-                }
-                Tab("Insights", systemImage: "lightbulb.fill", value: 2) {
-                    RoamTheme.background.ignoresSafeArea()
-                }
-            }
-            .tint(RoamTheme.accent)
-            .overlay {
+            VStack(spacing: 0) {
                 SwipeableTabContainer(selection: $selectedTab, tab0: {
                     VStack(spacing: 0) {
                         HStack {
@@ -89,6 +77,8 @@ struct ContentView: View {
                 }, tab2: {
                     InsightsView()
                 })
+
+                CustomTabBar(selection: $selectedTab)
             }
             .sheet(isPresented: $showingSettings) {
                 NavigationStack {
