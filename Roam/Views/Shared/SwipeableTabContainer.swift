@@ -10,6 +10,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
 
     @GestureState private var dragOffset: CGFloat = 0
     @State private var isDragging = false
+    @State private var animatedSelection: Int
 
     private let tabCount = 3
     private let edgeZoneWidth: CGFloat = 20
@@ -23,6 +24,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
          @ViewBuilder tab1: () -> Tab1,
          @ViewBuilder tab2: () -> Tab2) {
         self._selection = selection
+        self._animatedSelection = State(initialValue: selection.wrappedValue)
         self.tab0 = tab0()
         self.tab1 = tab1()
         self.tab2 = tab2()
@@ -40,7 +42,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                 tab2.frame(width: width).clipped()
                     .allowsHitTesting(selection == 2)
             }
-            .offset(x: -CGFloat(selection) * width + dragOffset)
+            .offset(x: -CGFloat(animatedSelection) * width + dragOffset)
             .highPriorityGesture(
                 DragGesture(minimumDistance: 10)
                     .updating($dragOffset) { value, state, _ in
@@ -82,9 +84,19 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
 
                         withAnimation(.spring(duration: 0.3)) {
                             selection = newSelection
+                            animatedSelection = newSelection
                         }
                     }
             )
+            .onChange(of: selection) { oldValue, newValue in
+                guard !isDragging else {
+                    animatedSelection = newValue
+                    return
+                }
+                withAnimation(.spring(duration: 0.3)) {
+                    animatedSelection = newValue
+                }
+            }
         }
     }
 }
