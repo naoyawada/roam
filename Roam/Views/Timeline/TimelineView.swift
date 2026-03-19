@@ -238,8 +238,7 @@ struct TimelineView: View {
             .filter { keyCounts[$0.cityKey] != nil }
             .sorted { keyCounts[$0.cityKey, default: 0] > keyCounts[$1.cityKey, default: 0] }
 
-        return ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+        return FlowLayout(spacing: 8) {
                 ForEach(sorted, id: \.cityKey) { cc in
                     HStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 2)
@@ -267,6 +266,5 @@ struct TimelineView: View {
                 }
             }
             .padding(.horizontal)
-        }
     }
 }
