@@ -37,9 +37,8 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
         hostingController.view.backgroundColor = .clear
         tabBarController.addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        // Add on top of everything, then bring tab bar to front
-        tabBarController.view.addSubview(hostingController.view)
-        tabBarController.view.bringSubviewToFront(tabBarController.tabBar)
+        // Insert directly below the tab bar: above VC content, below tab bar
+        tabBarController.view.insertSubview(hostingController.view, belowSubview: tabBarController.tabBar)
         NSLayoutConstraint.activate([
             hostingController.view.topAnchor.constraint(equalTo: tabBarController.view.topAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: tabBarController.view.leadingAnchor),
