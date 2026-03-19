@@ -72,7 +72,6 @@ struct TimelineView: View {
                     Image(systemName: "chevron.right")
                 }
             }
-            .padding(.horizontal)
 
             // Weekday headers
             HStack(spacing: 4) {
@@ -83,7 +82,6 @@ struct TimelineView: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.horizontal)
 
             // Calendar grid with slide transition
             CalendarGridView(
@@ -106,7 +104,6 @@ struct TimelineView: View {
                 insertion: .move(edge: navigatingForward ? .trailing : .leading),
                 removal: .move(edge: navigatingForward ? .leading : .trailing)
             ))
-            .padding(.horizontal)
             .gesture(
                 MagnifyGesture()
                     .onEnded { value in
@@ -138,7 +135,6 @@ struct TimelineView: View {
                     Image(systemName: "chevron.right")
                 }
             }
-            .padding(.horizontal)
 
             YearDotGridView(
                 year: displayedYear,
@@ -247,6 +243,5 @@ struct TimelineView: View {
                         .font(.caption2)
                 }
             }
-            .padding(.horizontal)
     }
 }
