@@ -40,22 +40,14 @@ struct RoamApp: App {
         BackgroundTaskService.schedulePrimaryCapture()
         significantLocationService.startMonitoring()
 
-        // Set the app-wide window background to match the theme color
+        // Set the app-wide background to match the theme color
         // so the status bar area and home indicator area aren't white.
         let bg = UIColor { traits in
             traits.userInterfaceStyle == .dark
                 ? UIColor(red: 0.098, green: 0.094, blue: 0.086, alpha: 1)
                 : UIColor(red: 0.969, green: 0.969, blue: 0.957, alpha: 1)
         }
-        for scene in UIApplication.shared.connectedScenes {
-            if let windowScene = scene as? UIWindowScene {
-                for window in windowScene.windows {
-                    window.backgroundColor = bg
-                }
-            }
-        }
-        // Also set via appearance for any future windows
-        UIWindow.appearance().backgroundColor = bg
+        UIView.appearance().backgroundColor = bg
     }
 
     var body: some Scene {
