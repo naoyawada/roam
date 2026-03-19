@@ -42,7 +42,7 @@ struct TimelineView: View {
 
                 legend
             }
-            .padding(.bottom)
+            .padding()
         }
         .grainBackground()
         .sheet(item: $selectedLog) { log in
