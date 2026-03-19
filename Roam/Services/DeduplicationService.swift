@@ -38,6 +38,29 @@ enum DeduplicationService {
         }
     }
 
+    /// Remove duplicate CityColor entries that share the same cityKey.
+    /// Keeps the entry with the lowest colorIndex (earliest assigned color).
+    @MainActor
+    static func deduplicateCityColors(context: ModelContext) {
+        let allColors = (try? context.fetch(FetchDescriptor<CityColor>())) ?? []
+
+        let grouped = Dictionary(grouping: allColors) { $0.cityKey }
+
+        var deletedCount = 0
+        for (_, colors) in grouped where colors.count > 1 {
+            let sorted = colors.sorted { $0.colorIndex < $1.colorIndex }
+            for color in sorted.dropFirst() {
+                context.delete(color)
+                deletedCount += 1
+            }
+        }
+
+        if deletedCount > 0 {
+            try? context.save()
+            logger.info("Deduplicated \(deletedCount) CityColor entries")
+        }
+    }
+
     private static func statusPriority(_ status: LogStatus) -> Int {
         switch status {
         case .confirmed: return 0
