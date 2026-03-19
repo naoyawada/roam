@@ -6,21 +6,24 @@ struct QuickStatsRow: View {
     let homeRatio: Int
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var animated = false
+    @State private var animatedCards: Set<Int> = []
 
     var body: some View {
         HStack(spacing: 10) {
-            StatCard(value: animated ? citiesVisited : 0, suffix: "", label: "Cities visited")
-            StatCard(value: animated ? longestStreak : 0, suffix: "", label: "Longest streak")
-            StatCard(value: animated ? homeRatio : 0, suffix: "%", label: "Home ratio")
+            StatCard(value: animatedCards.contains(0) ? citiesVisited : 0, suffix: "", label: "Cities visited")
+            StatCard(value: animatedCards.contains(1) ? longestStreak : 0, suffix: "", label: "Longest streak")
+            StatCard(value: animatedCards.contains(2) ? homeRatio : 0, suffix: "%", label: "Home ratio")
         }
         .onAppear {
-            guard !animated else { return }
-            if reduceMotion {
-                animated = true
-            } else {
-                withAnimation(.easeOut(duration: 0.8).delay(1.1)) {
-                    animated = true
+            guard animatedCards.isEmpty else { return }
+            for i in 0..<3 {
+                if reduceMotion {
+                    animatedCards.insert(i)
+                } else {
+                    let delay = 1.1 + Double(i) * 0.15
+                    withAnimation(.easeOut(duration: 0.6).delay(delay)) {
+                        _ = animatedCards.insert(i)
+                    }
                 }
             }
         }
