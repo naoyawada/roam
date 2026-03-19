@@ -10,8 +10,8 @@ struct QuickStatsRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            StatCard(value: animated ? citiesVisited : 0, suffix: nil, label: "Cities visited")
-            StatCard(value: animated ? longestStreak : 0, suffix: nil, label: "Longest streak")
+            StatCard(value: animated ? citiesVisited : 0, suffix: "", label: "Cities visited")
+            StatCard(value: animated ? longestStreak : 0, suffix: "", label: "Longest streak")
             StatCard(value: animated ? homeRatio : 0, suffix: "%", label: "Home ratio")
         }
         .onAppear {
@@ -19,7 +19,7 @@ struct QuickStatsRow: View {
             if reduceMotion {
                 animated = true
             } else {
-                withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
+                withAnimation(.easeOut(duration: 0.8).delay(0.2)) {
                     animated = true
                 }
             }
@@ -29,16 +29,15 @@ struct QuickStatsRow: View {
 
 private struct StatCard: View {
     let value: Int
-    let suffix: String?
+    let suffix: String
     let label: String
 
     var body: some View {
         VStack(spacing: 2) {
-            Text("\(value)\(suffix ?? "")")
+            AnimatingNumber(value: Double(value), suffix: suffix)
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundStyle(RoamTheme.textPrimary)
-                .contentTransition(.numericText(value: Double(value)))
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(RoamTheme.textSecondary)

@@ -20,8 +20,6 @@ struct TopCitiesList: View {
                 .padding(.bottom, 10)
 
             ForEach(Array(cities.enumerated()), id: \.offset) { _, city in
-                let displayNights = animated ? city.nights : 0
-                let displayPct = animated ? Int(city.percentage * 100) : 0
                 HStack {
                     Circle()
                         .fill(city.color)
@@ -30,16 +28,14 @@ struct TopCitiesList: View {
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
                     Spacer()
-                    Text("\(displayNights)")
+                    AnimatingNumber(value: Double(animated ? city.nights : 0), suffix: "")
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
-                        .contentTransition(.numericText(value: Double(displayNights)))
-                    Text("\(displayPct)%")
+                    AnimatingNumber(value: Double(animated ? Int(city.percentage * 100) : 0), suffix: "%")
                         .font(.caption)
                         .foregroundStyle(RoamTheme.textTertiary)
                         .frame(width: 32, alignment: .trailing)
-                        .contentTransition(.numericText(value: Double(displayPct)))
                 }
                 .padding(.vertical, 7)
 
@@ -50,9 +46,7 @@ struct TopCitiesList: View {
 
             // "Other" row
             if otherCount > 0 {
-                let displayOther = animated ? otherNights : 0
                 let pct = totalNights > 0 ? Int(Double(otherNights) / Double(totalNights) * 100) : 0
-                let displayPct = animated ? pct : 0
                 HStack {
                     Circle()
                         .fill(ColorPalette.otherColor)
@@ -61,16 +55,14 @@ struct TopCitiesList: View {
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textSecondary)
                     Spacer()
-                    Text("\(displayOther)")
+                    AnimatingNumber(value: Double(animated ? otherNights : 0), suffix: "")
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
-                        .contentTransition(.numericText(value: Double(displayOther)))
-                    Text("\(displayPct)%")
+                    AnimatingNumber(value: Double(animated ? pct : 0), suffix: "%")
                         .font(.caption)
                         .foregroundStyle(RoamTheme.textTertiary)
                         .frame(width: 32, alignment: .trailing)
-                        .contentTransition(.numericText(value: Double(displayPct)))
                 }
                 .padding(.vertical, 7)
             }
