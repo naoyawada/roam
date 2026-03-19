@@ -8,6 +8,8 @@ struct TopCitiesList: View {
     let allCities: [(name: String, nights: Int)]
 
     @State private var showingAllCities = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var animated = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -18,6 +20,8 @@ struct TopCitiesList: View {
                 .padding(.bottom, 10)
 
             ForEach(Array(cities.enumerated()), id: \.offset) { _, city in
+                let displayNights = animated ? city.nights : 0
+                let displayPct = animated ? Int(city.percentage * 100) : 0
                 HStack {
                     Circle()
                         .fill(city.color)
@@ -26,14 +30,16 @@ struct TopCitiesList: View {
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
                     Spacer()
-                    Text("\(city.nights)")
+                    Text("\(displayNights)")
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
-                    Text("\(Int(city.percentage * 100))%")
+                        .contentTransition(.numericText(value: Double(displayNights)))
+                    Text("\(displayPct)%")
                         .font(.caption)
                         .foregroundStyle(RoamTheme.textTertiary)
                         .frame(width: 32, alignment: .trailing)
+                        .contentTransition(.numericText(value: Double(displayPct)))
                 }
                 .padding(.vertical, 7)
 
@@ -44,6 +50,9 @@ struct TopCitiesList: View {
 
             // "Other" row
             if otherCount > 0 {
+                let displayOther = animated ? otherNights : 0
+                let pct = totalNights > 0 ? Int(Double(otherNights) / Double(totalNights) * 100) : 0
+                let displayPct = animated ? pct : 0
                 HStack {
                     Circle()
                         .fill(ColorPalette.otherColor)
@@ -52,15 +61,16 @@ struct TopCitiesList: View {
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textSecondary)
                     Spacer()
-                    Text("\(otherNights)")
+                    Text("\(displayOther)")
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
-                    let pct = totalNights > 0 ? Int(Double(otherNights) / Double(totalNights) * 100) : 0
-                    Text("\(pct)%")
+                        .contentTransition(.numericText(value: Double(displayOther)))
+                    Text("\(displayPct)%")
                         .font(.caption)
                         .foregroundStyle(RoamTheme.textTertiary)
                         .frame(width: 32, alignment: .trailing)
+                        .contentTransition(.numericText(value: Double(displayPct)))
                 }
                 .padding(.vertical, 7)
             }
@@ -83,6 +93,16 @@ struct TopCitiesList: View {
         .sheet(isPresented: $showingAllCities) {
             AllCitiesSheet(cities: allCities, totalNights: totalNights)
                 .presentationDetents([.medium, .large])
+        }
+        .onAppear {
+            guard !animated else { return }
+            if reduceMotion {
+                animated = true
+            } else {
+                withAnimation(.easeOut(duration: 0.6).delay(0.3)) {
+                    animated = true
+                }
+            }
         }
     }
 }
