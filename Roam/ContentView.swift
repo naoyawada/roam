@@ -13,7 +13,6 @@ struct ContentView: View {
     @State private var selectedTab: Int = 0
     @State private var showingSettings = false
     @State private var unresolvedToResolve: NightLog?
-    @State private var tabBarHeight: CGFloat = 0
 
     private var unresolvedLogs: [NightLog] {
         UnresolvedFilter.actionable(allLogs, today: BackfillService.calendarTodayNoonUTC())
@@ -42,10 +41,7 @@ struct ContentView: View {
         } else {
             TabView(selection: $selectedTab) {
                 Tab("Dashboard", systemImage: "chart.bar.fill", value: 0) {
-                    GeometryReader { geo in
-                        RoamTheme.background.ignoresSafeArea()
-                            .onAppear { tabBarHeight = geo.safeAreaInsets.bottom }
-                    }
+                    RoamTheme.background.ignoresSafeArea()
                 }
                 Tab("Timeline", systemImage: "calendar", value: 1) {
                     RoamTheme.background.ignoresSafeArea()
@@ -93,7 +89,6 @@ struct ContentView: View {
                 }, tab2: {
                     InsightsView()
                 })
-                .padding(.bottom, tabBarHeight)
             }
             .sheet(isPresented: $showingSettings) {
                 NavigationStack {
