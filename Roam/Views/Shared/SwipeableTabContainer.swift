@@ -48,7 +48,16 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                             return
                         }
                         isDragging = true
-                        state = value.translation.width
+
+                        let translation = value.translation.width
+                        let isAtLeadingEdge = selection == 0 && translation > 0
+                        let isAtTrailingEdge = selection == tabCount - 1 && translation < 0
+
+                        if isAtLeadingEdge || isAtTrailingEdge {
+                            state = translation * 0.3
+                        } else {
+                            state = translation
+                        }
                     }
                     .onEnded { value in
                         guard isDragging else { return }
