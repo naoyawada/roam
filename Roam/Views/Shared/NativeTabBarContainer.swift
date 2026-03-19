@@ -62,7 +62,7 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
             hostingController.view.topAnchor.constraint(equalTo: tabBarController.view.topAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: tabBarController.view.leadingAnchor),
             hostingController.view.trailingAnchor.constraint(equalTo: tabBarController.view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: tabBarController.tabBar.topAnchor, constant: -20),
+            hostingController.view.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor),
         ])
         hostingController.didMove(toParent: tabBarController)
 

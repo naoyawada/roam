@@ -74,16 +74,11 @@ struct ContentView: View {
     }
 
     private func setWindowBackground() {
-        let bg = UIColor { traits in
-            traits.userInterfaceStyle == .dark
-                ? UIColor(red: 0.098, green: 0.094, blue: 0.086, alpha: 1)
-                : UIColor(red: 0.969, green: 0.969, blue: 0.957, alpha: 1)
-        }
         for scene in UIApplication.shared.connectedScenes {
             if let windowScene = scene as? UIWindowScene {
                 for window in windowScene.windows {
-                    window.backgroundColor = bg
-                    window.rootViewController?.view.backgroundColor = bg
+                    window.backgroundColor = .clear
+                    window.rootViewController?.view.backgroundColor = .clear
                 }
             }
         }
