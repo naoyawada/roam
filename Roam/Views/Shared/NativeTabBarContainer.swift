@@ -15,17 +15,17 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
         // Create 3 empty VCs with tab bar items (for the native tab bar)
         let vc0 = UIViewController()
         vc0.tabBarItem = UITabBarItem(title: "Dashboard", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
-        vc0.view.backgroundColor = .clear
+        vc0.view.backgroundColor = UIColor(RoamTheme.background)
         vc0.view.isUserInteractionEnabled = false
 
         let vc1 = UIViewController()
         vc1.tabBarItem = UITabBarItem(title: "Timeline", image: UIImage(systemName: "calendar"), tag: 1)
-        vc1.view.backgroundColor = .clear
+        vc1.view.backgroundColor = UIColor(RoamTheme.background)
         vc1.view.isUserInteractionEnabled = false
 
         let vc2 = UIViewController()
         vc2.tabBarItem = UITabBarItem(title: "Insights", image: UIImage(systemName: "lightbulb.fill"), tag: 2)
-        vc2.view.backgroundColor = .clear
+        vc2.view.backgroundColor = UIColor(RoamTheme.background)
         vc2.view.isUserInteractionEnabled = false
 
         tabBarController.viewControllers = [vc0, vc1, vc2]
