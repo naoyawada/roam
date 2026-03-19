@@ -44,7 +44,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                     .clipped()
                     .allowsHitTesting(selection == 2)
             }
-            .transformEffect(.init(translationX: -CGFloat(animatedSelection) * width + dragOffset, y: 0))
+            .offset(x: -CGFloat(animatedSelection) * width + dragOffset)
             .highPriorityGesture(
                 DragGesture(minimumDistance: 10)
                     .updating($dragOffset) { value, state, _ in

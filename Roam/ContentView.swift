@@ -57,26 +57,37 @@ struct ContentView: View {
             .tint(RoamTheme.accent)
             .overlay {
                 SwipeableTabContainer(selection: $selectedTab, tab0: {
-                    NavigationStack {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("Roam")
+                                .font(.largeTitle.bold())
+                            Spacer()
+                            if !unresolvedLogs.isEmpty {
+                                Button {
+                                    unresolvedToResolve = unresolvedLogs.first
+                                } label: {
+                                    Text("\(unresolvedLogs.count)")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(RoamTheme.accent, in: Capsule())
+                                }
+                            }
+                            Button {
+                                showingSettings = true
+                            } label: {
+                                Image(systemName: "gearshape")
+                                    .font(.title3)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+
                         DashboardView()
-                            .safeAreaInset(edge: .top) {
-                                if !unresolvedLogs.isEmpty {
-                                    UnresolvedBanner(unresolvedCount: unresolvedLogs.count) {
-                                        unresolvedToResolve = unresolvedLogs.first
-                                    }
-                                    .padding(.horizontal)
-                                }
-                            }
-                            .toolbar {
-                                ToolbarItem(placement: .topBarTrailing) {
-                                    Button {
-                                        showingSettings = true
-                                    } label: {
-                                        Image(systemName: "gearshape")
-                                    }
-                                }
-                            }
                     }
+                    .grainBackground()
                 }, tab1: {
                     TimelineView()
                 }, tab2: {
