@@ -24,26 +24,26 @@ struct TimelineView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Timeline")
-                    .font(.largeTitle.bold())
-                Spacer()
+        ScrollView {
+            VStack(spacing: 16) {
+                HStack {
+                    Text("Timeline")
+                        .font(.largeTitle.bold())
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+
+                switch mode {
+                case .month:
+                    monthContent
+                case .year:
+                    yearContent
+                }
+
+                legend
             }
-            .padding(.horizontal)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
-
-            switch mode {
-            case .month:
-                monthContent
-            case .year:
-                yearContent
-            }
-
-            legend
-
-            Spacer()
+            .padding(.bottom)
         }
         .grainBackground()
         .sheet(item: $selectedLog) { log in
