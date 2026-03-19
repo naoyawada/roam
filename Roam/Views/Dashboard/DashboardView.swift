@@ -14,7 +14,7 @@ struct DashboardView: View {
     var body: some View {
         let analytics = AnalyticsService(context: context)
         ScrollView {
-                VStack(spacing: 20) {
+                VStack(alignment: .leading, spacing: 20) {
                     let streak = analytics.currentStreak(asOf: DateNormalization.normalizedNightDate(from: .now))
 
                     CurrentCityBanner(
@@ -75,6 +75,5 @@ struct DashboardView: View {
                 .padding()
             }
             .grainBackground()
-            .navigationTitle("Roam")
     }
 }

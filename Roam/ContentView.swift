@@ -10,6 +10,7 @@ struct ContentView: View {
     @Query private var allLogs: [NightLog]
 
     @StateObject private var locationService = LocationCaptureService()
+    @State private var selectedTab: Int = 0
     @State private var showingSettings = false
     @State private var unresolvedToResolve: NightLog?
 
@@ -38,37 +39,45 @@ struct ContentView: View {
                 )
             )
         } else {
-            TabView {
-                Tab("Dashboard", systemImage: "chart.bar.fill") {
-                    NavigationStack {
+            NativeTabBarContainer(selection: $selectedTab) {
+                SwipeableTabContainer(selection: $selectedTab, tab0: {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("Roam")
+                                .font(.largeTitle.bold())
+                            Spacer()
+                            if !unresolvedLogs.isEmpty {
+                                Button {
+                                    unresolvedToResolve = unresolvedLogs.first
+                                } label: {
+                                    Text("\(unresolvedLogs.count)")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(RoamTheme.accent, in: Capsule())
+                                }
+                            }
+                            Button {
+                                showingSettings = true
+                            } label: {
+                                Image(systemName: "gearshape")
+                                    .font(.title3)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
+
                         DashboardView()
-                            .safeAreaInset(edge: .top) {
-                                if !unresolvedLogs.isEmpty {
-                                    UnresolvedBanner(unresolvedCount: unresolvedLogs.count) {
-                                        unresolvedToResolve = unresolvedLogs.first
-                                    }
-                                    .padding(.horizontal)
-                                }
-                            }
-                            .toolbar {
-                                ToolbarItem(placement: .topBarTrailing) {
-                                    Button {
-                                        showingSettings = true
-                                    } label: {
-                                        Image(systemName: "gearshape")
-                                    }
-                                }
-                            }
                     }
-                }
-                Tab("Timeline", systemImage: "calendar") {
+                    .grainBackground()
+                }, tab1: {
                     TimelineView()
-                }
-                Tab("Insights", systemImage: "lightbulb.fill") {
+                }, tab2: {
                     InsightsView()
-                }
+                })
             }
-            .tint(RoamTheme.accent)
             .sheet(isPresented: $showingSettings) {
                 NavigationStack {
                     SettingsView()
@@ -83,6 +92,25 @@ struct ContentView: View {
                 DeduplicationService.deduplicateNightLogs(context: context)
                 DeduplicationService.deduplicateCityColors(context: context)
                 assignMissingColors()
+            }
+            .onAppear {
+                setWindowBackground()
+            }
+        }
+    }
+
+    private func setWindowBackground() {
+        let bg = UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.098, green: 0.094, blue: 0.086, alpha: 1)
+                : UIColor(red: 0.969, green: 0.969, blue: 0.957, alpha: 1)
+        }
+        for scene in UIApplication.shared.connectedScenes {
+            if let windowScene = scene as? UIWindowScene {
+                for window in windowScene.windows {
+                    window.backgroundColor = bg
+                    window.rootViewController?.view.backgroundColor = bg
+                }
             }
         }
     }

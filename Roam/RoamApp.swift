@@ -39,6 +39,7 @@ struct RoamApp: App {
         BackgroundTaskService.register(modelContainer: modelContainer)
         BackgroundTaskService.schedulePrimaryCapture()
         significantLocationService.startMonitoring()
+
     }
 
     var body: some Scene {

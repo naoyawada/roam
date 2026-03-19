@@ -24,24 +24,30 @@ struct TimelineView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                switch mode {
-                case .month:
-                    monthContent
-                case .year:
-                    yearContent
-                }
-
-                legend
-
+        VStack(spacing: 16) {
+            HStack {
+                Text("Timeline")
+                    .font(.largeTitle.bold())
                 Spacer()
             }
-            .grainBackground()
-            .navigationTitle("Timeline")
-            .sheet(item: $selectedLog) { log in
-                DayDetailSheet(log: log)
+            .padding(.horizontal)
+            .padding(.top, 8)
+            .padding(.bottom, 4)
+
+            switch mode {
+            case .month:
+                monthContent
+            case .year:
+                yearContent
             }
+
+            legend
+
+            Spacer()
+        }
+        .grainBackground()
+        .sheet(item: $selectedLog) { log in
+            DayDetailSheet(log: log)
         }
     }
 
@@ -113,18 +119,6 @@ struct TimelineView: View {
                         }
                     }
             )
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 50)
-                    .onEnded { value in
-                        if value.translation.width < -50 {
-                            navigatingForward = true
-                            withAnimation { nextMonth() }
-                        } else if value.translation.width > 50 {
-                            navigatingForward = false
-                            withAnimation { previousMonth() }
-                        }
-                    }
-            )
         }
         .clipped()
     }
@@ -168,16 +162,6 @@ struct TimelineView: View {
                             withAnimation {
                                 mode = .month
                             }
-                        }
-                    }
-            )
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 50)
-                    .onEnded { value in
-                        if value.translation.width < -50 {
-                            withAnimation { nextYear() }
-                        } else if value.translation.width > 50 {
-                            withAnimation { previousYear() }
                         }
                     }
             )
