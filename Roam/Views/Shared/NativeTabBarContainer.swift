@@ -44,6 +44,7 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
 
         // Host the SwiftUI paging content behind the tab bar
         let hostingController = UIHostingController(rootView: content)
+        hostingController.safeAreaRegions = []
         hostingController.view.backgroundColor = bg
         tabBarController.addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
@@ -53,7 +54,7 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
             hostingController.view.topAnchor.constraint(equalTo: tabBarController.view.topAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: tabBarController.view.leadingAnchor),
             hostingController.view.trailingAnchor.constraint(equalTo: tabBarController.view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: tabBarController.tabBar.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor),
         ])
         hostingController.didMove(toParent: tabBarController)
 
