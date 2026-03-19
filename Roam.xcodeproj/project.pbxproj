@@ -67,6 +67,7 @@
 		F3AD6860617159F9D6F8FFF3 /* DeduplicationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C11F9644281708616F2268 /* DeduplicationServiceTests.swift */; };
 		F4787C5C6FC3DD7F1544085E /* YearDotGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409B51C0F0DD1105703B77C0 /* YearDotGridView.swift */; };
 		F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */; };
+		F6E8E8C83FF482A91E54F8BF /* SwipeableTabContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EB083CB08A7B66EC8B9C57 /* SwipeableTabContainer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -131,6 +132,7 @@
 		BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentCityBanner.swift; sourceTree = "<group>"; };
 		BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationCaptureService.swift; sourceTree = "<group>"; };
 		C72CE241E3B8CDD29B35059E /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		C7EB083CB08A7B66EC8B9C57 /* SwipeableTabContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeableTabContainer.swift; sourceTree = "<group>"; };
 		C8F6EF6C7B88382F6E50BD98 /* CaptureResultSaverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureResultSaverTests.swift; sourceTree = "<group>"; };
 		CB5F214DCE81E9A4C3C1E11D /* UnresolvedFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnresolvedFilterTests.swift; sourceTree = "<group>"; };
 		D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyBreakdownChart.swift; sourceTree = "<group>"; };
@@ -208,6 +210,7 @@
 				23864012AE9AA4481A21698F /* AllCitiesSheet.swift */,
 				824E0EF02F8A45DC8F52BDF6 /* FlowLayout.swift */,
 				F6D7CA43E45C39FC47382F99 /* GrainBackground.swift */,
+				C7EB083CB08A7B66EC8B9C57 /* SwipeableTabContainer.swift */,
 				F9FCD0FC937244CF77D549C4 /* UnresolvedBanner.swift */,
 				64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */,
 			);
@@ -477,6 +480,7 @@
 				135500F84D1BC3D950AD1815 /* RoamTheme.swift in Sources */,
 				66CDD90D71C97B0E216E75F7 /* SettingsView.swift in Sources */,
 				61FD25159B361F2E3C4719CA /* SignificantLocationService.swift in Sources */,
+				F6E8E8C83FF482A91E54F8BF /* SwipeableTabContainer.swift in Sources */,
 				B3B65F4760C913CB20F71ABF /* TimelineView.swift in Sources */,
 				D9F49F2A3DD709A589C88C59 /* TopCitiesList.swift in Sources */,
 				B9EEE152B2DA6466212A6164 /* UnresolvedBanner.swift in Sources */,

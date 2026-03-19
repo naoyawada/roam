@@ -10,6 +10,7 @@ struct ContentView: View {
     @Query private var allLogs: [NightLog]
 
     @StateObject private var locationService = LocationCaptureService()
+    @State private var selectedTab: Int = 0
     @State private var showingSettings = false
     @State private var unresolvedToResolve: NightLog?
 
@@ -38,8 +39,20 @@ struct ContentView: View {
                 )
             )
         } else {
-            TabView {
-                Tab("Dashboard", systemImage: "chart.bar.fill") {
+            TabView(selection: $selectedTab) {
+                Tab("Dashboard", systemImage: "chart.bar.fill", value: 0) {
+                    Color.clear
+                }
+                Tab("Timeline", systemImage: "calendar", value: 1) {
+                    Color.clear
+                }
+                Tab("Insights", systemImage: "lightbulb.fill", value: 2) {
+                    Color.clear
+                }
+            }
+            .tint(RoamTheme.accent)
+            .overlay {
+                SwipeableTabContainer(selection: $selectedTab, tab0: {
                     NavigationStack {
                         DashboardView()
                             .safeAreaInset(edge: .top) {
@@ -60,15 +73,12 @@ struct ContentView: View {
                                 }
                             }
                     }
-                }
-                Tab("Timeline", systemImage: "calendar") {
+                }, tab1: {
                     TimelineView()
-                }
-                Tab("Insights", systemImage: "lightbulb.fill") {
+                }, tab2: {
                     InsightsView()
-                }
+                })
             }
-            .tint(RoamTheme.accent)
             .sheet(isPresented: $showingSettings) {
                 NavigationStack {
                     SettingsView()
