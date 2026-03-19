@@ -42,7 +42,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
             ))
             .scrollIndicators(.hidden)
             .scrollBounceBehavior(.automatic)
-            .background(RoamTheme.background)
+            .background(.clear)
             .onChange(of: selection) { _, newValue in
                 let animation: Animation = reduceMotion ? .easeInOut(duration: 0.15) : .smooth(duration: 0.3)
                 withAnimation(animation) {
