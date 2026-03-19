@@ -44,7 +44,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                     .clipped()
                     .allowsHitTesting(selection == 2)
             }
-            .drawingGroup()
+            .geometryGroup()
             .offset(x: -CGFloat(animatedSelection) * width + dragOffset)
             .highPriorityGesture(
                 DragGesture(minimumDistance: 10)
