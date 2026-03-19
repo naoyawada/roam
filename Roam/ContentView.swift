@@ -39,45 +39,44 @@ struct ContentView: View {
                 )
             )
         } else {
-            SwipeableTabContainer(selection: $selectedTab, tab0: {
-                VStack(spacing: 0) {
-                    HStack {
-                        Text("Roam")
-                            .font(.largeTitle.bold())
-                        Spacer()
-                        if !unresolvedLogs.isEmpty {
+            NativeTabBarContainer(selection: $selectedTab) {
+                SwipeableTabContainer(selection: $selectedTab, tab0: {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("Roam")
+                                .font(.largeTitle.bold())
+                            Spacer()
+                            if !unresolvedLogs.isEmpty {
+                                Button {
+                                    unresolvedToResolve = unresolvedLogs.first
+                                } label: {
+                                    Text("\(unresolvedLogs.count)")
+                                        .font(.caption.bold())
+                                        .foregroundStyle(.white)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 4)
+                                        .background(RoamTheme.accent, in: Capsule())
+                                }
+                            }
                             Button {
-                                unresolvedToResolve = unresolvedLogs.first
+                                showingSettings = true
                             } label: {
-                                Text("\(unresolvedLogs.count)")
-                                    .font(.caption.bold())
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(RoamTheme.accent, in: Capsule())
+                                Image(systemName: "gearshape")
+                                    .font(.title3)
                             }
                         }
-                        Button {
-                            showingSettings = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                                .font(.title3)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                    .padding(.bottom, 4)
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 4)
 
-                    DashboardView()
-                }
-                .grainBackground()
-            }, tab1: {
-                TimelineView()
-            }, tab2: {
-                InsightsView()
-            })
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                CustomTabBar(selection: $selectedTab)
+                        DashboardView()
+                    }
+                    .grainBackground()
+                }, tab1: {
+                    TimelineView()
+                }, tab2: {
+                    InsightsView()
+                })
             }
             .sheet(isPresented: $showingSettings) {
                 NavigationStack {
