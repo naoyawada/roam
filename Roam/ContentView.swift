@@ -51,7 +51,7 @@ struct ContentView: View {
                 }
             }
             .tint(RoamTheme.accent)
-            .overlay {
+            .overlay(alignment: .top) {
                 SwipeableTabContainer(selection: $selectedTab, tab0: {
                     NavigationStack {
                         DashboardView()
