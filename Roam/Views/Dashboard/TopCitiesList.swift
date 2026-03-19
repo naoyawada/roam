@@ -39,10 +39,13 @@ struct TopCitiesList: View {
                         .frame(width: 32, alignment: .trailing)
                 }
                 .padding(.vertical, 7)
+                .opacity(rowAnimated ? 1 : 0)
+                .offset(y: rowAnimated ? 0 : 8)
 
                 Rectangle()
                     .fill(RoamTheme.border)
                     .frame(height: 1)
+                    .opacity(rowAnimated ? 1 : 0)
             }
 
             // "Other" row
@@ -68,6 +71,8 @@ struct TopCitiesList: View {
                         .frame(width: 32, alignment: .trailing)
                 }
                 .padding(.vertical, 7)
+                .opacity(otherAnimated ? 1 : 0)
+                .offset(y: otherAnimated ? 0 : 8)
             }
 
             // "See all" link
