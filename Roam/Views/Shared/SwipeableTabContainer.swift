@@ -53,6 +53,27 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                     .onEnded { value in
                         guard isDragging else { return }
                         isDragging = false
+
+                        let translation = value.translation.width
+                        let velocity = value.velocity.width
+                        let commitThreshold = width * 0.4
+                        let velocityThreshold: CGFloat = 500
+
+                        var newSelection = selection
+
+                        if translation < -commitThreshold || velocity < -velocityThreshold {
+                            if selection < tabCount - 1 {
+                                newSelection = selection + 1
+                            }
+                        } else if translation > commitThreshold || velocity > velocityThreshold {
+                            if selection > 0 {
+                                newSelection = selection - 1
+                            }
+                        }
+
+                        withAnimation(.spring(duration: 0.3)) {
+                            selection = newSelection
+                        }
                     }
             )
         }
