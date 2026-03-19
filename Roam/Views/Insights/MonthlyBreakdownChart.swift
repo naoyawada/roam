@@ -79,8 +79,8 @@ struct MonthlyBreakdownChart: View {
                     if reduceMotion {
                         animatedMonths.insert(month.month)
                     } else {
-                        let delay = 0.1 + Double(month.month - 1) * 0.08
-                        withAnimation(.easeOut(duration: 0.5).delay(delay)) {
+                        let delay = 0.15 + Double(month.month - 1) * 0.12
+                        withAnimation(.easeOut(duration: 0.7).delay(delay)) {
                             _ = animatedMonths.insert(month.month)
                         }
                     }
