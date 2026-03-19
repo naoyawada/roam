@@ -7,6 +7,10 @@ struct DashboardView: View {
     @Query private var cityColors: [CityColor]
     @Query private var settings: [UserSettings]
 
+    @Binding var showingSettings: Bool
+    var unresolvedLogs: [NightLog]
+    var onResolve: (NightLog) -> Void
+
     private var currentYear: Int {
         Calendar.current.component(.year, from: .now)
     }
@@ -15,6 +19,29 @@ struct DashboardView: View {
         let analytics = AnalyticsService(context: context)
         ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    HStack {
+                        Text("Roam")
+                            .font(.largeTitle.bold())
+                        Spacer()
+                        if !unresolvedLogs.isEmpty {
+                            Button {
+                                onResolve(unresolvedLogs[0])
+                            } label: {
+                                Text("\(unresolvedLogs.count)")
+                                    .font(.caption.bold())
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(RoamTheme.accent, in: Capsule())
+                            }
+                        }
+                        Button {
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gearshape")
+                                .font(.title3)
+                        }
+                    }
                     let streak = analytics.currentStreak(asOf: DateNormalization.normalizedNightDate(from: .now))
 
                     CurrentCityBanner(

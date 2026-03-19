@@ -20,6 +20,7 @@
 		29141037D2B4F8B207C1EFE2 /* BackgroundTaskService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D67A2307B78BB5B0130643 /* BackgroundTaskService.swift */; };
 		2F58DFD0E9141CE4608A77D9 /* YearOverYearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E0F64E8EA98CCC7B86A87F1 /* YearOverYearView.swift */; };
 		387D97B9C9C5FADEE96010F6 /* MiniMonthGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85746F2EC5BF766F57464131 /* MiniMonthGridView.swift */; };
+		41DDC3A8C08DD7E13A473248 /* AnimatingNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D1DFDD0307FCAD8E5F7FFB /* AnimatingNumber.swift */; };
 		45FEA24C9A0F3D0977A94A82 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161355E300E961AC6947F70E /* InsightsView.swift */; };
 		4AB82FA66BB533444D897559 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9D868ACDE0717F8AD4523DD /* OnboardingView.swift */; };
 		5481C098BC3D13AC24D7EBC3 /* DataImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E7743148F503481970D52BA /* DataImportServiceTests.swift */; };
@@ -87,6 +88,7 @@
 		06BFA8009A22BA4D8C7357FF /* CitySearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CitySearchView.swift; sourceTree = "<group>"; };
 		0E0F64E8EA98CCC7B86A87F1 /* YearOverYearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearOverYearView.swift; sourceTree = "<group>"; };
 		108AE1705F106288F46ED85B /* Roam.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Roam.entitlements; sourceTree = "<group>"; };
+		14D1DFDD0307FCAD8E5F7FFB /* AnimatingNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingNumber.swift; sourceTree = "<group>"; };
 		161355E300E961AC6947F70E /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		1E7743148F503481970D52BA /* DataImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataImportServiceTests.swift; sourceTree = "<group>"; };
 		213B5349FB94E1A2C401CC74 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
@@ -212,6 +214,7 @@
 			isa = PBXGroup;
 			children = (
 				23864012AE9AA4481A21698F /* AllCitiesSheet.swift */,
+				14D1DFDD0307FCAD8E5F7FFB /* AnimatingNumber.swift */,
 				6D3E05ECCE58EF60289D0502 /* CustomTabBar.swift */,
 				824E0EF02F8A45DC8F52BDF6 /* FlowLayout.swift */,
 				F6D7CA43E45C39FC47382F99 /* GrainBackground.swift */,
@@ -451,6 +454,7 @@
 			files = (
 				CDDAA3EE818A11ED0D9337AC /* AllCitiesSheet.swift in Sources */,
 				9208A7F0FA8A35FC62430A99 /* AnalyticsService.swift in Sources */,
+				41DDC3A8C08DD7E13A473248 /* AnimatingNumber.swift in Sources */,
 				022AE66EED110DA6E22524B9 /* BackfillService.swift in Sources */,
 				29141037D2B4F8B207C1EFE2 /* BackgroundTaskService.swift in Sources */,
 				207CFA38EBC84291A829F85A /* CalendarGridView.swift in Sources */,

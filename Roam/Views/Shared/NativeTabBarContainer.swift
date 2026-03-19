@@ -19,40 +19,27 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UITabBarController {
         let tabBarController = UITabBarController()
-        let bg = Self.themeBackground
 
-        // Create 3 empty VCs with tab bar items (for the native tab bar)
         let vc0 = UIViewController()
         vc0.tabBarItem = UITabBarItem(title: "Dashboard", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
-        vc0.view.backgroundColor = bg
+        vc0.view.backgroundColor = .clear
         vc0.view.isUserInteractionEnabled = false
 
         let vc1 = UIViewController()
         vc1.tabBarItem = UITabBarItem(title: "Timeline", image: UIImage(systemName: "calendar"), tag: 1)
-        vc1.view.backgroundColor = bg
+        vc1.view.backgroundColor = .clear
         vc1.view.isUserInteractionEnabled = false
 
         let vc2 = UIViewController()
         vc2.tabBarItem = UITabBarItem(title: "Insights", image: UIImage(systemName: "lightbulb.fill"), tag: 2)
-        vc2.view.backgroundColor = bg
+        vc2.view.backgroundColor = .clear
         vc2.view.isUserInteractionEnabled = false
 
         tabBarController.viewControllers = [vc0, vc1, vc2]
         tabBarController.delegate = context.coordinator
         tabBarController.tabBar.tintColor = UIColor(RoamTheme.accent)
-        tabBarController.view.backgroundColor = bg
+        tabBarController.view.backgroundColor = .clear
 
-        // Host the SwiftUI paging content.
-        //
-        // The hosting view is pinned from the top of the screen down to the
-        // TOP of the tab bar. This means GrainBackground's .ignoresSafeArea()
-        // can only extend upward into the status bar area (which is correct),
-        // but cannot extend downward over the tab bar (keeping it visible and
-        // tappable).
-        //
-        // The window's background color (set below) fills behind the status
-        // bar area and the home indicator area below the tab bar, eliminating
-        // any white strips.
         let hostingController = UIHostingController(rootView: content)
         hostingController.view.backgroundColor = .clear
         tabBarController.addChild(hostingController)
@@ -68,25 +55,18 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
 
         context.coordinator.hostingController = hostingController
 
-        // Set the window's background color to match the theme so the areas
-        // behind the status bar and below the tab bar (home indicator region)
-        // are filled with the correct color instead of white.
         DispatchQueue.main.async {
-            tabBarController.view.window?.backgroundColor = bg
+            tabBarController.view.window?.backgroundColor = Self.themeBackground
         }
 
         return tabBarController
     }
 
     func updateUIViewController(_ tabBarController: UITabBarController, context: Context) {
-        // Sync tab bar selection with SwiftUI state
         if tabBarController.selectedIndex != selection {
             tabBarController.selectedIndex = selection
         }
-        // Update the SwiftUI content
         context.coordinator.hostingController?.rootView = content
-
-        // Ensure window background stays correct (e.g. after trait changes)
         tabBarController.view.window?.backgroundColor = Self.themeBackground
     }
 
@@ -109,7 +89,6 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
                     selection = index
                 }
             }
-            // Return true so the tab bar visually updates its selection
             return true
         }
     }

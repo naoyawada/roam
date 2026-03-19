@@ -24,26 +24,24 @@ struct TimelineView: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Timeline")
-                    .font(.largeTitle.bold())
-                Spacer()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                HStack {
+                    Text("Timeline")
+                        .font(.largeTitle.bold())
+                    Spacer()
+                }
+
+                switch mode {
+                case .month:
+                    monthContent
+                case .year:
+                    yearContent
+                }
+
+                legend
             }
-            .padding(.horizontal)
-            .padding(.top, 8)
-            .padding(.bottom, 4)
-
-            switch mode {
-            case .month:
-                monthContent
-            case .year:
-                yearContent
-            }
-
-            legend
-
-            Spacer()
+            .padding()
         }
         .grainBackground()
         .sheet(item: $selectedLog) { log in
@@ -74,7 +72,6 @@ struct TimelineView: View {
                     Image(systemName: "chevron.right")
                 }
             }
-            .padding(.horizontal)
 
             // Weekday headers
             HStack(spacing: 4) {
@@ -85,7 +82,6 @@ struct TimelineView: View {
                         .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.horizontal)
 
             // Calendar grid with slide transition
             CalendarGridView(
@@ -108,7 +104,6 @@ struct TimelineView: View {
                 insertion: .move(edge: navigatingForward ? .trailing : .leading),
                 removal: .move(edge: navigatingForward ? .leading : .trailing)
             ))
-            .padding(.horizontal)
             .gesture(
                 MagnifyGesture()
                     .onEnded { value in
@@ -140,7 +135,6 @@ struct TimelineView: View {
                     Image(systemName: "chevron.right")
                 }
             }
-            .padding(.horizontal)
 
             YearDotGridView(
                 year: displayedYear,
@@ -249,6 +243,5 @@ struct TimelineView: View {
                         .font(.caption2)
                 }
             }
-            .padding(.horizontal)
     }
 }

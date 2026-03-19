@@ -8,6 +8,8 @@ struct TopCitiesList: View {
     let allCities: [(name: String, nights: Int)]
 
     @State private var showingAllCities = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var animatedRows: Set<Int> = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -17,7 +19,8 @@ struct TopCitiesList: View {
                 .foregroundStyle(RoamTheme.textPrimary)
                 .padding(.bottom, 10)
 
-            ForEach(Array(cities.enumerated()), id: \.offset) { _, city in
+            ForEach(Array(cities.enumerated()), id: \.offset) { index, city in
+                let rowAnimated = animatedRows.contains(index)
                 HStack {
                     Circle()
                         .fill(city.color)
@@ -36,14 +39,19 @@ struct TopCitiesList: View {
                         .frame(width: 32, alignment: .trailing)
                 }
                 .padding(.vertical, 7)
+                .opacity(rowAnimated ? 1 : 0)
 
                 Rectangle()
                     .fill(RoamTheme.border)
                     .frame(height: 1)
+                    .opacity(rowAnimated ? 1 : 0)
             }
 
             // "Other" row
             if otherCount > 0 {
+                let otherIndex = cities.count
+                let otherAnimated = animatedRows.contains(otherIndex)
+                let pct = totalNights > 0 ? Int(Double(otherNights) / Double(totalNights) * 100) : 0
                 HStack {
                     Circle()
                         .fill(ColorPalette.otherColor)
@@ -56,13 +64,13 @@ struct TopCitiesList: View {
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
-                    let pct = totalNights > 0 ? Int(Double(otherNights) / Double(totalNights) * 100) : 0
                     Text("\(pct)%")
                         .font(.caption)
                         .foregroundStyle(RoamTheme.textTertiary)
                         .frame(width: 32, alignment: .trailing)
                 }
                 .padding(.vertical, 7)
+                .opacity(otherAnimated ? 1 : 0)
             }
 
             // "See all" link
@@ -83,6 +91,20 @@ struct TopCitiesList: View {
         .sheet(isPresented: $showingAllCities) {
             AllCitiesSheet(cities: allCities, totalNights: totalNights)
                 .presentationDetents([.medium, .large])
+        }
+        .onAppear {
+            guard animatedRows.isEmpty else { return }
+            let totalRows = cities.count + (otherCount > 0 ? 1 : 0)
+            for i in 0..<totalRows {
+                if reduceMotion {
+                    animatedRows.insert(i)
+                } else {
+                    let delay = 0.6 + Double(i) * 0.1
+                    withAnimation(.easeOut(duration: 0.6).delay(delay)) {
+                        _ = animatedRows.insert(i)
+                    }
+                }
+            }
         }
     }
 }
