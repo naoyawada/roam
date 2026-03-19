@@ -118,18 +118,6 @@ struct TimelineView: View {
                         }
                     }
             )
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 50)
-                    .onEnded { value in
-                        if value.translation.width < -50 {
-                            navigatingForward = true
-                            withAnimation { nextMonth() }
-                        } else if value.translation.width > 50 {
-                            navigatingForward = false
-                            withAnimation { previousMonth() }
-                        }
-                    }
-            )
         }
         .clipped()
     }
@@ -173,16 +161,6 @@ struct TimelineView: View {
                             withAnimation {
                                 mode = .month
                             }
-                        }
-                    }
-            )
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 50)
-                    .onEnded { value in
-                        if value.translation.width < -50 {
-                            withAnimation { nextYear() }
-                        } else if value.translation.width > 50 {
-                            withAnimation { previousYear() }
                         }
                     }
             )
