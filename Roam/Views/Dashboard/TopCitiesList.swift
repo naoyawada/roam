@@ -29,18 +29,17 @@ struct TopCitiesList: View {
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
                     Spacer()
-                    AnimatingNumber(value: Double(rowAnimated ? city.nights : 0), suffix: "")
+                    Text("\(city.nights)")
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
-                    AnimatingNumber(value: Double(rowAnimated ? Int(city.percentage * 100) : 0), suffix: "%")
+                    Text("\(Int(city.percentage * 100))%")
                         .font(.caption)
                         .foregroundStyle(RoamTheme.textTertiary)
                         .frame(width: 32, alignment: .trailing)
                 }
                 .padding(.vertical, 7)
                 .opacity(rowAnimated ? 1 : 0)
-                .offset(y: rowAnimated ? 0 : 8)
 
                 Rectangle()
                     .fill(RoamTheme.border)
@@ -61,18 +60,17 @@ struct TopCitiesList: View {
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textSecondary)
                     Spacer()
-                    AnimatingNumber(value: Double(otherAnimated ? otherNights : 0), suffix: "")
+                    Text("\(otherNights)")
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
-                    AnimatingNumber(value: Double(otherAnimated ? pct : 0), suffix: "%")
+                    Text("\(pct)%")
                         .font(.caption)
                         .foregroundStyle(RoamTheme.textTertiary)
                         .frame(width: 32, alignment: .trailing)
                 }
                 .padding(.vertical, 7)
                 .opacity(otherAnimated ? 1 : 0)
-                .offset(y: otherAnimated ? 0 : 8)
             }
 
             // "See all" link
