@@ -80,6 +80,7 @@ struct ContentView: View {
             .task {
                 await attemptForegroundCapture()
                 BackfillService.backfillMissedNights(context: context)
+                DeduplicationService.deduplicateNightLogs(context: context)
                 assignMissingColors()
             }
         }

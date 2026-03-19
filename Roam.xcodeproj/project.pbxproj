@@ -46,6 +46,7 @@
 		9F33C43995795018E6000775 /* AnalyticsServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63DDD65758488CE7F62C1F58 /* AnalyticsServiceTests.swift */; };
 		9F4F09384F6FBBCF75ABC9A1 /* CaptureSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */; };
 		AC25A9DF61146D6642C14EB8 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D00E3E6D01547CE9B679052 /* DashboardView.swift */; };
+		AF8FE20EBFF81E858C424C26 /* DeduplicationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E07135CDB115BE04D02FD04 /* DeduplicationService.swift */; };
 		B3B65F4760C913CB20F71ABF /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72CE241E3B8CDD29B35059E /* TimelineView.swift */; };
 		B9EEE152B2DA6466212A6164 /* UnresolvedBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCD0FC937244CF77D549C4 /* UnresolvedBanner.swift */; };
 		BB6552613AEC50EEF56580EC /* UnresolvedResolutionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */; };
@@ -62,6 +63,7 @@
 		EF6A4CE9DEB6D2FAB1FB1F17 /* CaptureResultSaver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA6369ADD7129C74EDC04D7 /* CaptureResultSaver.swift */; };
 		EFA488C0CDDB8D136ECF393D /* UnresolvedFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5F214DCE81E9A4C3C1E11D /* UnresolvedFilterTests.swift */; };
 		F064E26ED7FCC1A9353B8FE2 /* DataExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EC93ED423B3CE8910B4C61 /* DataExportView.swift */; };
+		F3AD6860617159F9D6F8FFF3 /* DeduplicationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C11F9644281708616F2268 /* DeduplicationServiceTests.swift */; };
 		F4787C5C6FC3DD7F1544085E /* YearDotGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409B51C0F0DD1105703B77C0 /* YearDotGridView.swift */; };
 		F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */; };
 /* End PBXBuildFile section */
@@ -93,6 +95,7 @@
 		3DE9FD917641ADA6EA9271A4 /* CaptureSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureSource.swift; sourceTree = "<group>"; };
 		409B51C0F0DD1105703B77C0 /* YearDotGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearDotGridView.swift; sourceTree = "<group>"; };
 		42F6EFE5C04BBCDEF9BFDDF1 /* RoamTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamTheme.swift; sourceTree = "<group>"; };
+		43C11F9644281708616F2268 /* DeduplicationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeduplicationServiceTests.swift; sourceTree = "<group>"; };
 		451BDBADFD229CF00F91E911 /* RoamTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RoamTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D7FF89B107B4B4154B20D9C /* DayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCell.swift; sourceTree = "<group>"; };
 		4F5CA8FAA3547C6DCBCBBE01 /* LogStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStatus.swift; sourceTree = "<group>"; };
@@ -108,6 +111,7 @@
 		76EC93ED423B3CE8910B4C61 /* DataExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportView.swift; sourceTree = "<group>"; };
 		778687BCAF748015DFE68915 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsService.swift; sourceTree = "<group>"; };
 		7A1D3A9470466B0ACE9F8CE3 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		7E07135CDB115BE04D02FD04 /* DeduplicationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeduplicationService.swift; sourceTree = "<group>"; };
 		7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateNormalization.swift; sourceTree = "<group>"; };
 		81D67A2307B78BB5B0130643 /* BackgroundTaskService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskService.swift; sourceTree = "<group>"; };
 		85746F2EC5BF766F57464131 /* MiniMonthGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniMonthGridView.swift; sourceTree = "<group>"; };
@@ -152,6 +156,7 @@
 				2B83452B970024E3BA1C1E06 /* DataExportTests.swift */,
 				1E7743148F503481970D52BA /* DataImportServiceTests.swift */,
 				911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */,
+				43C11F9644281708616F2268 /* DeduplicationServiceTests.swift */,
 				88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */,
 				DCB87FA04018026E1981F420 /* RoamTests.swift */,
 				DC20F392092EA72D0AAD7AC4 /* SignificantLocationServiceTests.swift */,
@@ -171,6 +176,7 @@
 				67200A60234C96471025090B /* DataExportService.swift */,
 				869AEC55168DE37DD3EC5624 /* DataImportService.swift */,
 				7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */,
+				7E07135CDB115BE04D02FD04 /* DeduplicationService.swift */,
 				BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */,
 				F599F069C99AF75FDF413E61 /* SignificantLocationService.swift */,
 				B645BA3A5C4B184DA801D31B /* UnresolvedFilter.swift */,
@@ -419,6 +425,7 @@
 				257C9005F6C1998BAA2CA774 /* DataExportTests.swift in Sources */,
 				5481C098BC3D13AC24D7EBC3 /* DataImportServiceTests.swift in Sources */,
 				E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */,
+				F3AD6860617159F9D6F8FFF3 /* DeduplicationServiceTests.swift in Sources */,
 				2293862100765F7BA574183A /* LocationValidationTests.swift in Sources */,
 				57C6A2A2F4154CFF796A4F06 /* RoamTests.swift in Sources */,
 				C95DE86E5415A367B3247F47 /* SignificantLocationServiceTests.swift in Sources */,
@@ -451,6 +458,7 @@
 				71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */,
 				90FDDDF4C2346380FBFD0837 /* DayCell.swift in Sources */,
 				2710B99F9426F221581461E0 /* DayDetailSheet.swift in Sources */,
+				AF8FE20EBFF81E858C424C26 /* DeduplicationService.swift in Sources */,
 				67179C62483A18ECA29E1BD6 /* GrainBackground.swift in Sources */,
 				1F83049070C1A069782B8963 /* HighlightsGrid.swift in Sources */,
 				45FEA24C9A0F3D0977A94A82 /* InsightsView.swift in Sources */,
