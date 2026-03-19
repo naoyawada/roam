@@ -17,49 +17,62 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
         }
     }
 
-    func makeUIViewController(context: Context) -> UITabBarController {
-        let tabBarController = UITabBarController()
+    func makeUIViewController(context: Context) -> TabBarHost<Content> {
+        let tabBarHost = TabBarHost<Content>()
 
-        // The hosting controller IS the managed VC0.
-        // UITabBarController will properly propagate safe area insets
-        // (including the tab bar height) to this VC, so ScrollViews
-        // automatically inset content above the tab bar while allowing
-        // content to scroll behind the translucent glass.
-        let hostingController = UIHostingController(rootView: content)
-        hostingController.view.backgroundColor = .clear
-        hostingController.tabBarItem = UITabBarItem(title: "Dashboard", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
+        // 3 empty VCs provide tab bar items. They get selected/deselected
+        // by UIKit but are always behind our hosting view.
+        let vc0 = UIViewController()
+        vc0.tabBarItem = UITabBarItem(title: "Dashboard", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
+        vc0.view.isUserInteractionEnabled = false
 
-        // Placeholder VCs just provide tab bar items — never actually displayed
         let vc1 = UIViewController()
         vc1.tabBarItem = UITabBarItem(title: "Timeline", image: UIImage(systemName: "calendar"), tag: 1)
+        vc1.view.isUserInteractionEnabled = false
 
         let vc2 = UIViewController()
         vc2.tabBarItem = UITabBarItem(title: "Insights", image: UIImage(systemName: "lightbulb.fill"), tag: 2)
+        vc2.view.isUserInteractionEnabled = false
 
-        tabBarController.viewControllers = [hostingController, vc1, vc2]
-        tabBarController.delegate = context.coordinator
-        tabBarController.tabBar.tintColor = UIColor(RoamTheme.accent)
+        tabBarHost.viewControllers = [vc0, vc1, vc2]
+        tabBarHost.delegate = context.coordinator
+        tabBarHost.tabBar.tintColor = UIColor(RoamTheme.accent)
 
+        // Hosting controller inserted as a persistent child — always visible
+        // regardless of which empty VC is "selected" for the tab bar highlight.
+        // Pinned edge-to-edge so content extends behind the translucent tab bar.
+        let hostingController = UIHostingController(rootView: content)
+        hostingController.view.backgroundColor = .clear
+        tabBarHost.addChild(hostingController)
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        tabBarHost.view.insertSubview(hostingController.view, belowSubview: tabBarHost.tabBar)
+        NSLayoutConstraint.activate([
+            hostingController.view.topAnchor.constraint(equalTo: tabBarHost.view.topAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: tabBarHost.view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: tabBarHost.view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: tabBarHost.view.bottomAnchor),
+        ])
+        hostingController.didMove(toParent: tabBarHost)
+
+        tabBarHost.swiftUIHostingController = hostingController
         context.coordinator.hostingController = hostingController
 
-        // Set window background for status bar and home indicator areas
+        // Window background for status bar and home indicator areas
         DispatchQueue.main.async {
-            tabBarController.view.window?.backgroundColor = Self.themeBackground
+            tabBarHost.view.window?.backgroundColor = Self.themeBackground
         }
 
-        return tabBarController
+        return tabBarHost
     }
 
-    func updateUIViewController(_ tabBarController: UITabBarController, context: Context) {
-        // Sync tab bar highlight with SwiftUI state (visual only, no VC switch)
-        let items = tabBarController.tabBar.items ?? []
-        if selection < items.count, tabBarController.tabBar.selectedItem !== items[selection] {
-            tabBarController.tabBar.selectedItem = items[selection]
+    func updateUIViewController(_ tabBarHost: TabBarHost<Content>, context: Context) {
+        // selectedIndex updates the tab bar highlight AND switches the empty VC
+        // (which is fine — our hosting view is always on top of the empty VCs)
+        if tabBarHost.selectedIndex != selection {
+            tabBarHost.selectedIndex = selection
         }
-        // Update the SwiftUI content
         context.coordinator.hostingController?.rootView = content
-        // Keep window background in sync for trait changes
-        tabBarController.view.window?.backgroundColor = Self.themeBackground
+        tabBarHost.view.window?.backgroundColor = Self.themeBackground
     }
 
     func makeCoordinator() -> Coordinator {
@@ -80,13 +93,29 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
                 withAnimation(.smooth(duration: 0.3)) {
                     selection = index
                 }
-                // Manually update the tab bar highlight
-                DispatchQueue.main.async {
-                    tabBarController.tabBar.selectedItem = tabBarController.tabBar.items?[index]
-                }
             }
-            // Return false to prevent VC switching — VC0 always stays displayed
-            return false
+            // Return true — UIKit switches the empty VC (invisible behind our
+            // hosting view) and updates the tab bar highlight naturally.
+            return true
+        }
+    }
+}
+
+/// Subclass that propagates tab bar safe area to the hosting controller
+/// so ScrollViews properly inset content above the tab bar.
+@MainActor
+final class TabBarHost<Content: View>: UITabBarController {
+    var swiftUIHostingController: UIHostingController<Content>?
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        guard let hosting = swiftUIHostingController else { return }
+        let tabBarHeight = tabBar.frame.height
+        let currentAdditional = hosting.additionalSafeAreaInsets.bottom
+        let inherited = hosting.view.safeAreaInsets.bottom - currentAdditional
+        let needed = max(0, tabBarHeight - inherited)
+        if abs(currentAdditional - needed) > 0.5 {
+            hosting.additionalSafeAreaInsets.bottom = needed
         }
     }
 }
