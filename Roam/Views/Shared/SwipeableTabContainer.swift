@@ -44,7 +44,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                     .clipped()
                     .allowsHitTesting(selection == 2)
             }
-            .geometryGroup()
+            .drawingGroup()
             .offset(x: -CGFloat(animatedSelection) * width + dragOffset)
             .highPriorityGesture(
                 DragGesture(minimumDistance: 10)
@@ -84,7 +84,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                             }
                         }
 
-                        let animation: Animation = reduceMotion ? .easeInOut(duration: 0.15) : .spring(duration: 0.3)
+                        let animation: Animation = reduceMotion ? .easeInOut(duration: 0.15) : .smooth(duration: 0.3)
                         withAnimation(animation) {
                             selection = newSelection
                             animatedSelection = newSelection
@@ -97,7 +97,7 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                         animatedSelection = newValue
                     }
                 } else {
-                    withAnimation(.spring(duration: 0.3)) {
+                    withAnimation(.smooth(duration: 0.3)) {
                         animatedSelection = newValue
                     }
                 }
