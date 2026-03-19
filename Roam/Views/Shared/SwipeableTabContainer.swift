@@ -32,14 +32,13 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
-            let contentHeight = geometry.size.height - geometry.safeAreaInsets.bottom
 
             HStack(spacing: 0) {
-                tab0.frame(width: width, height: contentHeight).clipped()
+                tab0.frame(width: width).clipped()
                     .allowsHitTesting(selection == 0)
-                tab1.frame(width: width, height: contentHeight).clipped()
+                tab1.frame(width: width).clipped()
                     .allowsHitTesting(selection == 1)
-                tab2.frame(width: width, height: contentHeight).clipped()
+                tab2.frame(width: width).clipped()
                     .allowsHitTesting(selection == 2)
             }
             .offset(x: -CGFloat(animatedSelection) * width + dragOffset)
