@@ -96,7 +96,7 @@ struct TopCitiesList: View {
                 if reduceMotion {
                     animatedRows.insert(i)
                 } else {
-                    let delay = 0.3 + Double(i) * 0.1
+                    let delay = 0.6 + Double(i) * 0.1
                     withAnimation(.easeOut(duration: 0.6).delay(delay)) {
                         _ = animatedRows.insert(i)
                     }

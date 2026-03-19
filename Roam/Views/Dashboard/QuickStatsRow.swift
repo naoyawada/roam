@@ -19,7 +19,7 @@ struct QuickStatsRow: View {
             if reduceMotion {
                 animated = true
             } else {
-                withAnimation(.easeOut(duration: 0.8).delay(0.8)) {
+                withAnimation(.easeOut(duration: 0.8).delay(1.1)) {
                     animated = true
                 }
             }
