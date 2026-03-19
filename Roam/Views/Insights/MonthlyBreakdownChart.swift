@@ -5,6 +5,9 @@ struct MonthlyBreakdownChart: View {
     let breakdown: [MonthlyBreakdown]
     let cityColors: [CityColor]
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var animatedMonths: Set<Int> = []
+
     private let monthLabels = Calendar.current.veryShortMonthSymbols
 
     private var legendEntries: [(key: String, label: String, color: Color)] {
@@ -52,10 +55,11 @@ struct MonthlyBreakdownChart: View {
 
             Chart {
                 ForEach(breakdown, id: \.month) { month in
+                    let revealed = animatedMonths.contains(month.month)
                     ForEach(Array(month.cityDays.enumerated()), id: \.offset) { _, entry in
                         BarMark(
                             x: .value("Month", monthLabels[month.month - 1]),
-                            y: .value("Days", entry.days)
+                            y: .value("Days", revealed ? entry.days : 0)
                         )
                         .foregroundStyle(colorForCity(entry.cityKey))
                     }
@@ -67,6 +71,19 @@ struct MonthlyBreakdownChart: View {
                 AxisMarks(values: .automatic) { _ in
                     AxisValueLabel()
                         .font(.caption2)
+                }
+            }
+            .onAppear {
+                guard animatedMonths.isEmpty else { return }
+                for month in breakdown {
+                    if reduceMotion {
+                        animatedMonths.insert(month.month)
+                    } else {
+                        let delay = 0.1 + Double(month.month - 1) * 0.08
+                        withAnimation(.easeOut(duration: 0.5).delay(delay)) {
+                            _ = animatedMonths.insert(month.month)
+                        }
+                    }
                 }
             }
 
