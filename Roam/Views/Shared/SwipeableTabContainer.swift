@@ -35,16 +35,18 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
 
             HStack(spacing: 0) {
                 tab0.frame(width: width)
+                    .compositingGroup()
+                    .clipped()
                     .allowsHitTesting(selection == 0)
-                    .transaction { $0.animation = nil }
                 tab1.frame(width: width)
+                    .compositingGroup()
+                    .clipped()
                     .allowsHitTesting(selection == 1)
-                    .transaction { $0.animation = nil }
                 tab2.frame(width: width)
+                    .compositingGroup()
+                    .clipped()
                     .allowsHitTesting(selection == 2)
-                    .transaction { $0.animation = nil }
             }
-            .clipped()
             .offset(x: -CGFloat(animatedSelection) * width + dragOffset)
             .highPriorityGesture(
                 DragGesture(minimumDistance: 10)
