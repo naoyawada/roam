@@ -4,14 +4,16 @@ struct CustomTabBar: View {
     @Binding var selection: Int
 
     var body: some View {
-        HStack(spacing: 0) {
-            tabButton(title: "Dashboard", icon: "chart.bar.fill", index: 0)
-            tabButton(title: "Timeline", icon: "calendar", index: 1)
-            tabButton(title: "Insights", icon: "lightbulb.fill", index: 2)
+        GlassEffectContainer {
+            HStack(spacing: 0) {
+                tabButton(title: "Dashboard", icon: "chart.bar.fill", index: 0)
+                tabButton(title: "Timeline", icon: "calendar", index: 1)
+                tabButton(title: "Insights", icon: "lightbulb.fill", index: 2)
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 20)
+            .glassEffect(.regular.interactive(), in: .capsule)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 24)
-        .glassEffect(.regular)
         .padding(.bottom, 8)
         .frame(maxWidth: .infinity)
     }
