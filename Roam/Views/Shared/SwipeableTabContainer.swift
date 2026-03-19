@@ -19,27 +19,35 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
     }
 
     var body: some View {
-        ScrollView(.horizontal) {
-            LazyHStack(spacing: 0) {
-                tab0.id(0)
-                    .containerRelativeFrame(.horizontal)
-                tab1.id(1)
-                    .containerRelativeFrame(.horizontal)
-                tab2.id(2)
-                    .containerRelativeFrame(.horizontal)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 0) {
+                    tab0.id(0)
+                        .containerRelativeFrame(.horizontal)
+                    tab1.id(1)
+                        .containerRelativeFrame(.horizontal)
+                    tab2.id(2)
+                        .containerRelativeFrame(.horizontal)
+                }
+                .scrollTargetLayout()
             }
-            .scrollTargetLayout()
-        }
-        .scrollTargetBehavior(.paging)
-        .scrollPosition(id: Binding(
-            get: { selection },
-            set: { newValue in
-                if let newValue {
-                    selection = newValue
+            .scrollTargetBehavior(.paging)
+            .scrollPosition(id: Binding(
+                get: { selection },
+                set: { newValue in
+                    if let newValue {
+                        selection = newValue
+                    }
+                }
+            ))
+            .scrollIndicators(.hidden)
+            .scrollBounceBehavior(.automatic)
+            .onChange(of: selection) { _, newValue in
+                let animation: Animation = reduceMotion ? .easeInOut(duration: 0.15) : .smooth(duration: 0.3)
+                withAnimation(animation) {
+                    proxy.scrollTo(newValue, anchor: .leading)
                 }
             }
-        ))
-        .scrollIndicators(.hidden)
-        .scrollBounceBehavior(.automatic)
+        }
     }
 }
