@@ -41,13 +41,13 @@ struct ContentView: View {
         } else {
             TabView(selection: $selectedTab) {
                 Tab("Dashboard", systemImage: "chart.bar.fill", value: 0) {
-                    Color.clear
+                    RoamTheme.background.ignoresSafeArea()
                 }
                 Tab("Timeline", systemImage: "calendar", value: 1) {
-                    Color.clear
+                    RoamTheme.background.ignoresSafeArea()
                 }
                 Tab("Insights", systemImage: "lightbulb.fill", value: 2) {
-                    Color.clear
+                    RoamTheme.background.ignoresSafeArea()
                 }
             }
             .tint(RoamTheme.accent)
