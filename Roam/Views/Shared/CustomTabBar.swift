@@ -9,10 +9,10 @@ struct CustomTabBar: View {
             tabButton(title: "Timeline", icon: "calendar", index: 1)
             tabButton(title: "Insights", icon: "lightbulb.fill", index: 2)
         }
-        .padding(.top, 10)
-        .padding(.bottom, 2)
+        .padding(.top, 12)
+        .padding(.bottom, 4)
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial)
+        .background(.bar)
     }
 
     private func tabButton(title: String, icon: String, index: Int) -> some View {

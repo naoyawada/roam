@@ -39,7 +39,7 @@ struct ContentView: View {
                 )
             )
         } else {
-            ZStack {
+            VStack(spacing: 0) {
                 SwipeableTabContainer(selection: $selectedTab, tab0: {
                     VStack(spacing: 0) {
                         HStack {
@@ -78,18 +78,7 @@ struct ContentView: View {
                     InsightsView()
                 })
 
-                TabView(selection: $selectedTab) {
-                    Tab("Dashboard", systemImage: "chart.bar.fill", value: 0) {
-                        Color.clear.allowsHitTesting(false)
-                    }
-                    Tab("Timeline", systemImage: "calendar", value: 1) {
-                        Color.clear.allowsHitTesting(false)
-                    }
-                    Tab("Insights", systemImage: "lightbulb.fill", value: 2) {
-                        Color.clear.allowsHitTesting(false)
-                    }
-                }
-                .tint(RoamTheme.accent)
+                CustomTabBar(selection: $selectedTab)
             }
             .sheet(isPresented: $showingSettings) {
                 NavigationStack {
