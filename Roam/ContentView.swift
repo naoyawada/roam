@@ -14,7 +14,7 @@ struct ContentView: View {
     @State private var unresolvedToResolve: NightLog?
 
     private var unresolvedLogs: [NightLog] {
-        allLogs.filter { $0.status == .unresolved }
+        UnresolvedFilter.actionable(allLogs, today: BackfillService.calendarTodayNoonUTC())
     }
 
     private var hasCompletedOnboarding: Bool {

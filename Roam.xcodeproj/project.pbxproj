@@ -52,6 +52,7 @@
 		BC3DF2657B8E2FFB90621459 /* DataExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67200A60234C96471025090B /* DataExportService.swift */; };
 		C27430F9DF134273B166D771 /* YearPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE09179968A6F28486086605 /* YearPicker.swift */; };
 		C95DE86E5415A367B3247F47 /* SignificantLocationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC20F392092EA72D0AAD7AC4 /* SignificantLocationServiceTests.swift */; };
+		CB3ED5D334B5C037B81D57B8 /* UnresolvedFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B645BA3A5C4B184DA801D31B /* UnresolvedFilter.swift */; };
 		CBA165938F38E9E4E20CFA92 /* BackfillServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB43CA9A1D9486ED5637742C /* BackfillServiceTests.swift */; };
 		CDDAA3EE818A11ED0D9337AC /* AllCitiesSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23864012AE9AA4481A21698F /* AllCitiesSheet.swift */; };
 		D9F49F2A3DD709A589C88C59 /* TopCitiesList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96D54A9086E7CD8A895B1455 /* TopCitiesList.swift */; };
@@ -59,6 +60,7 @@
 		E848A7CFF1E067DB73B9B33A /* DateNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911CF7149B8750ACD300CE36 /* DateNormalizationTests.swift */; };
 		EAAF522E19A47CE945C3D35C /* MonthlyBreakdownChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */; };
 		EF6A4CE9DEB6D2FAB1FB1F17 /* CaptureResultSaver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BA6369ADD7129C74EDC04D7 /* CaptureResultSaver.swift */; };
+		EFA488C0CDDB8D136ECF393D /* UnresolvedFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5F214DCE81E9A4C3C1E11D /* UnresolvedFilterTests.swift */; };
 		F064E26ED7FCC1A9353B8FE2 /* DataExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EC93ED423B3CE8910B4C61 /* DataExportView.swift */; };
 		F4787C5C6FC3DD7F1544085E /* YearDotGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409B51C0F0DD1105703B77C0 /* YearDotGridView.swift */; };
 		F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */; };
@@ -118,11 +120,13 @@
 		A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamApp.swift; sourceTree = "<group>"; };
 		AECD3C287711CA628B9824D9 /* YearSummaryBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearSummaryBar.swift; sourceTree = "<group>"; };
 		B2856C63FFED2930C5E15AF5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B645BA3A5C4B184DA801D31B /* UnresolvedFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnresolvedFilter.swift; sourceTree = "<group>"; };
 		BA84F0D90EF31DFF1AA98C14 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentCityBanner.swift; sourceTree = "<group>"; };
 		BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationCaptureService.swift; sourceTree = "<group>"; };
 		C72CE241E3B8CDD29B35059E /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
 		C8F6EF6C7B88382F6E50BD98 /* CaptureResultSaverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureResultSaverTests.swift; sourceTree = "<group>"; };
+		CB5F214DCE81E9A4C3C1E11D /* UnresolvedFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnresolvedFilterTests.swift; sourceTree = "<group>"; };
 		D1C7CE7D50D291D8F077B727 /* MonthlyBreakdownChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlyBreakdownChart.swift; sourceTree = "<group>"; };
 		DC20F392092EA72D0AAD7AC4 /* SignificantLocationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignificantLocationServiceTests.swift; sourceTree = "<group>"; };
 		DCB87FA04018026E1981F420 /* RoamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamTests.swift; sourceTree = "<group>"; };
@@ -151,6 +155,7 @@
 				88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */,
 				DCB87FA04018026E1981F420 /* RoamTests.swift */,
 				DC20F392092EA72D0AAD7AC4 /* SignificantLocationServiceTests.swift */,
+				CB5F214DCE81E9A4C3C1E11D /* UnresolvedFilterTests.swift */,
 			);
 			path = RoamTests;
 			sourceTree = "<group>";
@@ -168,6 +173,7 @@
 				7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */,
 				BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */,
 				F599F069C99AF75FDF413E61 /* SignificantLocationService.swift */,
+				B645BA3A5C4B184DA801D31B /* UnresolvedFilter.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -416,6 +422,7 @@
 				2293862100765F7BA574183A /* LocationValidationTests.swift in Sources */,
 				57C6A2A2F4154CFF796A4F06 /* RoamTests.swift in Sources */,
 				C95DE86E5415A367B3247F47 /* SignificantLocationServiceTests.swift in Sources */,
+				EFA488C0CDDB8D136ECF393D /* UnresolvedFilterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,6 +468,7 @@
 				B3B65F4760C913CB20F71ABF /* TimelineView.swift in Sources */,
 				D9F49F2A3DD709A589C88C59 /* TopCitiesList.swift in Sources */,
 				B9EEE152B2DA6466212A6164 /* UnresolvedBanner.swift in Sources */,
+				CB3ED5D334B5C037B81D57B8 /* UnresolvedFilter.swift in Sources */,
 				BB6552613AEC50EEF56580EC /* UnresolvedResolutionView.swift in Sources */,
 				5D9A8E5059726FB1889BCAF6 /* UserSettings.swift in Sources */,
 				F4787C5C6FC3DD7F1544085E /* YearDotGridView.swift in Sources */,
@@ -657,7 +665,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION_BASE = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.naoyawada.roam;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -680,7 +688,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION_BASE = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.naoyawada.roam;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
