@@ -12,6 +12,11 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
     @State private var isDragging = false
 
     private let tabCount = 3
+    private let edgeZoneWidth: CGFloat = 20
+
+    private func isInEdgeZone(startX: CGFloat, screenWidth: CGFloat) -> Bool {
+        startX <= edgeZoneWidth || startX >= screenWidth - edgeZoneWidth
+    }
 
     init(selection: Binding<Int>,
          @ViewBuilder tab0: () -> Tab0,
@@ -36,6 +41,20 @@ struct SwipeableTabContainer<Tab0: View, Tab1: View, Tab2: View>: View {
                     .allowsHitTesting(selection == 2)
             }
             .offset(x: -CGFloat(selection) * width + dragOffset)
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 10)
+                    .updating($dragOffset) { value, state, _ in
+                        guard isInEdgeZone(startX: value.startLocation.x, screenWidth: width) else {
+                            return
+                        }
+                        isDragging = true
+                        state = value.translation.width
+                    }
+                    .onEnded { value in
+                        guard isDragging else { return }
+                        isDragging = false
+                    }
+            )
         }
     }
 }
