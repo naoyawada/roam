@@ -9,33 +9,42 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
         self.content = content()
     }
 
+    private static var themeBackground: UIColor {
+        UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(red: 0.098, green: 0.094, blue: 0.086, alpha: 1)
+                : UIColor(red: 0.969, green: 0.969, blue: 0.957, alpha: 1)
+        }
+    }
+
     func makeUIViewController(context: Context) -> UITabBarController {
         let tabBarController = UITabBarController()
+        let bg = Self.themeBackground
 
         // Create 3 empty VCs with tab bar items (for the native tab bar)
         let vc0 = UIViewController()
         vc0.tabBarItem = UITabBarItem(title: "Dashboard", image: UIImage(systemName: "chart.bar.fill"), tag: 0)
-        vc0.view.backgroundColor = UIColor(RoamTheme.background)
+        vc0.view.backgroundColor = bg
         vc0.view.isUserInteractionEnabled = false
 
         let vc1 = UIViewController()
         vc1.tabBarItem = UITabBarItem(title: "Timeline", image: UIImage(systemName: "calendar"), tag: 1)
-        vc1.view.backgroundColor = UIColor(RoamTheme.background)
+        vc1.view.backgroundColor = bg
         vc1.view.isUserInteractionEnabled = false
 
         let vc2 = UIViewController()
         vc2.tabBarItem = UITabBarItem(title: "Insights", image: UIImage(systemName: "lightbulb.fill"), tag: 2)
-        vc2.view.backgroundColor = UIColor(RoamTheme.background)
+        vc2.view.backgroundColor = bg
         vc2.view.isUserInteractionEnabled = false
 
         tabBarController.viewControllers = [vc0, vc1, vc2]
         tabBarController.delegate = context.coordinator
         tabBarController.tabBar.tintColor = UIColor(RoamTheme.accent)
-        tabBarController.view.backgroundColor = UIColor(RoamTheme.background)
+        tabBarController.view.backgroundColor = bg
 
         // Host the SwiftUI paging content behind the tab bar
         let hostingController = UIHostingController(rootView: content)
-        hostingController.view.backgroundColor = .clear
+        hostingController.view.backgroundColor = bg
         tabBarController.addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         // Insert directly below the tab bar: above VC content, below tab bar
