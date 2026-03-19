@@ -38,6 +38,7 @@ final class UnresolvedFilterTests: XCTestCase {
         let logs = [
             makeLog(date: noonUTC(2026, 3, 15), status: .unresolved),  // past unresolved — include
             makeLog(date: noonUTC(2026, 3, 16), status: .confirmed),   // confirmed — exclude
+            makeLog(date: noonUTC(2026, 3, 17), status: .manual),      // manual — exclude
             makeLog(date: noonUTC(2026, 3, 19), status: .unresolved),  // today — exclude
             makeLog(date: noonUTC(2026, 3, 20), status: .unresolved),  // future — exclude
         ]
