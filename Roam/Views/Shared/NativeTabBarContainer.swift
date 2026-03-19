@@ -42,23 +42,38 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
         tabBarController.tabBar.tintColor = UIColor(RoamTheme.accent)
         tabBarController.view.backgroundColor = bg
 
-        // Host the SwiftUI paging content behind the tab bar
+        // Host the SwiftUI paging content.
+        //
+        // The hosting view is pinned from the top of the screen down to the
+        // TOP of the tab bar. This means GrainBackground's .ignoresSafeArea()
+        // can only extend upward into the status bar area (which is correct),
+        // but cannot extend downward over the tab bar (keeping it visible and
+        // tappable).
+        //
+        // The window's background color (set below) fills behind the status
+        // bar area and the home indicator area below the tab bar, eliminating
+        // any white strips.
         let hostingController = UIHostingController(rootView: content)
-        hostingController.safeAreaRegions = []
-        hostingController.view.backgroundColor = bg
+        hostingController.view.backgroundColor = .clear
         tabBarController.addChild(hostingController)
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        // Insert directly below the tab bar: above VC content, below tab bar
         tabBarController.view.insertSubview(hostingController.view, belowSubview: tabBarController.tabBar)
         NSLayoutConstraint.activate([
             hostingController.view.topAnchor.constraint(equalTo: tabBarController.view.topAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: tabBarController.view.leadingAnchor),
             hostingController.view.trailingAnchor.constraint(equalTo: tabBarController.view.trailingAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: tabBarController.view.bottomAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: tabBarController.tabBar.topAnchor, constant: 10),
         ])
         hostingController.didMove(toParent: tabBarController)
 
         context.coordinator.hostingController = hostingController
+
+        // Set the window's background color to match the theme so the areas
+        // behind the status bar and below the tab bar (home indicator region)
+        // are filled with the correct color instead of white.
+        DispatchQueue.main.async {
+            tabBarController.view.window?.backgroundColor = bg
+        }
 
         return tabBarController
     }
@@ -70,6 +85,9 @@ struct NativeTabBarContainer<Content: View>: UIViewControllerRepresentable {
         }
         // Update the SwiftUI content
         context.coordinator.hostingController?.rootView = content
+
+        // Ensure window background stays correct (e.g. after trait changes)
+        tabBarController.view.window?.backgroundColor = Self.themeBackground
     }
 
     func makeCoordinator() -> Coordinator {
