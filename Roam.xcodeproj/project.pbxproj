@@ -16,6 +16,7 @@
 		2293862100765F7BA574183A /* LocationValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */; };
 		257C9005F6C1998BAA2CA774 /* DataExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B83452B970024E3BA1C1E06 /* DataExportTests.swift */; };
 		2710B99F9426F221581461E0 /* DayDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6EF82EA5D64961C0618FD /* DayDetailSheet.swift */; };
+		283558DDA7874B63B4869437 /* NativeTabBarContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24DE514C16A949B23E949E33 /* NativeTabBarContainer.swift */; };
 		29141037D2B4F8B207C1EFE2 /* BackgroundTaskService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81D67A2307B78BB5B0130643 /* BackgroundTaskService.swift */; };
 		2F58DFD0E9141CE4608A77D9 /* YearOverYearView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E0F64E8EA98CCC7B86A87F1 /* YearOverYearView.swift */; };
 		387D97B9C9C5FADEE96010F6 /* MiniMonthGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85746F2EC5BF766F57464131 /* MiniMonthGridView.swift */; };
@@ -37,6 +38,7 @@
 		71B0F6BD5DE4A412AE2F0114 /* DateNormalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E0B1ECE2DC2A03A2062BCC1 /* DateNormalization.swift */; };
 		73C9DC7552AD43AE7FFE2DE0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2856C63FFED2930C5E15AF5 /* Assets.xcassets */; };
 		7B4E9326C95605459F6895A1 /* ColorPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213B5349FB94E1A2C401CC74 /* ColorPalette.swift */; };
+		7C7939091A49F0B7E11FD5A4 /* CustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D3E05ECCE58EF60289D0502 /* CustomTabBar.swift */; };
 		879C5CD335AA4ACA9C45DD85 /* LocationCaptureService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC8ABCCB1F8C28A401A4831A /* LocationCaptureService.swift */; };
 		89BD48C7D72221F9B4F0A7D4 /* RoamApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */; };
 		8FCAB67D06A78874B66FF314 /* DataImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 869AEC55168DE37DD3EC5624 /* DataImportService.swift */; };
@@ -89,6 +91,7 @@
 		1E7743148F503481970D52BA /* DataImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataImportServiceTests.swift; sourceTree = "<group>"; };
 		213B5349FB94E1A2C401CC74 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		23864012AE9AA4481A21698F /* AllCitiesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllCitiesSheet.swift; sourceTree = "<group>"; };
+		24DE514C16A949B23E949E33 /* NativeTabBarContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeTabBarContainer.swift; sourceTree = "<group>"; };
 		29A77B7801B9C1F699E56789 /* CityDisplayFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatterTests.swift; sourceTree = "<group>"; };
 		2B83452B970024E3BA1C1E06 /* DataExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportTests.swift; sourceTree = "<group>"; };
 		2D00E3E6D01547CE9B679052 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -108,6 +111,7 @@
 		64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnresolvedResolutionView.swift; sourceTree = "<group>"; };
 		67200A60234C96471025090B /* DataExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportService.swift; sourceTree = "<group>"; };
 		6D050F4B9DC635F3333C47DA /* Roam.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Roam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D3E05ECCE58EF60289D0502 /* CustomTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBar.swift; sourceTree = "<group>"; };
 		73B468CC1768479756B40354 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7627FC571437D796D019472E /* CityDisplayFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatter.swift; sourceTree = "<group>"; };
 		76EC93ED423B3CE8910B4C61 /* DataExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportView.swift; sourceTree = "<group>"; };
@@ -208,8 +212,10 @@
 			isa = PBXGroup;
 			children = (
 				23864012AE9AA4481A21698F /* AllCitiesSheet.swift */,
+				6D3E05ECCE58EF60289D0502 /* CustomTabBar.swift */,
 				824E0EF02F8A45DC8F52BDF6 /* FlowLayout.swift */,
 				F6D7CA43E45C39FC47382F99 /* GrainBackground.swift */,
+				24DE514C16A949B23E949E33 /* NativeTabBarContainer.swift */,
 				C7EB083CB08A7B66EC8B9C57 /* SwipeableTabContainer.swift */,
 				F9FCD0FC937244CF77D549C4 /* UnresolvedBanner.swift */,
 				64F7662D32B82233CD23108F /* UnresolvedResolutionView.swift */,
@@ -456,6 +462,7 @@
 				7B4E9326C95605459F6895A1 /* ColorPalette.swift in Sources */,
 				548F7A9523DFD7FB13D6995E /* ContentView.swift in Sources */,
 				F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */,
+				7C7939091A49F0B7E11FD5A4 /* CustomTabBar.swift in Sources */,
 				AC25A9DF61146D6642C14EB8 /* DashboardView.swift in Sources */,
 				BC3DF2657B8E2FFB90621459 /* DataExportService.swift in Sources */,
 				F064E26ED7FCC1A9353B8FE2 /* DataExportView.swift in Sources */,
@@ -473,6 +480,7 @@
 				6CDEA7FBCEB746784DCC2D76 /* LogStatus.swift in Sources */,
 				387D97B9C9C5FADEE96010F6 /* MiniMonthGridView.swift in Sources */,
 				EAAF522E19A47CE945C3D35C /* MonthlyBreakdownChart.swift in Sources */,
+				283558DDA7874B63B4869437 /* NativeTabBarContainer.swift in Sources */,
 				0DE13100F7E1CDD4A848244C /* NightLog.swift in Sources */,
 				4AB82FA66BB533444D897559 /* OnboardingView.swift in Sources */,
 				184B69BA26427783634B861B /* QuickStatsRow.swift in Sources */,
