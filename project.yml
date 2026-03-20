@@ -50,6 +50,7 @@ targets:
         GENERATE_INFOPLIST_FILE: "YES"
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Roam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Roam"
         BUNDLE_LOADER: "$(TEST_HOST)"
+        DEVELOPMENT_TEAM: VSB9363427
 
 schemes:
   Roam:

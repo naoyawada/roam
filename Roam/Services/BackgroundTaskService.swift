@@ -3,6 +3,12 @@ import CoreLocation
 import os
 import SwiftData
 
+enum CaptureOutcome: Sendable {
+    case captured
+    case skipped
+    case failed
+}
+
 enum BackgroundTaskService {
 
     static let primaryTaskID = "com.roamapp.nightCapture"
@@ -66,6 +72,45 @@ enum BackgroundTaskService {
         }
     }
 
+    /// Shared capture logic used by both BGTask and silent push handlers.
+    @MainActor
+    static func performCapture(
+        modelContainer: ModelContainer,
+        source: String
+    ) async -> CaptureOutcome {
+        logger.info("[\(source)] Capture starting")
+
+        guard SignificantLocationService.isInCaptureWindow(date: .now) else {
+            logger.warning("[\(source)] Outside capture window, skipping")
+            return .skipped
+        }
+
+        let authStatus = CLLocationManager().authorizationStatus
+        guard authStatus == .authorizedAlways else {
+            logger.error("[\(source)] Location not authorized (.authorizedAlways required, got \(String(describing: authStatus)))")
+            HeartbeatService.log(.locationFailed, payload: ["error": "not_authorized", "source": source])
+            return .failed
+        }
+
+        let service = LocationCaptureService()
+        let context = modelContainer.mainContext
+
+        guard let result = await service.captureNight() else {
+            logger.error("[\(source)] Capture returned nil")
+            HeartbeatService.log(.locationFailed, payload: ["error": "capture_nil", "source": source])
+            return .failed
+        }
+
+        CaptureResultSaver.save(result: result, context: context)
+        HeartbeatService.log(.locationCaptured, payload: [
+            "lat": result.latitude,
+            "lng": result.longitude,
+            "city": result.city,
+            "source": source,
+        ])
+        return .captured
+    }
+
     @MainActor
     private static func handleCapture(
         task: BGAppRefreshTask,
@@ -74,33 +119,10 @@ enum BackgroundTaskService {
     ) async {
         let label = isRetry ? "retry" : "primary"
         logger.info("[\(label)] Background capture starting")
+        HeartbeatService.log(.bgTaskFired, payload: ["retry": isRetry])
 
         // Schedule next primary capture regardless of outcome
         schedulePrimaryCapture()
-
-        // If the task fired outside the capture window (iOS delayed it past 6 AM),
-        // skip capture to avoid creating entries for the wrong date.
-        guard SignificantLocationService.isInCaptureWindow(date: .now) else {
-            logger.warning("[\(label)] Outside capture window, skipping")
-            task.setTaskCompleted(success: false)
-            return
-        }
-
-        // Check location authorization before attempting capture
-        let authStatus = CLLocationManager().authorizationStatus
-        guard authStatus == .authorizedAlways else {
-            logger.error("[\(label)] Location not authorized (.authorizedAlways required, got \(String(describing: authStatus)))")
-            if isRetry {
-                saveUnresolvedEntry(context: modelContainer.mainContext)
-            } else {
-                scheduleRetryCapture()
-            }
-            task.setTaskCompleted(success: false)
-            return
-        }
-
-        let service = LocationCaptureService()
-        let context = modelContainer.mainContext
 
         task.expirationHandler = {
             logger.warning("[\(label)] Task expired before capture completed")
@@ -109,19 +131,21 @@ enum BackgroundTaskService {
             }
         }
 
-        guard let result = await service.captureNight() else {
-            logger.error("[\(label)] Capture returned nil")
+        let outcome = await performCapture(modelContainer: modelContainer, source: label)
+
+        switch outcome {
+        case .captured:
+            task.setTaskCompleted(success: true)
+        case .skipped:
+            task.setTaskCompleted(success: false)
+        case .failed:
             if isRetry {
-                saveUnresolvedEntry(context: context)
+                saveUnresolvedEntry(context: modelContainer.mainContext)
             } else {
                 scheduleRetryCapture()
             }
-            task.setTaskCompleted(success: true)
-            return
+            task.setTaskCompleted(success: false)
         }
-
-        CaptureResultSaver.save(result: result, context: context)
-        task.setTaskCompleted(success: true)
     }
 
     @MainActor

@@ -119,6 +119,33 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+
+                #if DEBUG
+                Section("Debug") {
+                    LabeledContent("Device ID") {
+                        Text(DeviceTokenService.deviceID)
+                            .font(.caption2)
+                            .monospaced()
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    LabeledContent("APNs Token") {
+                        Text(DeviceTokenService.currentToken ?? "Not registered")
+                            .font(.caption2)
+                            .monospaced()
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    Button("Send Test Push") {
+                        Task {
+                            try? await SupabaseClient.insert(
+                                table: "rpc/test-push",
+                                body: ["device_id": DeviceTokenService.deviceID]
+                            )
+                        }
+                    }
+                }
+                #endif
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $showingCitySearch) {
