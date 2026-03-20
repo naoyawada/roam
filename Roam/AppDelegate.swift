@@ -39,7 +39,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
         didReceiveRemoteNotification userInfo: [AnyHashable: Any],
         fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
     ) {
-        Self.logger.info("Silent push received")
+        let isTest = (userInfo["test"] as? Int) == 1
+        Self.logger.info("Silent push received (test=\(isTest))")
 
         Task { @MainActor in
             HeartbeatService.log(.pushReceived)
@@ -52,7 +53,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
 
             let outcome = await BackgroundTaskService.performCapture(
                 modelContainer: container,
-                source: "push"
+                source: isTest ? "test-push" : "push",
+                forceCaptureWindow: isTest
             )
 
             switch outcome {

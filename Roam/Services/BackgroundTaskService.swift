@@ -76,11 +76,12 @@ enum BackgroundTaskService {
     @MainActor
     static func performCapture(
         modelContainer: ModelContainer,
-        source: String
+        source: String,
+        forceCaptureWindow: Bool = false
     ) async -> CaptureOutcome {
         logger.info("[\(source)] Capture starting")
 
-        guard SignificantLocationService.isInCaptureWindow(date: .now) else {
+        guard forceCaptureWindow || SignificantLocationService.isInCaptureWindow(date: .now) else {
             logger.warning("[\(source)] Outside capture window, skipping")
             return .skipped
         }
@@ -103,8 +104,6 @@ enum BackgroundTaskService {
 
         CaptureResultSaver.save(result: result, context: context)
         HeartbeatService.log(.locationCaptured, payload: [
-            "lat": result.latitude,
-            "lng": result.longitude,
             "city": result.city,
             "source": source,
         ])
