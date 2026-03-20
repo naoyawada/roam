@@ -54,7 +54,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
             let outcome = await BackgroundTaskService.performCapture(
                 modelContainer: container,
                 source: isTest ? "test-push" : "push",
-                forceCaptureWindow: isTest
+                forceCaptureWindow: true
             )
 
             switch outcome {
