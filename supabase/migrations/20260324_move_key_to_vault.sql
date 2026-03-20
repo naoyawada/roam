@@ -1,0 +1,3 @@
+-- Service role key stored via vault.create_secret (applied manually).
+-- This migration is a no-op placeholder to keep the migration history consistent.
+-- The actual secret was inserted directly and must never be committed to source control.
