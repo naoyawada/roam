@@ -55,6 +55,7 @@ struct SettingsView: View {
                                 settings.primaryCheckHour = comps.hour ?? 2
                                 settings.primaryCheckMinute = comps.minute ?? 0
                                 BackgroundTaskService.schedulePrimaryCapture(hour: settings.primaryCheckHour, minute: settings.primaryCheckMinute)
+                                syncScheduleToSupabase()
                             }
                         ),
                         displayedComponents: .hourAndMinute
@@ -69,6 +70,7 @@ struct SettingsView: View {
                                 settings.retryCheckHour = comps.hour ?? 5
                                 settings.retryCheckMinute = comps.minute ?? 0
                                 BackgroundTaskService.scheduleRetryCapture(hour: settings.retryCheckHour, minute: settings.retryCheckMinute)
+                                syncScheduleToSupabase()
                             }
                         ),
                         displayedComponents: .hourAndMinute
@@ -196,5 +198,14 @@ struct SettingsView: View {
 
     private func timeFromComponents(hour: Int, minute: Int) -> Date {
         Calendar.current.date(from: DateComponents(hour: hour, minute: minute)) ?? .now
+    }
+
+    private func syncScheduleToSupabase() {
+        DeviceTokenService.syncSchedule(
+            primaryHour: settings.primaryCheckHour,
+            primaryMinute: settings.primaryCheckMinute,
+            retryHour: settings.retryCheckHour,
+            retryMinute: settings.retryCheckMinute
+        )
     }
 }

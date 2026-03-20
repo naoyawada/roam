@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import Security
 import os
 
 enum DeviceTokenService {
@@ -7,21 +8,31 @@ enum DeviceTokenService {
     private static let logger = Logger(subsystem: "com.naoyawada.roam", category: "DeviceToken")
 
     private static let tokenKey = "apns_device_token"
-    private static let deviceIDKey = "roam_device_id"
+    private static let keychainService = "com.naoyawada.roam"
+    private static let keychainDeviceIDKey = "device_id"
+    // Legacy UserDefaults key — used for migration
+    private static let legacyDeviceIDKey = "roam_device_id"
 
     /// The current APNs token hex string, or nil if not yet registered.
     static var currentToken: String? {
         UserDefaults.standard.string(forKey: tokenKey)
     }
 
-    /// Stable device identifier. Reads from UserDefaults; falls back to a stored UUID.
-    /// Call `ensureDeviceID()` from MainActor at launch to seed with identifierForVendor.
+    /// Stable device identifier stored in Keychain (persists across reinstalls).
     static var deviceID: String {
-        if let stored = UserDefaults.standard.string(forKey: deviceIDKey) {
+        // Try Keychain first
+        if let stored = readKeychain(key: keychainDeviceIDKey) {
             return stored
         }
+        // Migrate from UserDefaults if present
+        if let legacy = UserDefaults.standard.string(forKey: legacyDeviceIDKey) {
+            writeKeychain(key: keychainDeviceIDKey, value: legacy)
+            UserDefaults.standard.removeObject(forKey: legacyDeviceIDKey)
+            return legacy
+        }
+        // Generate new
         let id = UUID().uuidString
-        UserDefaults.standard.set(id, forKey: deviceIDKey)
+        writeKeychain(key: keychainDeviceIDKey, value: id)
         return id
     }
 
@@ -29,14 +40,20 @@ enum DeviceTokenService {
     /// Must be called from MainActor (UIDevice.current is MainActor-isolated).
     @MainActor
     static func ensureDeviceID() {
-        guard UserDefaults.standard.string(forKey: deviceIDKey) == nil else { return }
+        guard readKeychain(key: keychainDeviceIDKey) == nil else { return }
+        // Migrate from UserDefaults if present
+        if let legacy = UserDefaults.standard.string(forKey: legacyDeviceIDKey) {
+            writeKeychain(key: keychainDeviceIDKey, value: legacy)
+            UserDefaults.standard.removeObject(forKey: legacyDeviceIDKey)
+            return
+        }
         let id = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
-        UserDefaults.standard.set(id, forKey: deviceIDKey)
+        writeKeychain(key: keychainDeviceIDKey, value: id)
     }
 
     /// Called from AppDelegate when APNs registration succeeds.
     /// Converts the token to hex and upserts to Supabase.
-    static func didRegister(tokenData: Data) {
+    static func didRegister(tokenData: Data, primaryHour: Int = 2, primaryMinute: Int = 0, retryHour: Int = 5, retryMinute: Int = 0) {
         let hex = tokenData.map { String(format: "%02x", $0) }.joined()
         UserDefaults.standard.set(hex, forKey: tokenKey)
         logger.info("APNs token stored: \(hex.prefix(8))...")
@@ -48,10 +65,74 @@ enum DeviceTokenService {
                     "device_id": deviceID,
                     "token": hex,
                     "timezone": TimeZone.current.identifier,
+                    "primary_hour": primaryHour,
+                    "primary_minute": primaryMinute,
+                    "retry_hour": retryHour,
+                    "retry_minute": retryMinute,
                 ],
                 onConflict: "device_id"
             )
             logger.info("Device token upserted to Supabase")
         }
+    }
+
+    /// Sync updated capture schedule to Supabase.
+    static func syncSchedule(primaryHour: Int, primaryMinute: Int, retryHour: Int, retryMinute: Int) {
+        guard let token = currentToken else {
+            logger.warning("syncSchedule: no APNs token yet, skipping")
+            return
+        }
+        logger.info("syncSchedule: \(primaryHour):\(primaryMinute) / \(retryHour):\(retryMinute)")
+        Task.detached(priority: .utility) {
+            do {
+                try await SupabaseClient.insert(
+                    table: "device_tokens",
+                    body: [
+                        "device_id": deviceID,
+                        "token": token,
+                        "timezone": TimeZone.current.identifier,
+                        "primary_hour": primaryHour,
+                        "primary_minute": primaryMinute,
+                        "retry_hour": retryHour,
+                        "retry_minute": retryMinute,
+                    ],
+                    onConflict: "device_id"
+                )
+                logger.info("Schedule synced to Supabase")
+            } catch {
+                logger.error("syncSchedule failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // MARK: - Keychain helpers
+
+    private static func readKeychain(key: String) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess, let data = result as? Data else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    private static func writeKeychain(key: String, value: String) {
+        let data = Data(value.utf8)
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: key,
+        ]
+        // Delete existing, then add
+        SecItemDelete(query as CFDictionary)
+        var addQuery = query
+        addQuery[kSecValueData as String] = data
+        addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+        SecItemAdd(addQuery as CFDictionary, nil)
     }
 }
