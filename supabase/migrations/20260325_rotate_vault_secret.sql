@@ -1,0 +1,2 @@
+-- Rotated service role key in vault (applied manually).
+-- The actual secret must never be committed to source control.
