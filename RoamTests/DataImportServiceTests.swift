@@ -294,6 +294,145 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.malformed, 1)
     }
 
+    // MARK: - Import Upsert (Bug 1)
+
+    func testImportUpdatesExistingUnresolvedEntry() {
+        // Pre-insert an unresolved entry for Jan 15
+        let existing = NightLog(
+            date: noonUTC(2026, 1, 15),
+            capturedAt: noonUTC(2026, 1, 15),
+            source: .automatic,
+            status: .unresolved
+        )
+        context.insert(existing)
+        try! context.save()
+        let originalID = existing.id
+
+        let json = """
+[{"date": "2026-01-15T12:00:00Z", "city": "Austin", "state": "TX", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"}]
+"""
+
+        let result = DataImportService.importFile(content: json, format: .json, into: context)
+
+        XCTAssertEqual(result.imported, 0)
+        XCTAssertEqual(result.updated, 1)
+        XCTAssertEqual(result.skipped, 0)
+        XCTAssertEqual(result.malformed, 0)
+
+        let logs = try! context.fetch(FetchDescriptor<NightLog>())
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertEqual(logs[0].city, "Austin")
+        XCTAssertEqual(logs[0].state, "TX")
+        XCTAssertEqual(logs[0].country, "US")
+        XCTAssertEqual(logs[0].status, .confirmed)
+        XCTAssertEqual(logs[0].source, .manual)
+        XCTAssertEqual(logs[0].id, originalID) // UUID preserved
+    }
+
+    func testImportDoesNotOverwriteConfirmedEntry() {
+        // Pre-insert a confirmed entry for Jan 15
+        let existing = NightLog(
+            date: noonUTC(2026, 1, 15),
+            city: "Austin",
+            state: "TX",
+            country: "US",
+            capturedAt: noonUTC(2026, 1, 15),
+            source: .automatic,
+            status: .confirmed
+        )
+        context.insert(existing)
+        try! context.save()
+
+        let json = """
+[{"date": "2026-01-15T12:00:00Z", "city": "NYC", "state": "NY", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"}]
+"""
+
+        let result = DataImportService.importFile(content: json, format: .json, into: context)
+
+        XCTAssertEqual(result.imported, 0)
+        XCTAssertEqual(result.updated, 0)
+        XCTAssertEqual(result.skipped, 1)
+        XCTAssertEqual(result.malformed, 0)
+
+        let logs = try! context.fetch(FetchDescriptor<NightLog>())
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertEqual(logs[0].city, "Austin") // original preserved
+    }
+
+    func testImportSkipsUnresolvedWhenIncomingHasNoCity() {
+        // Pre-insert an unresolved entry
+        let existing = NightLog(
+            date: noonUTC(2026, 1, 15),
+            capturedAt: noonUTC(2026, 1, 15),
+            source: .automatic,
+            status: .unresolved
+        )
+        context.insert(existing)
+        try! context.save()
+
+        let json = """
+[{"date": "2026-01-15T12:00:00Z", "source": "automatic", "status": "unresolved", "captured_at": "2026-01-15T02:00:00Z"}]
+"""
+
+        let result = DataImportService.importFile(content: json, format: .json, into: context)
+
+        XCTAssertEqual(result.imported, 0)
+        XCTAssertEqual(result.updated, 0)
+        XCTAssertEqual(result.skipped, 1)
+        XCTAssertEqual(result.malformed, 0)
+
+        let logs = try! context.fetch(FetchDescriptor<NightLog>())
+        XCTAssertEqual(logs[0].status, .unresolved) // unchanged
+    }
+
+    // MARK: - Within-File Dedup (Bug 2)
+
+    func testImportDedupesWithinFile() {
+        let json = """
+[
+    {"date": "2026-01-15T12:00:00Z", "city": "Austin", "state": "TX", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"},
+    {"date": "2026-01-15T12:00:00Z", "city": "NYC", "state": "NY", "country": "US", "source": "manual", "status": "manual", "captured_at": "2026-01-15T12:00:00Z"}
+]
+"""
+
+        let result = DataImportService.importFile(content: json, format: .json, into: context)
+
+        XCTAssertEqual(result.imported, 1)
+        XCTAssertEqual(result.skipped, 1)
+        XCTAssertEqual(result.malformed, 0)
+
+        let logs = try! context.fetch(FetchDescriptor<NightLog>())
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertEqual(logs[0].city, "Austin") // first entry wins
+    }
+
+    func testImportNormalizesNonNoonDates() {
+        // Import a date that is already noon UTC — should match an existing entry at noon UTC
+        let existing = NightLog(
+            date: noonUTC(2026, 1, 15),
+            capturedAt: noonUTC(2026, 1, 15),
+            source: .automatic,
+            status: .unresolved
+        )
+        context.insert(existing)
+        try! context.save()
+
+        // The date in the JSON is noon UTC, matching the existing entry
+        let json = """
+[{"date": "2026-01-15T12:00:00Z", "city": "Austin", "state": "TX", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"}]
+"""
+
+        let result = DataImportService.importFile(content: json, format: .json, into: context)
+
+        XCTAssertEqual(result.updated, 1)
+        XCTAssertEqual(result.imported, 0)
+        XCTAssertEqual(result.malformed, 0)
+
+        let logs = try! context.fetch(FetchDescriptor<NightLog>())
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertEqual(logs[0].city, "Austin")
+    }
+
     // MARK: - Helpers
 
     private func noonUTC(_ year: Int, _ month: Int, _ day: Int) -> Date {
