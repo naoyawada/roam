@@ -10,6 +10,7 @@ enum DataImportService {
 
     struct ImportResult {
         let imported: Int
+        let updated: Int
         let skipped: Int
         let malformed: Int
     }
@@ -66,7 +67,7 @@ enum DataImportService {
         }
 
         try? context.save()
-        return ImportResult(imported: imported, skipped: skipped, malformed: malformed)
+        return ImportResult(imported: imported, updated: 0, skipped: skipped, malformed: malformed)
     }
 
     // MARK: - CSV Parsing
