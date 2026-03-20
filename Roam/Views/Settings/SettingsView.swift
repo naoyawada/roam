@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var selectedCountry: String?
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled: Bool = true
     @State private var showSyncRestartAlert = false
+    @State private var debugCaptureResult: String?
 
     private var settings: UserSettings {
         if let existing = settingsArray.first {
@@ -145,6 +146,26 @@ struct SettingsView: View {
                                 body: ["device_id": DeviceTokenService.deviceID]
                             )
                         }
+                    }
+                    Button("Trigger Capture Now") {
+                        Task {
+                            guard let container = AppDelegate.modelContainer else { return }
+                            let outcome = await BackgroundTaskService.performCapture(
+                                modelContainer: container,
+                                source: "debug",
+                                forceCaptureWindow: true
+                            )
+                            debugCaptureResult = switch outcome {
+                            case .captured: "Captured!"
+                            case .skipped: "Skipped"
+                            case .failed: "Failed"
+                            }
+                        }
+                    }
+                    if let result = debugCaptureResult {
+                        Text(result)
+                            .font(.caption)
+                            .foregroundStyle(result == "Captured!" ? .green : .red)
                     }
                     Button("Delete Today's Entry", role: .destructive) {
                         let nightDate = DateNormalization.normalizedNightDate(from: .now)
