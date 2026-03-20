@@ -139,14 +139,6 @@ struct SettingsView: View {
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }
-                    Button("Send Test Push") {
-                        Task {
-                            try? await SupabaseClient.insert(
-                                table: "rpc/test-push",
-                                body: ["device_id": DeviceTokenService.deviceID]
-                            )
-                        }
-                    }
                     Button("Trigger Capture Now") {
                         Task {
                             guard let container = AppDelegate.modelContainer else { return }
