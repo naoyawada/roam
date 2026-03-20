@@ -61,7 +61,7 @@ enum DeduplicationService {
         }
     }
 
-    private static func statusPriority(_ status: LogStatus) -> Int {
+    static func statusPriority(_ status: LogStatus) -> Int {
         switch status {
         case .confirmed: return 0
         case .manual: return 1

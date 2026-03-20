@@ -47,4 +47,24 @@ enum DataExportService {
     private static func csvEscape(_ value: String) -> String {
         value.replacingOccurrences(of: "\"", with: "\"\"")
     }
+
+    static func deduplicatedLogs(_ logs: [NightLog]) -> [NightLog] {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+
+        let grouped = Dictionary(grouping: logs) {
+            cal.dateComponents([.year, .month, .day], from: $0.date)
+        }
+
+        return grouped.values.map { group in
+            group.sorted { a, b in
+                let aPriority = DeduplicationService.statusPriority(a.status)
+                let bPriority = DeduplicationService.statusPriority(b.status)
+                if aPriority != bPriority {
+                    return aPriority < bPriority
+                }
+                return a.capturedAt > b.capturedAt
+            }.first!
+        }.sorted { $0.date < $1.date }
+    }
 }

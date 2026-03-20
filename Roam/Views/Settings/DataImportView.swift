@@ -75,7 +75,11 @@ struct DataImportView: View {
     }
 
     private func importSummary(_ result: DataImportService.ImportResult) -> String {
-        var parts = ["\(result.imported) entries imported", "\(result.skipped) skipped (duplicates)"]
+        var parts = ["\(result.imported) entries imported"]
+        if result.updated > 0 {
+            parts.append("\(result.updated) updated")
+        }
+        parts.append("\(result.skipped) skipped (duplicates)")
         if result.malformed > 0 {
             parts.append("\(result.malformed) malformed rows")
         }

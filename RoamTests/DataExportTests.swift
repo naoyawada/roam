@@ -171,6 +171,72 @@ final class DataExportTests: XCTestCase {
         XCTAssertTrue(capturedAtRange.lowerBound < cityRange.lowerBound)
     }
 
+    // MARK: - Export Dedup
+
+    func testDeduplicatedLogsKeepsBestPerDate() {
+        let date = noonUTC(2026, 1, 15)
+        let confirmed = NightLog(
+            date: date,
+            city: "Austin",
+            state: "TX",
+            country: "US",
+            capturedAt: date,
+            source: .automatic,
+            status: .confirmed
+        )
+        let unresolved = NightLog(
+            date: date,
+            capturedAt: date,
+            source: .automatic,
+            status: .unresolved
+        )
+
+        let result = DataExportService.deduplicatedLogs([unresolved, confirmed])
+
+        XCTAssertEqual(result.count, 1)
+        XCTAssertEqual(result[0].city, "Austin")
+        XCTAssertEqual(result[0].status, .confirmed)
+    }
+
+    func testDeduplicatedLogsPreservesUniqueEntries() {
+        let log1 = NightLog(
+            date: noonUTC(2026, 1, 15),
+            city: "Austin",
+            capturedAt: noonUTC(2026, 1, 15),
+            source: .automatic,
+            status: .confirmed
+        )
+        let log2 = NightLog(
+            date: noonUTC(2026, 1, 16),
+            city: "NYC",
+            capturedAt: noonUTC(2026, 1, 16),
+            source: .automatic,
+            status: .confirmed
+        )
+
+        let result = DataExportService.deduplicatedLogs([log1, log2])
+
+        XCTAssertEqual(result.count, 2)
+    }
+
+    func testDeduplicatedLogsSortsByDate() {
+        let log1 = NightLog(
+            date: noonUTC(2026, 1, 16),
+            city: "NYC",
+            capturedAt: noonUTC(2026, 1, 16)
+        )
+        let log2 = NightLog(
+            date: noonUTC(2026, 1, 15),
+            city: "Austin",
+            capturedAt: noonUTC(2026, 1, 15)
+        )
+
+        let result = DataExportService.deduplicatedLogs([log1, log2])
+
+        XCTAssertEqual(result[0].city, "Austin")
+        XCTAssertEqual(result[1].city, "NYC")
+    }
+
     // MARK: - Helpers
 
     private func noonUTC(_ year: Int, _ month: Int, _ day: Int) -> Date {

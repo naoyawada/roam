@@ -24,10 +24,15 @@ struct DataExportView: View {
     }
 
     private var filteredLogs: [NightLog] {
-        guard let year = filterYear else { return Array(allLogs) }
-        var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "UTC")!
-        return allLogs.filter { cal.component(.year, from: $0.date) == year }
+        let logs: [NightLog]
+        if let year = filterYear {
+            var cal = Calendar(identifier: .gregorian)
+            cal.timeZone = TimeZone(identifier: "UTC")!
+            logs = allLogs.filter { cal.component(.year, from: $0.date) == year }
+        } else {
+            logs = Array(allLogs)
+        }
+        return DataExportService.deduplicatedLogs(logs)
     }
 
     private var availableYears: [Int] {
