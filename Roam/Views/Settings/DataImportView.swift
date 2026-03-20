@@ -62,6 +62,9 @@ struct DataImportView: View {
                 let format: DataImportService.ImportFormat =
                     url.pathExtension.lowercased() == "json" ? .json : .csv
                 importResult = DataImportService.importFile(content: content, format: format, into: context)
+                DeduplicationService.deduplicateNightLogs(context: context)
+                DeduplicationService.deduplicateCityColors(context: context)
+                CityColorService.assignMissingColors(context: context)
                 showingResult = true
             } catch {
                 importError = error.localizedDescription
