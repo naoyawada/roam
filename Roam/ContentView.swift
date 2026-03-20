@@ -65,7 +65,7 @@ struct ContentView: View {
                 BackfillService.backfillMissedNights(context: context)
                 DeduplicationService.deduplicateNightLogs(context: context)
                 DeduplicationService.deduplicateCityColors(context: context)
-                assignMissingColors()
+                CityColorService.assignMissingColors(context: context)
             }
             .onAppear {
                 setWindowBackground()
@@ -117,26 +117,4 @@ struct ContentView: View {
         Self.logger.info("Foreground capture succeeded: \(result.city)")
     }
 
-    private func assignMissingColors() {
-        let existingColors = (try? context.fetch(FetchDescriptor<CityColor>())) ?? []
-        let existingKeys = Set(existingColors.map(\.cityKey))
-        let maxIndex = existingColors.map(\.colorIndex).max() ?? -1
-
-        var nextIndex = maxIndex + 1
-        var cityKeys = Set<String>()
-
-        for log in allLogs where log.city != nil {
-            let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
-            if !existingKeys.contains(key) && !cityKeys.contains(key) {
-                cityKeys.insert(key)
-                let cityColor = CityColor(cityKey: key, colorIndex: nextIndex)
-                context.insert(cityColor)
-                nextIndex += 1
-            }
-        }
-
-        if !cityKeys.isEmpty {
-            try? context.save()
-        }
-    }
 }
