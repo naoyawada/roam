@@ -119,6 +119,42 @@ struct SettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+
+                #if DEBUG
+                Section("Debug") {
+                    LabeledContent("Device ID") {
+                        Text(DeviceTokenService.deviceID)
+                            .font(.caption2)
+                            .monospaced()
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    LabeledContent("APNs Token") {
+                        Text(DeviceTokenService.currentToken ?? "Not registered")
+                            .font(.caption2)
+                            .monospaced()
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    Button("Send Test Push") {
+                        Task {
+                            try? await SupabaseClient.insert(
+                                table: "rpc/test-push",
+                                body: ["device_id": DeviceTokenService.deviceID]
+                            )
+                        }
+                    }
+                    Button("Delete Today's Entry", role: .destructive) {
+                        let nightDate = DateNormalization.normalizedNightDate(from: .now)
+                        if let entry = try? context.fetch(
+                            FetchDescriptor<NightLog>(predicate: #Predicate { $0.date == nightDate })
+                        ).first {
+                            context.delete(entry)
+                            try? context.save()
+                        }
+                    }
+                }
+                #endif
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $showingCitySearch) {

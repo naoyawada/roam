@@ -3,6 +3,7 @@ import SwiftData
 
 @main
 struct RoamApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) private var scenePhase
     let modelContainer: ModelContainer
     let significantLocationService: SignificantLocationService
@@ -34,12 +35,14 @@ struct RoamApp: App {
             fatalError("Failed to create ModelContainer: \(error)")
         }
 
+        // Make container available to AppDelegate for push-triggered captures
+        AppDelegate.modelContainer = modelContainer
+
         significantLocationService = SignificantLocationService(modelContainer: modelContainer)
 
         BackgroundTaskService.register(modelContainer: modelContainer)
         BackgroundTaskService.schedulePrimaryCapture()
         significantLocationService.startMonitoring()
-
     }
 
     var body: some Scene {
@@ -52,6 +55,7 @@ struct RoamApp: App {
                 // Reschedule on every foreground return — ensures the task
                 // survives force-quits, reboots, and iOS pruning the schedule.
                 BackgroundTaskService.schedulePrimaryCapture()
+                HeartbeatService.log(.appForegrounded)
             }
         }
     }
