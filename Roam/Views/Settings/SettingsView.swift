@@ -144,6 +144,15 @@ struct SettingsView: View {
                             )
                         }
                     }
+                    Button("Delete Today's Entry", role: .destructive) {
+                        let nightDate = DateNormalization.normalizedNightDate(from: .now)
+                        if let entry = try? context.fetch(
+                            FetchDescriptor<NightLog>(predicate: #Predicate { $0.date == nightDate })
+                        ).first {
+                            context.delete(entry)
+                            try? context.save()
+                        }
+                    }
                 }
                 #endif
             }
