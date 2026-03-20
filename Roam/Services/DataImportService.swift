@@ -37,16 +37,43 @@ enum DataImportService {
         let existingLogs = (try? context.fetch(FetchDescriptor<NightLog>())) ?? []
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        let existingDates = Set(existingLogs.map { cal.dateComponents([.year, .month, .day], from: $0.date) })
+        var existingEntries: [DateComponents: NightLog] = [:]
+        for log in existingLogs {
+            let comps = cal.dateComponents([.year, .month, .day], from: log.date)
+            // If multiple exist for same date, keep the best one for our lookup
+            if let current = existingEntries[comps] {
+                if DeduplicationService.statusPriority(log.status) < DeduplicationService.statusPriority(current.status) {
+                    existingEntries[comps] = log
+                }
+            } else {
+                existingEntries[comps] = log
+            }
+        }
 
         var imported = 0
+        var updated = 0
         var skipped = 0
 
         for entry in entries {
             let normalizedDate = DateNormalization.normalizedNightDate(from: entry.date)
             let dateComps = cal.dateComponents([.year, .month, .day], from: normalizedDate)
-            if existingDates.contains(dateComps) {
-                skipped += 1
+
+            if let existing = existingEntries[dateComps] {
+                // Date already seen — check if we should update
+                if existing.status == .unresolved && entry.city != nil {
+                    existing.city = entry.city
+                    existing.state = entry.state
+                    existing.country = entry.country
+                    existing.latitude = entry.latitude
+                    existing.longitude = entry.longitude
+                    existing.horizontalAccuracy = entry.horizontalAccuracy
+                    existing.capturedAt = entry.capturedAt ?? .now
+                    existing.source = .manual
+                    existing.status = .confirmed
+                    updated += 1
+                } else {
+                    skipped += 1
+                }
                 continue
             }
 
@@ -63,11 +90,12 @@ enum DataImportService {
                 status: .confirmed
             )
             context.insert(log)
+            existingEntries[dateComps] = log
             imported += 1
         }
 
         try? context.save()
-        return ImportResult(imported: imported, updated: 0, skipped: skipped, malformed: malformed)
+        return ImportResult(imported: imported, updated: updated, skipped: skipped, malformed: malformed)
     }
 
     // MARK: - CSV Parsing
