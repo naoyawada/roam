@@ -13,7 +13,7 @@ After a fresh install with iCloud sync enabled, importing a previously exported 
 
 ## Approach: Upsert on Import + Mutable Dedup + Export Dedup
 
-Single-pass upsert with a mutable tracking dictionary. Export deduplicates at the call site.
+Single-pass upsert with a mutable tracking dictionary. Export deduplicates via a shared utility. Priority logic reuses `DeduplicationService.statusPriority` to avoid divergent "best entry" rules.
 
 ## Changes
 
@@ -28,8 +28,8 @@ The import loop becomes a 3-way branch:
 | Condition | Action | Count |
 |-----------|--------|-------|
 | Date not seen yet | Insert new NightLog (`.manual` / `.confirmed`), add to `existingEntries` | `imported` |
-| Date exists, existing is unresolved, incoming has city data | Update existing NightLog fields in place (city, state, country, lat/lon, accuracy, status → `.confirmed`, source → `.manual`) | `updated` |
-| Date exists, existing is confirmed (or incoming has no city data) | Skip | `skipped` |
+| Date exists, existing is unresolved, incoming has city data (`city != nil`) | Update existing NightLog in place (city, state, country, lat/lon, accuracy, status → `.confirmed`, source → `.manual`, capturedAt → imported value or `.now`) | `updated` |
+| Date exists, existing is confirmed or manual (or incoming has no city) | Skip | `skipped` |
 
 `ImportResult` gains a new field:
 
@@ -42,21 +42,29 @@ struct ImportResult {
 }
 ```
 
-Within-file dedup is solved automatically — after inserting or updating, the date is in `existingEntries`, so the second occurrence for the same date is skipped.
+Within-file dedup is solved automatically — after inserting or updating, the date is in `existingEntries`, so the second occurrence for the same date is skipped. First entry wins for within-file duplicates.
+
+**Implementation note:** NightLog is a reference type (`@Model class`). On the update path, the existing object is mutated in place, so the dictionary reference remains valid. The `id` (UUID) of the original entry is preserved, which is important for CloudKit record identity.
 
 ### 2. Export Dedup (Bug 3)
 
-**File:** `Roam/Views/Settings/DataExportView.swift`
+**File:** `Roam/Services/DataExportService.swift`
 
-Add a dedup step in the `filteredLogs` computed property:
+Add a static `deduplicatedLogs(_:)` method to `DataExportService`:
 
 - Group logs by normalized date (year/month/day components in UTC)
-- For each group, pick the "best" entry: confirmed-with-city > manual-with-city > unresolved
-- Sort deduplicated results by date
+- For each group, pick the "best" entry using `DeduplicationService.statusPriority` (confirmed > manual > unresolved), with `capturedAt` as tiebreaker — the same rule used by `DeduplicationService.deduplicateNightLogs`
+- Return sorted by date
 
-`DataExportService` stays unchanged — it's a pure serializer. Dedup responsibility lives in the view that selects which logs to export.
+**File:** `Roam/Views/Settings/DataExportView.swift`
+
+Update `filteredLogs` to call `DataExportService.deduplicatedLogs(logs)` after year-filtering. The dedup logic lives in the service layer for testability; the view just calls it.
 
 The "Export N entries" button label will automatically show the correct deduplicated count.
+
+**File:** `Roam/Services/DeduplicationService.swift`
+
+Make `statusPriority` internal (remove `private`) so it can be reused by `DataExportService`.
 
 ### 3. UI Summary Update
 
@@ -74,8 +82,10 @@ Update `importSummary()` to include the `updated` count:
 
 - Import with existing unresolved entry → entry is updated to confirmed with city data, counted as `updated`
 - Import with existing confirmed entry → entry is not overwritten, counted as `skipped`
-- Import file with two rows for same date → exactly one entry in DB
+- Import file with two rows for same date → exactly one entry in DB (first entry wins)
+- Import file with two rows for same date with different cities → first city is kept
 - Import where incoming has no city data and existing is unresolved → skip
+- Update path preserves the original entry's `id` (UUID)
 
 **New tests in `RoamTests/DataExportTests.swift`:**
 
@@ -88,7 +98,9 @@ No changes to existing tests — behavior for fresh imports with no duplicates i
 
 ### In scope
 - `Roam/Services/DataImportService.swift` — upsert logic and mutable date tracking
-- `Roam/Views/Settings/DataExportView.swift` — dedup in `filteredLogs`
+- `Roam/Services/DataExportService.swift` — add `deduplicatedLogs()` static method
+- `Roam/Services/DeduplicationService.swift` — make `statusPriority` internal
+- `Roam/Views/Settings/DataExportView.swift` — call dedup in `filteredLogs`
 - `Roam/Views/Settings/DataImportView.swift` — summary string update
 - `RoamTests/` — new test cases
 
@@ -96,6 +108,7 @@ No changes to existing tests — behavior for fresh imports with no duplicates i
 - Retroactive dedup of existing database entries (that is #20)
 - Changes to JSON/CSV export schema
 - UI changes beyond the import summary text
+- CityColor assignment for newly imported cities (handled by existing launch-time `assignMissingColors()`)
 
 ## Done When
 - Importing an entry for a date with an existing unresolved entry updates it with confirmed city data
