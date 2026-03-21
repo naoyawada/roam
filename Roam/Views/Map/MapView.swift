@@ -125,13 +125,17 @@ struct MapView: View {
                 .colorMultiply(Color(red: 0.96, green: 0.93, blue: 0.88))
             }
 
-            Text("Map")
-                .font(.system(size: 34, weight: .regular))
-                .foregroundStyle(RoamTheme.textPrimary)
-                .padding(.leading, 20)
-                .safeAreaPadding(.top)
         }
         .ignoresSafeArea(edges: .top)
+        .overlay(alignment: .topLeading) {
+            GeometryReader { geo in
+                Text("Map")
+                    .font(.system(size: 34, weight: .regular))
+                    .foregroundStyle(RoamTheme.textPrimary)
+                    .padding(.leading, 20)
+                    .padding(.top, geo.safeAreaInsets.top + 2)
+            }
+        }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedItem) { item in
             CityDetailSheet(item: item)
