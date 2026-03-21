@@ -51,7 +51,9 @@ struct MonthlyBreakdownChart: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Monthly Breakdown")
-                .fontWeight(.semibold)
+                .fontWeight(.regular)
+                .font(.subheadline)
+                .foregroundStyle(RoamTheme.textPrimary)
 
             Chart {
                 ForEach(breakdown, id: \.month) { month in
