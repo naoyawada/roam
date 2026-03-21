@@ -306,6 +306,7 @@ struct TimelineView: View {
                         .frame(width: 10, height: 10)
                     Text("Unresolved")
                         .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
     }
