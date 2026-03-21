@@ -27,7 +27,7 @@ struct DayCell: View {
 
             Text("\(day)")
                 .font(.caption)
-                .fontWeight(isToday ? .bold : .medium)
+                .fontWeight(isToday ? .semibold : .regular)
                 .foregroundStyle(
                     (color != nil && !isFuture) ? .white :
                     isFuture ? RoamTheme.textTertiary : RoamTheme.textSecondary

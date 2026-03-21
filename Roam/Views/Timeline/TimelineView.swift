@@ -64,7 +64,8 @@ struct TimelineView: View {
                 }
                 Spacer()
                 Text(monthYearString)
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.regular)
                 Spacer()
                 Button {
                     navigatingForward = true
@@ -130,7 +131,8 @@ struct TimelineView: View {
                 }
                 Spacer()
                 Text(String(displayedYear))
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.regular)
                 Spacer()
                 Button(action: nextYear) {
                     Image(systemName: "chevron.right")
