@@ -19,30 +19,6 @@ struct DashboardView: View {
         let analytics = AnalyticsService(context: context)
         ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    HStack {
-                        Text("Roam")
-                            .font(.largeTitle)
-                            .fontWeight(.regular)
-                        Spacer()
-                        if !unresolvedLogs.isEmpty {
-                            Button {
-                                onResolve(unresolvedLogs[0])
-                            } label: {
-                                Text("\(unresolvedLogs.count)")
-                                    .font(.caption.bold())
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(RoamTheme.accent, in: Capsule())
-                            }
-                        }
-                        Button {
-                            showingSettings = true
-                        } label: {
-                            Image(systemName: "gearshape")
-                                .font(.title3)
-                        }
-                    }
                     let streak = analytics.currentStreak(asOf: DateNormalization.normalizedNightDate(from: .now))
 
                     CurrentCityBanner(
@@ -101,6 +77,30 @@ struct DashboardView: View {
                     )
                 }
                 .padding()
+            }
+            .navigationTitle("Roam")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    if !unresolvedLogs.isEmpty {
+                        Button {
+                            onResolve(unresolvedLogs[0])
+                        } label: {
+                            Text("\(unresolvedLogs.count)")
+                                .font(.caption.bold())
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(RoamTheme.accent, in: Capsule())
+                        }
+                    }
+                    Button {
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.title3)
+                    }
+                }
             }
             .grainBackground()
     }

@@ -19,7 +19,6 @@ struct GrainBackground: ViewModifier {
                         )
                     }
                 }
-                .ignoresSafeArea()
                 .allowsHitTesting(false)
                 .drawingGroup()
             }
