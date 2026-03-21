@@ -127,7 +127,9 @@ struct MapView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedItem) { item in
             CityDetailSheet(item: item)
-                .presentationDetents([.height(200)])
+                .presentationDetents([.height(160)])
+                .presentationBackground(RoamTheme.background)
+                .presentationDragIndicator(.visible)
         }
         .task {
             await geocodeMissingCities()
