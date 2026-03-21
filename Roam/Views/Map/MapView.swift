@@ -89,7 +89,7 @@ struct MapView: View {
     }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             if cityItems.isEmpty && !geocodingInProgress {
                 Map(position: $cameraPosition) {}
                     .mapStyle(.standard(pointsOfInterest: .excludingAll))
@@ -100,6 +100,7 @@ struct MapView: View {
                 Text("Your cities will appear here")
                     .font(.subheadline)
                     .foregroundStyle(RoamTheme.textSecondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Map(position: $cameraPosition) {
                     ForEach(cityItems) { item in
@@ -117,10 +118,14 @@ struct MapView: View {
                 }
                 .mapStyle(.standard(pointsOfInterest: .excludingAll))
             }
+
+            Text("Map")
+                .font(.system(size: 34, weight: .regular))
+                .foregroundStyle(RoamTheme.textPrimary)
+                .padding(.leading, 20)
+                .padding(.top, 0)
         }
-        .navigationTitle("Map")
-        .navigationBarTitleDisplayMode(.large)
-        .background(NavigationBarFontConfigurator())
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedItem) { item in
             CityDetailSheet(item: item)
                 .presentationDetents([.height(200)])
@@ -163,30 +168,3 @@ struct MapView: View {
     }
 }
 
-private struct NavigationBarFontConfigurator: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UIViewController {
-        UIViewController()
-    }
-
-    func updateUIViewController(_ vc: UIViewController, context: Context) {
-        DispatchQueue.main.async {
-            guard let navBar = vc.navigationController?.navigationBar else { return }
-
-            let titleColor = UIColor(RoamTheme.textPrimary)
-            let font = UIFont.systemFont(ofSize: 34, weight: .regular)
-
-            let scrollEdge = UINavigationBarAppearance()
-            scrollEdge.configureWithTransparentBackground()
-            scrollEdge.largeTitleTextAttributes = [.foregroundColor: titleColor, .font: font]
-            scrollEdge.titleTextAttributes = [.foregroundColor: titleColor]
-
-            let standard = UINavigationBarAppearance()
-            standard.configureWithDefaultBackground()
-            standard.largeTitleTextAttributes = [.foregroundColor: titleColor, .font: font]
-            standard.titleTextAttributes = [.foregroundColor: titleColor]
-
-            navBar.scrollEdgeAppearance = scrollEdge
-            navBar.standardAppearance = standard
-        }
-    }
-}
