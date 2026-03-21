@@ -89,41 +89,38 @@ struct MapView: View {
     }
 
     var body: some View {
-        ScrollView {
-            ZStack {
-                if cityItems.isEmpty && !geocodingInProgress {
-                    Map(position: $cameraPosition) {}
-                        .mapStyle(.standard(pointsOfInterest: .excludingAll))
-                        .onAppear {
-                            cameraPosition = .region(defaultRegion)
-                        }
+        ZStack {
+            if cityItems.isEmpty && !geocodingInProgress {
+                Map(position: $cameraPosition) {}
+                    .mapStyle(.standard(pointsOfInterest: .excludingAll))
+                    .onAppear {
+                        cameraPosition = .region(defaultRegion)
+                    }
 
-                    Text("Your cities will appear here")
-                        .font(.subheadline)
-                        .foregroundStyle(RoamTheme.textSecondary)
-                } else {
-                    Map(position: $cameraPosition) {
-                        ForEach(cityItems) { item in
-                            Annotation(item.displayName, coordinate: CLLocationCoordinate2D(
-                                latitude: item.latitude,
-                                longitude: item.longitude
-                            )) {
-                                CityPinAnnotation(color: item.color)
-                                    .onTapGesture {
-                                        HapticService.selection()
-                                        selectedItem = item
-                                    }
-                            }
+                Text("Your cities will appear here")
+                    .font(.subheadline)
+                    .foregroundStyle(RoamTheme.textSecondary)
+            } else {
+                Map(position: $cameraPosition) {
+                    ForEach(cityItems) { item in
+                        Annotation(item.displayName, coordinate: CLLocationCoordinate2D(
+                            latitude: item.latitude,
+                            longitude: item.longitude
+                        )) {
+                            CityPinAnnotation(color: item.color)
+                                .onTapGesture {
+                                    HapticService.selection()
+                                    selectedItem = item
+                                }
                         }
                     }
-                    .mapStyle(.standard(pointsOfInterest: .excludingAll))
                 }
+                .mapStyle(.standard(pointsOfInterest: .excludingAll))
             }
-            .containerRelativeFrame([.horizontal, .vertical])
         }
-        .scrollDisabled(true)
         .navigationTitle("Map")
         .navigationBarTitleDisplayMode(.large)
+        .background(NavigationBarFontConfigurator())
         .sheet(item: $selectedItem) { item in
             CityDetailSheet(item: item)
                 .presentationDetents([.height(200)])
@@ -163,5 +160,33 @@ struct MapView: View {
         }
 
         geocodingInProgress = false
+    }
+}
+
+private struct NavigationBarFontConfigurator: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+
+    func updateUIViewController(_ vc: UIViewController, context: Context) {
+        DispatchQueue.main.async {
+            guard let navBar = vc.navigationController?.navigationBar else { return }
+
+            let titleColor = UIColor(RoamTheme.textPrimary)
+            let font = UIFont.systemFont(ofSize: 34, weight: .regular)
+
+            let scrollEdge = UINavigationBarAppearance()
+            scrollEdge.configureWithTransparentBackground()
+            scrollEdge.largeTitleTextAttributes = [.foregroundColor: titleColor, .font: font]
+            scrollEdge.titleTextAttributes = [.foregroundColor: titleColor]
+
+            let standard = UINavigationBarAppearance()
+            standard.configureWithDefaultBackground()
+            standard.largeTitleTextAttributes = [.foregroundColor: titleColor, .font: font]
+            standard.titleTextAttributes = [.foregroundColor: titleColor]
+
+            navBar.scrollEdgeAppearance = scrollEdge
+            navBar.standardAppearance = standard
+        }
     }
 }
