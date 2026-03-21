@@ -18,6 +18,16 @@ struct DashboardView: View {
     var body: some View {
         let analytics = AnalyticsService(context: context)
         ScrollView {
+            if allLogs.isEmpty {
+                VStack {
+                    Spacer(minLength: 120)
+                    Text("Your first night will appear here")
+                        .font(.subheadline)
+                        .foregroundStyle(RoamTheme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                    Spacer()
+                }
+            } else {
                 VStack(alignment: .leading, spacing: 20) {
                     let streak = analytics.currentStreak(asOf: DateNormalization.normalizedNightDate(from: .now))
 
@@ -78,6 +88,7 @@ struct DashboardView: View {
                 }
                 .padding()
             }
+        }
             .navigationTitle("Roam")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {

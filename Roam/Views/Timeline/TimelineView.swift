@@ -17,6 +17,15 @@ struct TimelineView: View {
     @State private var mode: TimelineMode = .month
     @State private var navigatingForward = true
 
+    private var currentViewHasLogs: Bool {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        return allLogs.contains { log in
+            cal.component(.year, from: log.date) == displayedYear &&
+            (mode == .year || cal.component(.month, from: log.date) == displayedMonth)
+        }
+    }
+
     private var weekdaySymbols: [String] {
         let symbols = Calendar.current.veryShortWeekdaySymbols
         let firstWeekday = Calendar.current.firstWeekday - 1
@@ -31,6 +40,14 @@ struct TimelineView: View {
                     monthContent
                 case .year:
                     yearContent
+                }
+
+                if !currentViewHasLogs {
+                    Text("No nights logged")
+                        .font(.subheadline)
+                        .foregroundStyle(RoamTheme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 20)
                 }
 
                 legend
