@@ -43,6 +43,7 @@ struct CitySearchView: View {
                     Section("Recent") {
                         ForEach(recentCities, id: \.displayName) { entry in
                             Button {
+                                HapticService.medium()
                                 selectedCity = entry.city
                                 selectedState = entry.state
                                 selectedCountry = entry.country
@@ -106,6 +107,7 @@ struct CitySearchView: View {
         }()
 
         selectedCountry = reps.region?.identifier
+        HapticService.medium()
         dismiss()
     }
 }

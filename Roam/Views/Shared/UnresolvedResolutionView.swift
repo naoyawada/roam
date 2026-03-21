@@ -23,6 +23,7 @@ struct UnresolvedResolutionView: View {
                         .fontWeight(.semibold)
 
                     Button("Confirm") {
+                        HapticService.medium()
                         log.city = selectedCity
                         log.state = selectedState
                         log.country = selectedCountry

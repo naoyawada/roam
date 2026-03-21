@@ -73,6 +73,7 @@ struct CalendarGridView: View {
                 )
                 .onTapGesture {
                     if !isFuture {
+                        HapticService.selection()
                         onDayTapped(log, dayDate)
                     }
                 }
