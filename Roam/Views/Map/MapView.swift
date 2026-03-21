@@ -90,38 +90,47 @@ struct MapView: View {
 
     private let mapStyle: MapStyle = .standard(emphasis: .muted, pointsOfInterest: .excludingAll)
 
+    private let mapTint = Color(red: 0.96, green: 0.93, blue: 0.88)
+
     var body: some View {
-        ZStack {
-            if cityItems.isEmpty && !geocodingInProgress {
+        MapReader { proxy in
+            ZStack {
                 Map(position: $cameraPosition) {}
                     .mapStyle(mapStyle)
                     .saturation(0)
-                    .colorMultiply(Color(red: 0.96, green: 0.93, blue: 0.88))
-                    .onAppear {
-                        cameraPosition = .region(defaultRegion)
-                    }
+                    .colorMultiply(mapTint)
 
-                Text("Your cities will appear here")
-                    .font(.subheadline)
-                    .foregroundStyle(RoamTheme.textSecondary)
-            } else {
-                Map(position: $cameraPosition) {
+                if cityItems.isEmpty && !geocodingInProgress {
+                    Text("Your cities will appear here")
+                        .font(.subheadline)
+                        .foregroundStyle(RoamTheme.textSecondary)
+                } else {
                     ForEach(cityItems) { item in
-                        Annotation(item.displayName, coordinate: CLLocationCoordinate2D(
+                        let coord = CLLocationCoordinate2D(
                             latitude: item.latitude,
                             longitude: item.longitude
-                        )) {
-                            CityPinAnnotation(color: item.color)
-                                .onTapGesture {
-                                    HapticService.selection()
-                                    selectedItem = item
-                                }
+                        )
+                        if let point = proxy.convert(coord, to: .local) {
+                            VStack(spacing: 2) {
+                                CityPinAnnotation(color: item.color)
+                                Text(item.displayName)
+                                    .font(.caption2)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(RoamTheme.textPrimary)
+                            }
+                            .position(point)
+                            .onTapGesture {
+                                HapticService.selection()
+                                selectedItem = item
+                            }
                         }
                     }
                 }
-                .mapStyle(mapStyle)
-                .saturation(0)
-                .colorMultiply(Color(red: 0.96, green: 0.93, blue: 0.88))
+            }
+            .onAppear {
+                if cityItems.isEmpty {
+                    cameraPosition = .region(defaultRegion)
+                }
             }
         }
         .toolbar(.hidden, for: .navigationBar)
