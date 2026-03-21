@@ -120,6 +120,7 @@ struct TimelineView: View {
                 MagnifyGesture()
                     .onEnded { value in
                         if value.magnification < 0.7 {
+                            HapticService.medium()
                             withAnimation {
                                 mode = .year
                             }
@@ -155,6 +156,7 @@ struct TimelineView: View {
                 cityColors: cityColors
             ) { month in
                 displayedMonth = month
+                HapticService.medium()
                 withAnimation {
                     mode = .month
                 }
@@ -179,6 +181,7 @@ struct TimelineView: View {
                             let currentMonth = Calendar.current.component(.month, from: Date())
                             let currentYear = Calendar.current.component(.year, from: Date())
                             displayedMonth = (displayedYear == currentYear) ? currentMonth : 1
+                            HapticService.medium()
                             withAnimation {
                                 mode = .month
                             }
@@ -197,6 +200,7 @@ struct TimelineView: View {
     }
 
     private func previousMonth() {
+        HapticService.selection()
         if displayedMonth == 1 {
             displayedMonth = 12
             displayedYear -= 1
@@ -206,6 +210,7 @@ struct TimelineView: View {
     }
 
     private func nextMonth() {
+        HapticService.selection()
         if displayedMonth == 12 {
             displayedMonth = 1
             displayedYear += 1
@@ -215,10 +220,12 @@ struct TimelineView: View {
     }
 
     private func previousYear() {
+        HapticService.selection()
         displayedYear -= 1
     }
 
     private func nextYear() {
+        HapticService.selection()
         displayedYear += 1
     }
 
