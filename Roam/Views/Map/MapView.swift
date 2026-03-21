@@ -88,11 +88,14 @@ struct MapView: View {
         }
     }
 
+    private let mapStyle: MapStyle = .standard(emphasis: .muted, pointsOfInterest: .excludingAll)
+
     var body: some View {
         ZStack(alignment: .topLeading) {
             if cityItems.isEmpty && !geocodingInProgress {
                 Map(position: $cameraPosition) {}
-                    .mapStyle(.standard(pointsOfInterest: .excludingAll))
+                    .mapStyle(mapStyle)
+                    .ignoresSafeArea(edges: .top)
                     .onAppear {
                         cameraPosition = .region(defaultRegion)
                     }
@@ -116,14 +119,15 @@ struct MapView: View {
                         }
                     }
                 }
-                .mapStyle(.standard(pointsOfInterest: .excludingAll))
+                .mapStyle(mapStyle)
+                .ignoresSafeArea(edges: .top)
             }
 
             Text("Map")
                 .font(.system(size: 34, weight: .regular))
                 .foregroundStyle(RoamTheme.textPrimary)
                 .padding(.leading, 20)
-                .padding(.top, 0)
+                .padding(.top, 2)
         }
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedItem) { item in
