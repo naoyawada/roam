@@ -5,8 +5,7 @@ import os
 enum AppTab: Int, CaseIterable {
     case dashboard = 0
     case timeline = 1
-    case map = 2
-    case insights = 3
+    case insights = 2
 }
 
 struct ContentView: View {
@@ -61,12 +60,7 @@ struct ContentView: View {
                         TimelineView()
                     }
                 }
-                Tab("Map", systemImage: "map.fill", value: .map) {
-                    NavigationStack {
-                        MapView()
-                    }
-                }
-                Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
+Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
                     NavigationStack {
                         InsightsView()
                     }
