@@ -91,7 +91,7 @@ struct MapView: View {
     private let mapStyle: MapStyle = .standard(emphasis: .muted, pointsOfInterest: .excludingAll)
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
+        ZStack {
             if cityItems.isEmpty && !geocodingInProgress {
                 Map(position: $cameraPosition) {}
                     .mapStyle(mapStyle)
@@ -104,7 +104,6 @@ struct MapView: View {
                 Text("Your cities will appear here")
                     .font(.subheadline)
                     .foregroundStyle(RoamTheme.textSecondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 Map(position: $cameraPosition) {
                     ForEach(cityItems) { item in
@@ -123,17 +122,6 @@ struct MapView: View {
                 .mapStyle(mapStyle)
                 .saturation(0)
                 .colorMultiply(Color(red: 0.96, green: 0.93, blue: 0.88))
-            }
-
-        }
-        .ignoresSafeArea(edges: .top)
-        .overlay(alignment: .topLeading) {
-            GeometryReader { geo in
-                Text("Map")
-                    .font(.system(size: 34, weight: .regular))
-                    .foregroundStyle(RoamTheme.textPrimary)
-                    .padding(.leading, 20)
-                    .padding(.top, geo.safeAreaInsets.top + 2)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
