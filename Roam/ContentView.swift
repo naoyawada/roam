@@ -2,6 +2,12 @@ import SwiftUI
 import SwiftData
 import os
 
+enum AppTab: Int, CaseIterable {
+    case dashboard = 0
+    case timeline = 1
+    case insights = 2
+}
+
 struct ContentView: View {
     private static let logger = Logger(subsystem: "com.naoyawada.roam", category: "ForegroundCatch")
 
@@ -10,7 +16,7 @@ struct ContentView: View {
     @Query private var allLogs: [NightLog]
 
     @StateObject private var locationService = LocationCaptureService()
-    @State private var selectedTab: Int = 0
+    @State private var selectedTab: AppTab = .dashboard
     @State private var showingSettings = false
     @State private var unresolvedToResolve: NightLog?
 
@@ -39,19 +45,28 @@ struct ContentView: View {
                 )
             )
         } else {
-            NativeTabBarContainer(selection: $selectedTab) {
-                SwipeableTabContainer(selection: $selectedTab, tab0: {
-                    DashboardView(
-                        showingSettings: $showingSettings,
-                        unresolvedLogs: unresolvedLogs,
-                        onResolve: { unresolvedToResolve = $0 }
-                    )
-                }, tab1: {
-                    TimelineView()
-                }, tab2: {
-                    InsightsView()
-                })
+            TabView(selection: $selectedTab) {
+                Tab("Dashboard", systemImage: "chart.bar.fill", value: .dashboard) {
+                    NavigationStack {
+                        DashboardView(
+                            showingSettings: $showingSettings,
+                            unresolvedLogs: unresolvedLogs,
+                            onResolve: { unresolvedToResolve = $0 }
+                        )
+                    }
+                }
+                Tab("Timeline", systemImage: "calendar", value: .timeline) {
+                    NavigationStack {
+                        TimelineView()
+                    }
+                }
+                Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
+                    NavigationStack {
+                        InsightsView()
+                    }
+                }
             }
+            .tint(RoamTheme.accent)
             .sheet(isPresented: $showingSettings) {
                 NavigationStack {
                     SettingsView()
@@ -69,8 +84,36 @@ struct ContentView: View {
             }
             .onAppear {
                 setWindowBackground()
+                configureNavigationBarAppearance()
             }
         }
+    }
+
+    private func configureNavigationBarAppearance() {
+        let titleColor = UIColor(RoamTheme.textPrimary)
+
+        let scrollEdge = UINavigationBarAppearance()
+        scrollEdge.configureWithTransparentBackground()
+        scrollEdge.largeTitleTextAttributes = [
+            .foregroundColor: titleColor,
+            .font: UIFont.systemFont(ofSize: 34, weight: .regular)
+        ]
+        scrollEdge.titleTextAttributes = [
+            .foregroundColor: titleColor
+        ]
+
+        let standard = UINavigationBarAppearance()
+        standard.configureWithDefaultBackground()
+        standard.largeTitleTextAttributes = [
+            .foregroundColor: titleColor,
+            .font: UIFont.systemFont(ofSize: 34, weight: .regular)
+        ]
+        standard.titleTextAttributes = [
+            .foregroundColor: titleColor
+        ]
+
+        UINavigationBar.appearance().scrollEdgeAppearance = scrollEdge
+        UINavigationBar.appearance().standardAppearance = standard
     }
 
     private func setWindowBackground() {

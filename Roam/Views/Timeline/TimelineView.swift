@@ -26,13 +26,6 @@ struct TimelineView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                HStack {
-                    Text("Timeline")
-                        .font(.largeTitle)
-                        .fontWeight(.regular)
-                    Spacer()
-                }
-
                 switch mode {
                 case .month:
                     monthContent
@@ -44,6 +37,8 @@ struct TimelineView: View {
             }
             .padding()
         }
+        .navigationTitle("Timeline")
+        .navigationBarTitleDisplayMode(.large)
         .grainBackground()
         .sheet(item: $selectedLog) { log in
             DayDetailSheet(log: log)
@@ -107,6 +102,21 @@ struct TimelineView: View {
                 removal: .move(edge: navigatingForward ? .leading : .trailing)
             ))
             .gesture(
+                DragGesture(minimumDistance: 50)
+                    .onEnded { value in
+                        let horizontal = value.translation.width
+                        let vertical = value.translation.height
+                        guard abs(horizontal) > abs(vertical) else { return }
+                        if horizontal < 0 {
+                            navigatingForward = true
+                            withAnimation { nextMonth() }
+                        } else {
+                            navigatingForward = false
+                            withAnimation { previousMonth() }
+                        }
+                    }
+            )
+            .gesture(
                 MagnifyGesture()
                     .onEnded { value in
                         if value.magnification < 0.7 {
@@ -149,6 +159,19 @@ struct TimelineView: View {
                     mode = .month
                 }
             }
+            .gesture(
+                DragGesture(minimumDistance: 50)
+                    .onEnded { value in
+                        let horizontal = value.translation.width
+                        let vertical = value.translation.height
+                        guard abs(horizontal) > abs(vertical) else { return }
+                        if horizontal < 0 {
+                            withAnimation { nextYear() }
+                        } else {
+                            withAnimation { previousYear() }
+                        }
+                    }
+            )
             .gesture(
                 MagnifyGesture()
                     .onEnded { value in
