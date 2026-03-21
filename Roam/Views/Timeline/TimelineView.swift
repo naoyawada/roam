@@ -16,6 +16,11 @@ struct TimelineView: View {
     @State private var selectedLog: NightLog?
     @State private var mode: TimelineMode = .month
     @State private var navigatingForward = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var zoomAnimation: Animation {
+        reduceMotion ? .easeInOut(duration: 0.15) : .spring(duration: 0.35)
+    }
 
     private var currentViewHasLogs: Bool {
         var cal = Calendar(identifier: .gregorian)
@@ -35,11 +40,21 @@ struct TimelineView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                switch mode {
-                case .month:
-                    monthContent
-                case .year:
-                    yearContent
+                ZStack {
+                    if mode == .month {
+                        monthContent
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 1.0).combined(with: .opacity),
+                                removal: .scale(scale: 0.3).combined(with: .opacity)
+                            ))
+                    }
+                    if mode == .year {
+                        yearContent
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 0.3).combined(with: .opacity),
+                                removal: .scale(scale: 1.0).combined(with: .opacity)
+                            ))
+                    }
                 }
 
                 if !currentViewHasLogs {
@@ -138,7 +153,7 @@ struct TimelineView: View {
                     .onEnded { value in
                         if value.magnification < 0.7 {
                             HapticService.medium()
-                            withAnimation {
+                            withAnimation(zoomAnimation) {
                                 mode = .year
                             }
                         }
@@ -174,7 +189,7 @@ struct TimelineView: View {
             ) { month in
                 displayedMonth = month
                 HapticService.medium()
-                withAnimation {
+                withAnimation(zoomAnimation) {
                     mode = .month
                 }
             }
@@ -199,7 +214,7 @@ struct TimelineView: View {
                             let currentYear = Calendar.current.component(.year, from: Date())
                             displayedMonth = (displayedYear == currentYear) ? currentMonth : 1
                             HapticService.medium()
-                            withAnimation {
+                            withAnimation(zoomAnimation) {
                                 mode = .month
                             }
                         }
