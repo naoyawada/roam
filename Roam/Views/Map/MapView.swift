@@ -89,35 +89,39 @@ struct MapView: View {
     }
 
     var body: some View {
-        ZStack {
-            if cityItems.isEmpty && !geocodingInProgress {
-                Map(position: $cameraPosition) {}
-                    .mapStyle(.standard(pointsOfInterest: .excludingAll))
-                    .onAppear {
-                        cameraPosition = .region(defaultRegion)
-                    }
+        ScrollView {
+            ZStack {
+                if cityItems.isEmpty && !geocodingInProgress {
+                    Map(position: $cameraPosition) {}
+                        .mapStyle(.standard(pointsOfInterest: .excludingAll))
+                        .onAppear {
+                            cameraPosition = .region(defaultRegion)
+                        }
 
-                Text("Your cities will appear here")
-                    .font(.subheadline)
-                    .foregroundStyle(RoamTheme.textSecondary)
-            } else {
-                Map(position: $cameraPosition) {
-                    ForEach(cityItems) { item in
-                        Annotation(item.displayName, coordinate: CLLocationCoordinate2D(
-                            latitude: item.latitude,
-                            longitude: item.longitude
-                        )) {
-                            CityPinAnnotation(color: item.color)
-                                .onTapGesture {
-                                    HapticService.selection()
-                                    selectedItem = item
-                                }
+                    Text("Your cities will appear here")
+                        .font(.subheadline)
+                        .foregroundStyle(RoamTheme.textSecondary)
+                } else {
+                    Map(position: $cameraPosition) {
+                        ForEach(cityItems) { item in
+                            Annotation(item.displayName, coordinate: CLLocationCoordinate2D(
+                                latitude: item.latitude,
+                                longitude: item.longitude
+                            )) {
+                                CityPinAnnotation(color: item.color)
+                                    .onTapGesture {
+                                        HapticService.selection()
+                                        selectedItem = item
+                                    }
+                            }
                         }
                     }
+                    .mapStyle(.standard(pointsOfInterest: .excludingAll))
                 }
-                .mapStyle(.standard(pointsOfInterest: .excludingAll))
             }
+            .containerRelativeFrame([.horizontal, .vertical])
         }
+        .scrollDisabled(true)
         .navigationTitle("Map")
         .navigationBarTitleDisplayMode(.large)
         .sheet(item: $selectedItem) { item in
