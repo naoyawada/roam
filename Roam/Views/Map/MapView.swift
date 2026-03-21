@@ -90,47 +90,39 @@ struct MapView: View {
 
     private let mapStyle: MapStyle = .standard(emphasis: .muted, pointsOfInterest: .excludingAll)
 
-    private let mapTint = Color(red: 0.96, green: 0.93, blue: 0.88)
-
     var body: some View {
-        MapReader { proxy in
-            ZStack {
-                Map(position: $cameraPosition) {}
-                    .mapStyle(mapStyle)
-                    .saturation(0)
-                    .colorMultiply(mapTint)
-
-                if cityItems.isEmpty && !geocodingInProgress {
-                    Text("Your cities will appear here")
-                        .font(.subheadline)
-                        .foregroundStyle(RoamTheme.textSecondary)
-                } else {
-                    ForEach(cityItems) { item in
-                        let coord = CLLocationCoordinate2D(
-                            latitude: item.latitude,
-                            longitude: item.longitude
-                        )
-                        if let point = proxy.convert(coord, to: .local) {
-                            VStack(spacing: 2) {
-                                CityPinAnnotation(color: item.color)
-                                Text(item.displayName)
-                                    .font(.caption2)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(RoamTheme.textPrimary)
-                            }
-                            .position(point)
+        ZStack {
+            Map(position: $cameraPosition) {
+                ForEach(cityItems) { item in
+                    Annotation(item.displayName, coordinate: CLLocationCoordinate2D(
+                        latitude: item.latitude,
+                        longitude: item.longitude
+                    )) {
+                        CityPinAnnotation(color: item.color)
                             .onTapGesture {
                                 HapticService.selection()
                                 selectedItem = item
                             }
-                        }
                     }
                 }
             }
-            .onAppear {
-                if cityItems.isEmpty {
-                    cameraPosition = .region(defaultRegion)
-                }
+            .mapStyle(mapStyle)
+            .saturation(0)
+            .overlay {
+                Color(red: 0.92, green: 0.88, blue: 0.82)
+                    .opacity(0.25)
+                    .allowsHitTesting(false)
+            }
+
+            if cityItems.isEmpty && !geocodingInProgress {
+                Text("Your cities will appear here")
+                    .font(.subheadline)
+                    .foregroundStyle(RoamTheme.textSecondary)
+            }
+        }
+        .onAppear {
+            if cityItems.isEmpty {
+                cameraPosition = .region(defaultRegion)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
