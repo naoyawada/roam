@@ -95,7 +95,7 @@ struct MapView: View {
             if cityItems.isEmpty && !geocodingInProgress {
                 Map(position: $cameraPosition) {}
                     .mapStyle(mapStyle)
-                    .saturation(0.3)
+                    .saturation(0)
                     .colorMultiply(Color(red: 0.96, green: 0.93, blue: 0.88))
                     .ignoresSafeArea(edges: .top)
                     .onAppear {
@@ -122,7 +122,7 @@ struct MapView: View {
                     }
                 }
                 .mapStyle(mapStyle)
-                .saturation(0.3)
+                .saturation(0)
                 .colorMultiply(Color(red: 0.96, green: 0.93, blue: 0.88))
                 .ignoresSafeArea(edges: .top)
             }
