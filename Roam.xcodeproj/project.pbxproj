@@ -71,6 +71,7 @@
 		EFA488C0CDDB8D136ECF393D /* UnresolvedFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5F214DCE81E9A4C3C1E11D /* UnresolvedFilterTests.swift */; };
 		F064E26ED7FCC1A9353B8FE2 /* DataExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EC93ED423B3CE8910B4C61 /* DataExportView.swift */; };
 		F3AD6860617159F9D6F8FFF3 /* DeduplicationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43C11F9644281708616F2268 /* DeduplicationServiceTests.swift */; };
+		F461B5BEB53D73CC860DB34F /* HapticService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2907E2AFE41733BEC9BE60B8 /* HapticService.swift */; };
 		F4787C5C6FC3DD7F1544085E /* YearDotGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 409B51C0F0DD1105703B77C0 /* YearDotGridView.swift */; };
 		F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */; };
 		F51C0C05437DB545CE75A073 /* HeartbeatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7084FFC99259D401C6BCB0D /* HeartbeatService.swift */; };
@@ -97,6 +98,7 @@
 		1E7743148F503481970D52BA /* DataImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataImportServiceTests.swift; sourceTree = "<group>"; };
 		213B5349FB94E1A2C401CC74 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		23864012AE9AA4481A21698F /* AllCitiesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllCitiesSheet.swift; sourceTree = "<group>"; };
+		2907E2AFE41733BEC9BE60B8 /* HapticService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticService.swift; sourceTree = "<group>"; };
 		29A77B7801B9C1F699E56789 /* CityDisplayFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatterTests.swift; sourceTree = "<group>"; };
 		2B83452B970024E3BA1C1E06 /* DataExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportTests.swift; sourceTree = "<group>"; };
 		2D00E3E6D01547CE9B679052 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -325,6 +327,7 @@
 			isa = PBXGroup;
 			children = (
 				213B5349FB94E1A2C401CC74 /* ColorPalette.swift */,
+				2907E2AFE41733BEC9BE60B8 /* HapticService.swift */,
 				42F6EFE5C04BBCDEF9BFDDF1 /* RoamTheme.swift */,
 			);
 			path = Utilities;
@@ -496,6 +499,7 @@
 				F63BEFB26604554F140A3ECF /* DeviceTokenService.swift in Sources */,
 				911DD75B3BE6429067C09DB3 /* FlowLayout.swift in Sources */,
 				67179C62483A18ECA29E1BD6 /* GrainBackground.swift in Sources */,
+				F461B5BEB53D73CC860DB34F /* HapticService.swift in Sources */,
 				F51C0C05437DB545CE75A073 /* HeartbeatService.swift in Sources */,
 				1F83049070C1A069782B8963 /* HighlightsGrid.swift in Sources */,
 				45FEA24C9A0F3D0977A94A82 /* InsightsView.swift in Sources */,

@@ -14,12 +14,19 @@ struct InsightsView: View {
 
     var body: some View {
         let analytics = AnalyticsService(context: context)
+        let years = analytics.availableYears()
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                    let years = analytics.availableYears()
+                YearPicker(years: years.isEmpty ? [currentYear] : years, selectedYear: $selectedYear)
 
-                    YearPicker(years: years.isEmpty ? [currentYear] : years, selectedYear: $selectedYear)
-
+                if years.isEmpty {
+                    Text("Insights will appear once you have a few nights logged")
+                        .font(.subheadline)
+                        .foregroundStyle(RoamTheme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 40)
+                } else {
                     MonthlyBreakdownChart(
                         breakdown: analytics.monthlyBreakdown(year: selectedYear),
                         cityColors: cityColors
@@ -53,10 +60,11 @@ struct InsightsView: View {
                         YearOverYearView(years: yoyData)
                     }
                 }
-                .padding()
             }
-            .navigationTitle("Insights")
-            .navigationBarTitleDisplayMode(.large)
-            .grainBackground()
+            .padding()
+        }
+        .navigationTitle("Insights")
+        .navigationBarTitleDisplayMode(.large)
+        .grainBackground()
     }
 }

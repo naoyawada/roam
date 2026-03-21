@@ -60,7 +60,7 @@ struct ContentView: View {
                         TimelineView()
                     }
                 }
-                Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
+Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
                     NavigationStack {
                         InsightsView()
                     }

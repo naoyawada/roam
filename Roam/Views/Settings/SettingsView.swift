@@ -16,6 +16,8 @@ struct SettingsView: View {
     @State private var selectedCity: String?
     @State private var selectedState: String?
     @State private var selectedCountry: String?
+    @State private var selectedLatitude: Double?
+    @State private var selectedLongitude: Double?
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled: Bool = true
     @State private var showSyncRestartAlert = false
     @State private var debugCaptureResult: String?
@@ -183,7 +185,9 @@ struct SettingsView: View {
                 CitySearchView(
                     selectedCity: $selectedCity,
                     selectedState: $selectedState,
-                    selectedCountry: $selectedCountry
+                    selectedCountry: $selectedCountry,
+                    selectedLatitude: $selectedLatitude,
+                    selectedLongitude: $selectedLongitude
                 )
             }
             .onChange(of: selectedCity) { _, newCity in

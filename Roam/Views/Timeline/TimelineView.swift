@@ -16,6 +16,20 @@ struct TimelineView: View {
     @State private var selectedLog: NightLog?
     @State private var mode: TimelineMode = .month
     @State private var navigatingForward = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var zoomAnimation: Animation {
+        reduceMotion ? .easeInOut(duration: 0.15) : .spring(duration: 0.35)
+    }
+
+    private var currentViewHasLogs: Bool {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        return allLogs.contains { log in
+            cal.component(.year, from: log.date) == displayedYear &&
+            (mode == .year || cal.component(.month, from: log.date) == displayedMonth)
+        }
+    }
 
     private var weekdaySymbols: [String] {
         let symbols = Calendar.current.veryShortWeekdaySymbols
@@ -26,11 +40,29 @@ struct TimelineView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                switch mode {
-                case .month:
-                    monthContent
-                case .year:
-                    yearContent
+                ZStack {
+                    if mode == .month {
+                        monthContent
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 1.0).combined(with: .opacity),
+                                removal: .scale(scale: 0.3).combined(with: .opacity)
+                            ))
+                    }
+                    if mode == .year {
+                        yearContent
+                            .transition(.asymmetric(
+                                insertion: .scale(scale: 0.3).combined(with: .opacity),
+                                removal: .scale(scale: 1.0).combined(with: .opacity)
+                            ))
+                    }
+                }
+
+                if !currentViewHasLogs {
+                    Text("No nights logged")
+                        .font(.subheadline)
+                        .foregroundStyle(RoamTheme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 20)
                 }
 
                 legend
@@ -120,7 +152,8 @@ struct TimelineView: View {
                 MagnifyGesture()
                     .onEnded { value in
                         if value.magnification < 0.7 {
-                            withAnimation {
+                            HapticService.medium()
+                            withAnimation(zoomAnimation) {
                                 mode = .year
                             }
                         }
@@ -155,7 +188,8 @@ struct TimelineView: View {
                 cityColors: cityColors
             ) { month in
                 displayedMonth = month
-                withAnimation {
+                HapticService.medium()
+                withAnimation(zoomAnimation) {
                     mode = .month
                 }
             }
@@ -179,7 +213,8 @@ struct TimelineView: View {
                             let currentMonth = Calendar.current.component(.month, from: Date())
                             let currentYear = Calendar.current.component(.year, from: Date())
                             displayedMonth = (displayedYear == currentYear) ? currentMonth : 1
-                            withAnimation {
+                            HapticService.medium()
+                            withAnimation(zoomAnimation) {
                                 mode = .month
                             }
                         }
@@ -197,6 +232,7 @@ struct TimelineView: View {
     }
 
     private func previousMonth() {
+        HapticService.selection()
         if displayedMonth == 1 {
             displayedMonth = 12
             displayedYear -= 1
@@ -206,6 +242,7 @@ struct TimelineView: View {
     }
 
     private func nextMonth() {
+        HapticService.selection()
         if displayedMonth == 12 {
             displayedMonth = 1
             displayedYear += 1
@@ -215,10 +252,12 @@ struct TimelineView: View {
     }
 
     private func previousYear() {
+        HapticService.selection()
         displayedYear -= 1
     }
 
     private func nextYear() {
+        HapticService.selection()
         displayedYear += 1
     }
 
@@ -267,6 +306,7 @@ struct TimelineView: View {
                         .frame(width: 10, height: 10)
                     Text("Unresolved")
                         .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
     }
