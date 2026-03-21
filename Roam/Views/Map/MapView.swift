@@ -107,10 +107,9 @@ struct MapView: View {
                 }
             }
             .mapStyle(mapStyle)
-            .saturation(0)
             .overlay {
-                Color(red: 0.92, green: 0.88, blue: 0.82)
-                    .opacity(0.25)
+                Color(red: 0.90, green: 0.86, blue: 0.80)
+                    .opacity(0.3)
                     .allowsHitTesting(false)
             }
 
