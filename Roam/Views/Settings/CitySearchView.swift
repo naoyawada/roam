@@ -6,6 +6,8 @@ struct CitySearchView: View {
     @Binding var selectedCity: String?
     @Binding var selectedState: String?
     @Binding var selectedCountry: String?
+    @Binding var selectedLatitude: Double?
+    @Binding var selectedLongitude: Double?
 
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \NightLog.date, order: .reverse) private var allLogs: [NightLog]
@@ -107,6 +109,9 @@ struct CitySearchView: View {
         }()
 
         selectedCountry = reps.region?.identifier
+        let location = item.location
+        selectedLatitude = location.coordinate.latitude
+        selectedLongitude = location.coordinate.longitude
         HapticService.medium()
         dismiss()
     }

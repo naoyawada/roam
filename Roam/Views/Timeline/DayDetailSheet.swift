@@ -10,6 +10,8 @@ struct DayDetailSheet: View {
     @State private var selectedCity: String?
     @State private var selectedState: String?
     @State private var selectedCountry: String?
+    @State private var selectedLatitude: Double?
+    @State private var selectedLongitude: Double?
 
     private var dateString: String {
         log.date.formatted(date: .long, time: .omitted)
@@ -56,7 +58,9 @@ struct DayDetailSheet: View {
                 CitySearchView(
                     selectedCity: $selectedCity,
                     selectedState: $selectedState,
-                    selectedCountry: $selectedCountry
+                    selectedCountry: $selectedCountry,
+                    selectedLatitude: $selectedLatitude,
+                    selectedLongitude: $selectedLongitude
                 )
             }
             .onChange(of: selectedCity) { _, newCity in
@@ -64,6 +68,8 @@ struct DayDetailSheet: View {
                 log.city = newCity
                 log.state = selectedState
                 log.country = selectedCountry
+                log.latitude = selectedLatitude
+                log.longitude = selectedLongitude
                 log.source = .manual
                 if log.status == .unresolved { log.status = .manual }
 

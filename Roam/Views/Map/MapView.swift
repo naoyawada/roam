@@ -8,32 +8,50 @@ struct MapView: View {
 
     @State private var selectedItem: CityMapItem?
     @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var geocodedCoordinates: [String: CLLocationCoordinate2D] = [:]
+    @State private var geocodingInProgress = false
 
-    private var cityItems: [CityMapItem] {
+    private var allCityData: [String: (logs: [NightLog], avgLat: Double?, avgLon: Double?)] {
         let confirmedRaw = LogStatus.confirmedRaw
         let manualRaw = LogStatus.manualRaw
 
-        var groups: [String: (logs: [NightLog], lat: Double, lon: Double, count: Int)] = [:]
+        var groups: [String: [NightLog]] = [:]
 
         for log in allLogs {
             guard log.statusRaw == confirmedRaw || log.statusRaw == manualRaw,
-                  let city = log.city, !city.isEmpty,
-                  let lat = log.latitude, let lon = log.longitude else { continue }
+                  let city = log.city, !city.isEmpty else { continue }
 
             let key = CityDisplayFormatter.cityKey(city: city, state: log.state, country: log.country)
-            if var group = groups[key] {
-                group.logs.append(log)
-                group.lat += lat
-                group.lon += lon
-                group.count += 1
-                groups[key] = group
-            } else {
-                groups[key] = (logs: [log], lat: lat, lon: lon, count: 1)
-            }
+            groups[key, default: []].append(log)
         }
 
-        return groups.compactMap { key, group in
-            let sorted = group.logs.sorted { $0.date < $1.date }
+        return groups.mapValues { logs in
+            let withCoords = logs.filter { $0.latitude != nil && $0.longitude != nil }
+            if withCoords.isEmpty {
+                return (logs: logs, avgLat: nil, avgLon: nil)
+            }
+            let avgLat = withCoords.reduce(0.0) { $0 + ($1.latitude ?? 0) } / Double(withCoords.count)
+            let avgLon = withCoords.reduce(0.0) { $0 + ($1.longitude ?? 0) } / Double(withCoords.count)
+            return (logs: logs, avgLat: avgLat, avgLon: avgLon)
+        }
+    }
+
+    private var cityItems: [CityMapItem] {
+        allCityData.compactMap { key, data in
+            let lat: Double
+            let lon: Double
+
+            if let avgLat = data.avgLat, let avgLon = data.avgLon {
+                lat = avgLat
+                lon = avgLon
+            } else if let coord = geocodedCoordinates[key] {
+                lat = coord.latitude
+                lon = coord.longitude
+            } else {
+                return nil
+            }
+
+            let sorted = data.logs.sorted { $0.date < $1.date }
             guard let first = sorted.first, let last = sorted.last else { return nil }
 
             let parts = key.split(separator: "|")
@@ -48,8 +66,8 @@ struct MapView: View {
             return CityMapItem(
                 id: key,
                 displayName: displayName,
-                latitude: group.lat / Double(group.count),
-                longitude: group.lon / Double(group.count),
+                latitude: lat,
+                longitude: lon,
                 totalNights: sorted.count,
                 firstVisit: first.date,
                 lastVisit: last.date,
@@ -72,7 +90,7 @@ struct MapView: View {
 
     var body: some View {
         ZStack {
-            if cityItems.isEmpty {
+            if cityItems.isEmpty && !geocodingInProgress {
                 Map(position: $cameraPosition) {}
                     .mapStyle(.standard(pointsOfInterest: .excludingAll))
                     .onAppear {
@@ -106,5 +124,40 @@ struct MapView: View {
             CityDetailSheet(item: item)
                 .presentationDetents([.height(200)])
         }
+        .task {
+            await geocodeMissingCities()
+        }
+    }
+
+    private func geocodeMissingCities() async {
+        let citiesNeedingGeocode = allCityData.filter { $0.value.avgLat == nil }
+            .filter { !geocodedCoordinates.keys.contains($0.key) }
+
+        guard !citiesNeedingGeocode.isEmpty else { return }
+        geocodingInProgress = true
+
+        for (key, _) in citiesNeedingGeocode {
+            let parts = key.split(separator: "|")
+            let city = parts.count > 0 ? String(parts[0]) : ""
+            let state = parts.count > 1 ? String(parts[1]) : nil
+            let country = parts.count > 2 ? String(parts[2]) : nil
+
+            let searchString = [city, state, country].compactMap { $0 }.joined(separator: ", ")
+            guard !searchString.isEmpty else { continue }
+
+            do {
+                let request = MKLocalSearch.Request()
+                request.naturalLanguageQuery = searchString
+                let search = MKLocalSearch(request: request)
+                let response = try await search.start()
+                if let item = response.mapItems.first {
+                    geocodedCoordinates[key] = item.location.coordinate
+                }
+            } catch {
+                // Skip cities that can't be geocoded
+            }
+        }
+
+        geocodingInProgress = false
     }
 }

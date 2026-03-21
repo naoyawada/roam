@@ -8,6 +8,8 @@ struct UnresolvedResolutionView: View {
     @State private var selectedCity: String?
     @State private var selectedState: String?
     @State private var selectedCountry: String?
+    @State private var selectedLatitude: Double?
+    @State private var selectedLongitude: Double?
     @State private var showingCitySearch = false
 
     var body: some View {
@@ -27,6 +29,8 @@ struct UnresolvedResolutionView: View {
                         log.city = selectedCity
                         log.state = selectedState
                         log.country = selectedCountry
+                        log.latitude = selectedLatitude
+                        log.longitude = selectedLongitude
                         log.source = .manual
                         log.status = .manual
 
@@ -60,7 +64,9 @@ struct UnresolvedResolutionView: View {
                 CitySearchView(
                     selectedCity: $selectedCity,
                     selectedState: $selectedState,
-                    selectedCountry: $selectedCountry
+                    selectedCountry: $selectedCountry,
+                    selectedLatitude: $selectedLatitude,
+                    selectedLongitude: $selectedLongitude
                 )
             }
             .tint(RoamTheme.accent)
