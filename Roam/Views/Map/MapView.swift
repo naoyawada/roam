@@ -97,7 +97,6 @@ struct MapView: View {
                     .mapStyle(mapStyle)
                     .saturation(0)
                     .colorMultiply(Color(red: 0.96, green: 0.93, blue: 0.88))
-                    .ignoresSafeArea(edges: .top)
                     .onAppear {
                         cameraPosition = .region(defaultRegion)
                     }
@@ -124,15 +123,15 @@ struct MapView: View {
                 .mapStyle(mapStyle)
                 .saturation(0)
                 .colorMultiply(Color(red: 0.96, green: 0.93, blue: 0.88))
-                .ignoresSafeArea(edges: .top)
             }
 
             Text("Map")
                 .font(.system(size: 34, weight: .regular))
                 .foregroundStyle(RoamTheme.textPrimary)
                 .padding(.leading, 20)
-                .padding(.top, 2)
+                .safeAreaPadding(.top)
         }
+        .ignoresSafeArea(edges: .top)
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $selectedItem) { item in
             CityDetailSheet(item: item)
