@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query private var settingsArray: [UserSettings]
     @Query(
@@ -172,6 +173,12 @@ struct SettingsView: View {
                 #endif
             }
             .navigationTitle("Settings")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(RoamTheme.accent)
+                }
+            }
             .sheet(isPresented: $showingCitySearch) {
                 CitySearchView(
                     selectedCity: $selectedCity,

@@ -45,6 +45,21 @@ struct RoamApp: App {
         significantLocationService.startMonitoring()
     }
 
+    private func syncScheduleToSupabase() {
+        let context = ModelContext(modelContainer)
+        let settings = (try? context.fetch(FetchDescriptor<UserSettings>()))?.first
+        let primaryHour = settings?.primaryCheckHour ?? 2
+        let primaryMinute = settings?.primaryCheckMinute ?? 0
+        let retryHour = settings?.retryCheckHour ?? 5
+        let retryMinute = settings?.retryCheckMinute ?? 0
+        DeviceTokenService.syncSchedule(
+            primaryHour: primaryHour,
+            primaryMinute: primaryMinute,
+            retryHour: retryHour,
+            retryMinute: retryMinute
+        )
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -56,6 +71,7 @@ struct RoamApp: App {
                 // survives force-quits, reboots, and iOS pruning the schedule.
                 BackgroundTaskService.schedulePrimaryCapture()
                 HeartbeatService.log(.appForegrounded)
+                syncScheduleToSupabase()
             }
         }
     }

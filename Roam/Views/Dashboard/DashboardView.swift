@@ -21,7 +21,8 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack {
                         Text("Roam")
-                            .font(.largeTitle.bold())
+                            .font(.largeTitle)
+                            .fontWeight(.regular)
                         Spacer()
                         if !unresolvedLogs.isEmpty {
                             Button {

@@ -91,8 +91,17 @@ struct OnboardingView: View {
                 .foregroundStyle(.secondary)
 
             Button("Allow Location Access") {
-                step = .requestingPermission
-                locationService.requestWhenInUseAuthorization()
+                let current = locationService.authorizationStatus
+                if current == .authorizedWhenInUse || current == .authorizedAlways || current == .denied || current == .restricted {
+                    // Permission already determined — skip the spinner
+                    if current == .authorizedWhenInUse {
+                        locationService.requestAlwaysAuthorization()
+                    }
+                    step = .complete
+                } else {
+                    step = .requestingPermission
+                    locationService.requestWhenInUseAuthorization()
+                }
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)

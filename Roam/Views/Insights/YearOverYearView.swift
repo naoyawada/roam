@@ -6,7 +6,7 @@ struct YearOverYearView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Year over Year")
-                .fontWeight(.medium)
+                .fontWeight(.regular)
                 .font(.subheadline)
                 .foregroundStyle(RoamTheme.textPrimary)
 

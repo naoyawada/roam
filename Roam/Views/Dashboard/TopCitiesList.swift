@@ -14,7 +14,7 @@ struct TopCitiesList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Top Cities")
-                .fontWeight(.medium)
+                .fontWeight(.regular)
                 .font(.subheadline)
                 .foregroundStyle(RoamTheme.textPrimary)
                 .padding(.bottom, 10)
@@ -22,9 +22,9 @@ struct TopCitiesList: View {
             ForEach(Array(cities.enumerated()), id: \.offset) { index, city in
                 let rowAnimated = animatedRows.contains(index)
                 HStack {
-                    Circle()
+                    RoundedRectangle(cornerRadius: 2)
                         .fill(city.color)
-                        .frame(width: 7, height: 7)
+                        .frame(width: 10, height: 10)
                     Text(city.name)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
@@ -53,9 +53,9 @@ struct TopCitiesList: View {
                 let otherAnimated = animatedRows.contains(otherIndex)
                 let pct = totalNights > 0 ? Int(Double(otherNights) / Double(totalNights) * 100) : 0
                 HStack {
-                    Circle()
+                    RoundedRectangle(cornerRadius: 2)
                         .fill(ColorPalette.otherColor)
-                        .frame(width: 7, height: 7)
+                        .frame(width: 10, height: 10)
                     Text("\(otherCount) other cit\(otherCount == 1 ? "y" : "ies")")
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textSecondary)

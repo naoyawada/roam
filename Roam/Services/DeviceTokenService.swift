@@ -53,7 +53,9 @@ enum DeviceTokenService {
 
     /// Called from AppDelegate when APNs registration succeeds.
     /// Converts the token to hex and upserts to Supabase.
-    static func didRegister(tokenData: Data, primaryHour: Int = 2, primaryMinute: Int = 0, retryHour: Int = 5, retryMinute: Int = 0) {
+    /// Schedule columns are omitted so that re-registration doesn't overwrite
+    /// a user-configured schedule — `syncSchedule` is the sole owner of those fields.
+    static func didRegister(tokenData: Data) {
         let hex = tokenData.map { String(format: "%02x", $0) }.joined()
         UserDefaults.standard.set(hex, forKey: tokenKey)
         logger.info("APNs token stored: \(hex.prefix(8))...")
@@ -65,10 +67,6 @@ enum DeviceTokenService {
                     "device_id": deviceID,
                     "token": hex,
                     "timezone": TimeZone.current.identifier,
-                    "primary_hour": primaryHour,
-                    "primary_minute": primaryMinute,
-                    "retry_hour": retryHour,
-                    "retry_minute": retryMinute,
                 ],
                 onConflict: "device_id"
             )

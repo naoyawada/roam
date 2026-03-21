@@ -11,7 +11,7 @@ struct YearSummaryBar: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(String(Calendar.current.component(.year, from: .now)))
-                    .fontWeight(.medium)
+                    .fontWeight(.regular)
                     .font(.subheadline)
                     .foregroundStyle(RoamTheme.textPrimary)
                 Spacer()

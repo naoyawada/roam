@@ -28,7 +28,8 @@ struct TimelineView: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
                     Text("Timeline")
-                        .font(.largeTitle.bold())
+                        .font(.largeTitle)
+                        .fontWeight(.regular)
                     Spacer()
                 }
 
@@ -63,7 +64,8 @@ struct TimelineView: View {
                 }
                 Spacer()
                 Text(monthYearString)
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.regular)
                 Spacer()
                 Button {
                     navigatingForward = true
@@ -129,7 +131,8 @@ struct TimelineView: View {
                 }
                 Spacer()
                 Text(String(displayedYear))
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.regular)
                 Spacer()
                 Button(action: nextYear) {
                     Image(systemName: "chevron.right")

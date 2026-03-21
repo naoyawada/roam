@@ -9,30 +9,32 @@ struct HighlightsGrid: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Highlights")
-                .fontWeight(.medium)
+                .fontWeight(.regular)
                 .font(.subheadline)
                 .foregroundStyle(RoamTheme.textPrimary)
 
             LazyVGrid(columns: [GridItem(.flexible(), alignment: .top), GridItem(.flexible(), alignment: .top)], spacing: 10) {
                 HighlightCard(
-                    label: "Most visited",
+                    icon: "chart.line.uptrend.xyaxis",
+                    label: "Most Visited",
                     value: mostVisited.city,
-                    detail: "\(mostVisited.nights) nights"
+                    detail: "\(mostVisited.nights) Nights"
                 )
                 HighlightCard(
-                    label: "Longest streak",
+                    icon: "flame",
+                    label: "Longest Streak",
                     value: longestStreak.city,
-                    detail: "\(longestStreak.days) consecutive"
+                    detail: "\(longestStreak.days) Nights"
                 )
                 HighlightCard(
-                    label: "New cities this year",
-                    value: "\(newCityCount)",
-                    detail: ""
+                    icon: "building.2",
+                    label: "New Cities This Year",
+                    largeValue: "\(newCityCount)"
                 )
                 HighlightCard(
-                    label: "Home vs. away",
-                    value: "\(Int(homeAwayRatio.homePercentage * 100))% / \(Int(homeAwayRatio.awayPercentage * 100))%",
-                    detail: ""
+                    icon: "suitcase",
+                    label: "Away",
+                    largeValue: "\(Int(homeAwayRatio.awayPercentage * 100))%"
                 )
             }
         }
@@ -40,24 +42,40 @@ struct HighlightsGrid: View {
 }
 
 private struct HighlightCard: View {
+    let icon: String
     let label: String
-    let value: String
-    let detail: String
+    var value: String = ""
+    var detail: String = ""
+    var largeValue: String = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 0) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .light))
+                .foregroundStyle(RoamTheme.accent)
+                .padding(.bottom, 12)
+
             Text(label)
-                .font(.caption)
+                .font(.system(size: 9, weight: .medium))
                 .textCase(.uppercase)
-                .tracking(0.3)
-                .foregroundStyle(RoamTheme.textTertiary)
-            Text(value)
-                .fontWeight(.medium)
-                .foregroundStyle(RoamTheme.textPrimary)
-            if !detail.isEmpty {
-                Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(RoamTheme.textSecondary)
+                .foregroundStyle(RoamTheme.textSecondary)
+                .padding(.bottom, 4)
+
+            if !largeValue.isEmpty {
+                Text(largeValue)
+                    .font(.title)
+                    .fontWeight(.regular)
+                    .foregroundStyle(RoamTheme.textPrimary)
+            } else {
+                Text(value)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(RoamTheme.textPrimary)
+                if !detail.isEmpty {
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(RoamTheme.textSecondary)
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
