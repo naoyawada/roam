@@ -13,7 +13,7 @@ struct CurrentCityBanner: View {
                 .foregroundStyle(.white.opacity(0.7))
             Text(cityName)
                 .font(.title)
-                .fontWeight(.semibold)
+                .fontWeight(.medium)
                 .tracking(RoamTheme.headingTracking)
                 .foregroundStyle(.white)
             Text("Day \(streakDays) of current streak")

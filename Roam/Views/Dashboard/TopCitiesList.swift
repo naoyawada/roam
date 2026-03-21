@@ -14,7 +14,7 @@ struct TopCitiesList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Top Cities")
-                .fontWeight(.medium)
+                .fontWeight(.regular)
                 .font(.subheadline)
                 .foregroundStyle(RoamTheme.textPrimary)
                 .padding(.bottom, 10)

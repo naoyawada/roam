@@ -9,10 +9,25 @@ struct QuickStatsRow: View {
     @State private var animatedCards: Set<Int> = []
 
     var body: some View {
-        HStack(spacing: 10) {
-            StatCard(value: animatedCards.contains(0) ? citiesVisited : 0, suffix: "", label: "Cities visited")
-            StatCard(value: animatedCards.contains(1) ? longestStreak : 0, suffix: "", label: "Longest streak")
-            StatCard(value: animatedCards.contains(2) ? homeRatio : 0, suffix: "%", label: "Home ratio")
+        HStack(alignment: .top, spacing: 10) {
+            StatCard(
+                icon: "building.2",
+                label: "Cities Visited",
+                value: animatedCards.contains(0) ? citiesVisited : 0,
+                suffix: ""
+            )
+            StatCard(
+                icon: "flame",
+                label: "Streak",
+                value: animatedCards.contains(1) ? longestStreak : 0,
+                suffix: ""
+            )
+            StatCard(
+                icon: "house",
+                label: "Home Rate",
+                value: animatedCards.contains(2) ? homeRatio : 0,
+                suffix: "%"
+            )
         }
         .onAppear {
             guard animatedCards.isEmpty else { return }
@@ -31,22 +46,31 @@ struct QuickStatsRow: View {
 }
 
 private struct StatCard: View {
+    let icon: String
+    let label: String
     let value: Int
     let suffix: String
-    let label: String
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(alignment: .leading, spacing: 0) {
             AnimatingNumber(value: Double(value), suffix: suffix)
-                .font(.title3)
-                .fontWeight(.semibold)
+                .font(.title)
+                .fontWeight(.regular)
                 .foregroundStyle(RoamTheme.textPrimary)
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(RoamTheme.textSecondary)
+                .padding(.bottom, 6)
+
+            HStack(spacing: 3) {
+                Image(systemName: icon)
+                Text(label)
+                    .textCase(.uppercase)
+            }
+            .font(.system(size: 9, weight: .medium))
+            .foregroundStyle(RoamTheme.textSecondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, RoamTheme.cardPadding)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(12)
         .overlay(
             RoundedRectangle(cornerRadius: RoamTheme.cornerRadiusSmall)
                 .stroke(RoamTheme.border, lineWidth: 1)

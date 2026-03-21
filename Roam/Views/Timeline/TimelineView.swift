@@ -28,7 +28,8 @@ struct TimelineView: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
                     Text("Timeline")
-                        .font(.largeTitle.bold())
+                        .font(.largeTitle)
+                        .fontWeight(.regular)
                     Spacer()
                 }
 

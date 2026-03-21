@@ -18,7 +18,8 @@ struct InsightsView: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
                     Text("Insights")
-                        .font(.largeTitle.bold())
+                        .font(.largeTitle)
+                        .fontWeight(.regular)
                     Spacer()
                 }
                     let years = analytics.availableYears()

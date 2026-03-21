@@ -63,6 +63,11 @@ enum RoamTheme {
         dark: Color(red: 0.910, green: 0.902, blue: 0.878).opacity(0.15)
     )
 
+    static let borderWarm = adaptive(
+        light: Color(red: 0.843, green: 0.808, blue: 0.780),   // #D7CEC7
+        dark: Color(red: 0.353, green: 0.337, blue: 0.318)     // warm gray for dark
+    )
+
     static let surfaceSubtle = adaptive(
         light: Color(red: 0.149, green: 0.145, blue: 0.118).opacity(0.03),
         dark: Color(red: 0.910, green: 0.902, blue: 0.878).opacity(0.05)
