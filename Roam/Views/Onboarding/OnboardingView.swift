@@ -82,7 +82,7 @@ struct OnboardingView: View {
             Text("Location Access")
                 .font(.title2)
                 .fontWeight(.bold)
-            Text("Roam checks your location once at night (around 2 AM) to determine which city you're in. This requires \"Always\" location access so it can work while you sleep.")
+            Text("Roam passively monitors your location to automatically track which cities you visit. This requires \"Always\" location access so it can detect city changes in the background.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
             Text("Your location data stays on your device and in your private iCloud account. It is never shared.")

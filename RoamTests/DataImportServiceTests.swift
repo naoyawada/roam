@@ -9,22 +9,9 @@ final class DataImportServiceTests: XCTestCase {
     var context: ModelContext!
 
     override func setUp() async throws {
-        let cloudConfig = ModelConfiguration(
-            "cloud",
-            schema: Schema([NightLog.self, CityColor.self]),
-            isStoredInMemoryOnly: true,
-            cloudKitDatabase: .none
-        )
-        let localConfig = ModelConfiguration(
-            "local",
-            schema: Schema([UserSettings.self]),
-            isStoredInMemoryOnly: true,
-            cloudKitDatabase: .none
-        )
-        container = try ModelContainer(
-            for: NightLog.self, CityColor.self, UserSettings.self,
-            configurations: cloudConfig, localConfig
-        )
+        let schema = Schema([DailyEntry.self, CityRecord.self, UserSettings.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        container = try ModelContainer(for: schema, configurations: [config])
         context = container.mainContext
     }
 
@@ -32,12 +19,12 @@ final class DataImportServiceTests: XCTestCase {
 
     func testParseValidCSV() {
         let csv = [
-            "date,city,state,country,latitude,longitude,source,status,captured_at,accuracy",
-            "\"2026-01-15T12:00:00Z\",\"Austin\",\"TX\",\"US\",\"30.2672\",\"-97.7431\",\"automatic\",\"confirmed\",\"2026-01-15T02:00:00Z\",\"50\"",
-            "\"2026-01-16T12:00:00Z\",\"NYC\",\"NY\",\"US\",\"40.7128\",\"-74.006\",\"automatic\",\"confirmed\",\"2026-01-16T02:00:00Z\",\"30\"",
-            "\"2026-01-17T12:00:00Z\",\"LA\",\"CA\",\"US\",\"34.0522\",\"-118.2437\",\"manual\",\"manual\",\"2026-01-17T12:00:00Z\",\"100\"",
-            "\"2026-01-18T12:00:00Z\",\"\",\"\",\"\",\"\",\"\",\"automatic\",\"unresolved\",\"2026-01-18T02:00:00Z\",\"\"",
-            "\"2026-01-19T12:00:00Z\",\"Chicago\",\"IL\",\"US\",\"41.8781\",\"-87.6298\",\"automatic\",\"confirmed\",\"2026-01-19T02:00:00Z\",\"25\""
+            "date,city,region,country,latitude,longitude,source,confidence,total_visit_hours,is_travel_day,updated_at",
+            "\"2026-01-15T12:00:00Z\",\"Austin\",\"TX\",\"US\",\"30.2672\",\"-97.7431\",\"visit\",\"high\",\"8.0\",\"false\",\"2026-01-15T12:00:00Z\"",
+            "\"2026-01-16T12:00:00Z\",\"NYC\",\"NY\",\"US\",\"40.7128\",\"-74.006\",\"visit\",\"high\",\"12.0\",\"false\",\"2026-01-16T12:00:00Z\"",
+            "\"2026-01-17T12:00:00Z\",\"LA\",\"CA\",\"US\",\"34.0522\",\"-118.2437\",\"manual\",\"medium\",\"6.0\",\"true\",\"2026-01-17T12:00:00Z\"",
+            "\"2026-01-18T12:00:00Z\",\"\",\"\",\"\",\"\",\"\",\"visit\",\"low\",\"0.0\",\"false\",\"2026-01-18T12:00:00Z\"",
+            "\"2026-01-19T12:00:00Z\",\"Chicago\",\"IL\",\"US\",\"41.8781\",\"-87.6298\",\"visit\",\"high\",\"10.0\",\"false\",\"2026-01-19T12:00:00Z\""
         ].joined(separator: "\n")
 
         let (entries, malformed) = DataImportService.parseCSV(csv)
@@ -46,23 +33,22 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(malformed, 0)
 
         XCTAssertEqual(entries[0].city, "Austin")
-        XCTAssertEqual(entries[0].state, "TX")
+        XCTAssertEqual(entries[0].region, "TX")
         XCTAssertEqual(entries[0].country, "US")
         XCTAssertEqual(entries[0].latitude, 30.2672)
         XCTAssertEqual(entries[0].longitude, -97.7431)
 
-        // Empty fields should be nil
-        XCTAssertNil(entries[3].city)
-        XCTAssertNil(entries[3].latitude)
-        XCTAssertNil(entries[3].horizontalAccuracy)
+        // Empty fields should produce empty strings for city
+        XCTAssertEqual(entries[3].city, "")
+        XCTAssertEqual(entries[3].latitude, 0.0)
     }
 
     func testParseCSVWithMalformedRows() {
         let csv = [
-            "date,city,state,country,latitude,longitude,source,status,captured_at,accuracy",
-            "\"2026-01-15T12:00:00Z\",\"Austin\",\"TX\",\"US\",\"30.2672\",\"-97.7431\",\"automatic\",\"confirmed\",\"2026-01-15T02:00:00Z\",\"50\"",
+            "date,city,region,country,latitude,longitude,source,confidence,total_visit_hours,is_travel_day,updated_at",
+            "\"2026-01-15T12:00:00Z\",\"Austin\",\"TX\",\"US\",\"30.2672\",\"-97.7431\",\"visit\",\"high\",\"8.0\",\"false\",\"2026-01-15T12:00:00Z\"",
             "not a valid row",
-            "\"bad-date\",\"Austin\",\"TX\",\"US\",\"30\",\"97\",\"auto\",\"confirmed\",\"2026-01-15T02:00:00Z\",\"50\""
+            "\"bad-date\",\"Austin\",\"TX\",\"US\",\"30\",\"97\",\"visit\",\"high\",\"8.0\",\"false\",\"2026-01-15T12:00:00Z\""
         ].joined(separator: "\n")
 
         let (entries, malformed) = DataImportService.parseCSV(csv)
@@ -72,7 +58,7 @@ final class DataImportServiceTests: XCTestCase {
     }
 
     func testParseCSVHeaderOnly() {
-        let csv = "date,city,state,country,latitude,longitude,source,status,captured_at,accuracy"
+        let csv = "date,city,region,country,latitude,longitude,source,confidence,total_visit_hours,is_travel_day,updated_at"
 
         let (entries, malformed) = DataImportService.parseCSV(csv)
 
@@ -89,8 +75,8 @@ final class DataImportServiceTests: XCTestCase {
 
     func testParseCSVWithEscapedQuotes() {
         let csv = [
-            "date,city,state,country,latitude,longitude,source,status,captured_at,accuracy",
-            "\"2026-01-15T12:00:00Z\",\"City with \"\"quotes\"\"\",\"TX\",\"US\",\"30\",\"97\",\"manual\",\"confirmed\",\"2026-01-15T12:00:00Z\",\"50\""
+            "date,city,region,country,latitude,longitude,source,confidence,total_visit_hours,is_travel_day,updated_at",
+            "\"2026-01-15T12:00:00Z\",\"City with \"\"quotes\"\"\",\"TX\",\"US\",\"30\",\"97\",\"manual\",\"high\",\"8.0\",\"false\",\"2026-01-15T12:00:00Z\""
         ].joined(separator: "\n")
 
         let (entries, malformed) = DataImportService.parseCSV(csv)
@@ -108,53 +94,57 @@ final class DataImportServiceTests: XCTestCase {
     {
         "date": "2026-01-15T12:00:00Z",
         "city": "Austin",
-        "state": "TX",
+        "region": "TX",
         "country": "US",
         "latitude": 30.2672,
         "longitude": -97.7431,
-        "source": "automatic",
-        "status": "confirmed",
-        "captured_at": "2026-01-15T02:00:00Z",
-        "accuracy": 50.0
+        "source": "visit",
+        "confidence": "high",
+        "total_visit_hours": 8.0,
+        "is_travel_day": false,
+        "updated_at": "2026-01-15T12:00:00Z"
     },
     {
         "date": "2026-01-16T12:00:00Z",
         "city": "NYC",
-        "state": "NY",
+        "region": "NY",
         "country": "US",
         "latitude": 40.7128,
         "longitude": -74.006,
-        "source": "automatic",
-        "status": "confirmed",
-        "captured_at": "2026-01-16T02:00:00Z",
-        "accuracy": 30.0
+        "source": "visit",
+        "confidence": "high",
+        "total_visit_hours": 12.0,
+        "is_travel_day": false,
+        "updated_at": "2026-01-16T12:00:00Z"
     },
     {
         "date": "2026-01-17T12:00:00Z",
-        "source": "automatic",
-        "status": "unresolved",
-        "captured_at": "2026-01-17T02:00:00Z"
+        "city": "",
+        "source": "visit",
+        "confidence": "low",
+        "updated_at": "2026-01-17T12:00:00Z"
     },
     {
         "date": "2026-01-18T12:00:00Z",
         "city": "Chicago",
-        "state": "IL",
+        "region": "IL",
         "country": "US",
-        "source": "automatic",
-        "status": "confirmed",
-        "captured_at": "2026-01-18T02:00:00Z"
+        "source": "visit",
+        "confidence": "high",
+        "updated_at": "2026-01-18T12:00:00Z"
     },
     {
         "date": "2026-01-19T12:00:00Z",
         "city": "LA",
-        "state": "CA",
+        "region": "CA",
         "country": "US",
         "latitude": 34.0522,
         "longitude": -118.2437,
         "source": "manual",
-        "status": "manual",
-        "captured_at": "2026-01-19T12:00:00Z",
-        "accuracy": 100.0
+        "confidence": "medium",
+        "total_visit_hours": 6.0,
+        "is_travel_day": true,
+        "updated_at": "2026-01-19T12:00:00Z"
     }
 ]
 """
@@ -166,17 +156,18 @@ final class DataImportServiceTests: XCTestCase {
 
         XCTAssertEqual(entries[0].city, "Austin")
         XCTAssertEqual(entries[0].latitude, 30.2672)
+        XCTAssertEqual(entries[4].isTravelDay, true)
 
         // Entry with no optional fields
-        XCTAssertNil(entries[2].city)
-        XCTAssertNil(entries[2].latitude)
+        XCTAssertEqual(entries[2].city, "")
+        XCTAssertEqual(entries[2].latitude, 0.0)
     }
 
     func testParseJSONMissingDate() {
         let json = """
 [
-    {"city": "Austin", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"},
-    {"date": "2026-01-16T12:00:00Z", "city": "NYC", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-16T02:00:00Z"}
+    {"city": "Austin", "source": "visit", "confidence": "high"},
+    {"date": "2026-01-16T12:00:00Z", "city": "NYC", "source": "visit", "confidence": "high"}
 ]
 """
 
@@ -189,7 +180,7 @@ final class DataImportServiceTests: XCTestCase {
 
     func testParseJSONWithExtraKeys() {
         let json = """
-[{"date": "2026-01-15T12:00:00Z", "city": "Austin", "source": "auto", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z", "extra_field": "ignored"}]
+[{"date": "2026-01-15T12:00:00Z", "city": "Austin", "source": "visit", "confidence": "high", "extra_field": "ignored"}]
 """
 
         let (entries, malformed) = DataImportService.parseJSON(json)
@@ -209,21 +200,15 @@ final class DataImportServiceTests: XCTestCase {
     // MARK: - Import with Duplicate Detection
 
     func testImportSkipsDuplicates() {
-        // Pre-insert a log for Jan 15
-        let existingLog = NightLog(
-            date: noonUTC(2026, 1, 15),
-            city: "Austin",
-            state: "TX",
-            country: "US",
-            capturedAt: noonUTC(2026, 1, 15)
-        )
-        context.insert(existingLog)
+        // Pre-insert an entry for Jan 15
+        let existing = makeDailyEntry(date: noonUTC(2026, 1, 15), city: "Austin")
+        context.insert(existing)
         try! context.save()
 
         let csv = [
-            "date,city,state,country,latitude,longitude,source,status,captured_at,accuracy",
-            "\"2026-01-15T12:00:00Z\",\"NYC\",\"NY\",\"US\",\"40\",\"74\",\"automatic\",\"confirmed\",\"2026-01-15T02:00:00Z\",\"50\"",
-            "\"2026-01-16T12:00:00Z\",\"LA\",\"CA\",\"US\",\"34\",\"118\",\"automatic\",\"confirmed\",\"2026-01-16T02:00:00Z\",\"50\""
+            "date,city,region,country,latitude,longitude,source,confidence,total_visit_hours,is_travel_day,updated_at",
+            "\"2026-01-15T12:00:00Z\",\"NYC\",\"NY\",\"US\",\"40\",\"74\",\"visit\",\"high\",\"8.0\",\"false\",\"2026-01-15T12:00:00Z\"",
+            "\"2026-01-16T12:00:00Z\",\"LA\",\"CA\",\"US\",\"34\",\"118\",\"visit\",\"high\",\"8.0\",\"false\",\"2026-01-16T12:00:00Z\""
         ].joined(separator: "\n")
 
         let result = DataImportService.importFile(content: csv, format: .csv, into: context)
@@ -232,33 +217,31 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.skipped, 1)
         XCTAssertEqual(result.malformed, 0)
 
-        // Verify the existing Austin entry wasn't overwritten
-        let allLogs = try! context.fetch(FetchDescriptor<NightLog>(sortBy: [SortDescriptor(\NightLog.date)]))
-        XCTAssertEqual(allLogs.count, 2)
-        XCTAssertEqual(allLogs[0].city, "Austin") // original preserved
-        XCTAssertEqual(allLogs[1].city, "LA") // new one imported
+        let allEntries = try! context.fetch(FetchDescriptor<DailyEntry>(sortBy: [SortDescriptor(\DailyEntry.date)]))
+        XCTAssertEqual(allEntries.count, 2)
+        XCTAssertEqual(allEntries[0].primaryCity, "Austin") // original preserved
+        XCTAssertEqual(allEntries[1].primaryCity, "LA")     // new one imported
     }
 
     func testImportSetsSourceToManual() {
         let csv = [
-            "date,city,state,country,latitude,longitude,source,status,captured_at,accuracy",
-            "\"2026-01-15T12:00:00Z\",\"Austin\",\"TX\",\"US\",\"30\",\"97\",\"automatic\",\"confirmed\",\"2026-01-15T02:00:00Z\",\"50\""
+            "date,city,region,country,latitude,longitude,source,confidence,total_visit_hours,is_travel_day,updated_at",
+            "\"2026-01-15T12:00:00Z\",\"Austin\",\"TX\",\"US\",\"30\",\"97\",\"visit\",\"high\",\"8.0\",\"false\",\"2026-01-15T12:00:00Z\""
         ].joined(separator: "\n")
 
         let result = DataImportService.importFile(content: csv, format: .csv, into: context)
 
         XCTAssertEqual(result.imported, 1)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs[0].source, .manual)
-        XCTAssertEqual(logs[0].status, .confirmed)
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries[0].source, .manual)
     }
 
     func testImportJSONFile() {
         let json = """
 [
-    {"date": "2026-01-15T12:00:00Z", "city": "Austin", "state": "TX", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"},
-    {"date": "2026-01-16T12:00:00Z", "city": "NYC", "state": "NY", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-16T02:00:00Z"}
+    {"date": "2026-01-15T12:00:00Z", "city": "Austin", "region": "TX", "country": "US", "source": "visit", "confidence": "high"},
+    {"date": "2026-01-16T12:00:00Z", "city": "NYC", "region": "NY", "country": "US", "source": "visit", "confidence": "high"}
 ]
 """
 
@@ -268,23 +251,23 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.skipped, 0)
         XCTAssertEqual(result.malformed, 0)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>(sortBy: [SortDescriptor(\NightLog.date)]))
-        XCTAssertEqual(logs.count, 2)
-        XCTAssertEqual(logs[0].city, "Austin")
-        XCTAssertEqual(logs[1].city, "NYC")
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>(sortBy: [SortDescriptor(\DailyEntry.date)]))
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertEqual(entries[0].primaryCity, "Austin")
+        XCTAssertEqual(entries[1].primaryCity, "NYC")
     }
 
     func testImportCombinesMalformedAndDuplicates() {
         // Pre-insert for Jan 15
-        let existing = NightLog(date: noonUTC(2026, 1, 15), capturedAt: noonUTC(2026, 1, 15))
+        let existing = makeDailyEntry(date: noonUTC(2026, 1, 15), city: "Austin")
         context.insert(existing)
         try! context.save()
 
         let csv = [
-            "date,city,state,country,latitude,longitude,source,status,captured_at,accuracy",
-            "\"2026-01-15T12:00:00Z\",\"Austin\",\"TX\",\"US\",\"30\",\"97\",\"auto\",\"confirmed\",\"2026-01-15T02:00:00Z\",\"50\"",
+            "date,city,region,country,latitude,longitude,source,confidence,total_visit_hours,is_travel_day,updated_at",
+            "\"2026-01-15T12:00:00Z\",\"Austin\",\"TX\",\"US\",\"30\",\"97\",\"visit\",\"high\",\"8.0\",\"false\",\"2026-01-15T12:00:00Z\"",
             "bad row",
-            "\"2026-01-16T12:00:00Z\",\"NYC\",\"NY\",\"US\",\"40\",\"74\",\"auto\",\"confirmed\",\"2026-01-16T02:00:00Z\",\"30\""
+            "\"2026-01-16T12:00:00Z\",\"NYC\",\"NY\",\"US\",\"40\",\"74\",\"visit\",\"high\",\"8.0\",\"false\",\"2026-01-16T12:00:00Z\""
         ].joined(separator: "\n")
 
         let result = DataImportService.importFile(content: csv, format: .csv, into: context)
@@ -294,22 +277,16 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.malformed, 1)
     }
 
-    // MARK: - Import Upsert (Bug 1)
+    // MARK: - Import Upsert
 
-    func testImportUpdatesExistingUnresolvedEntry() {
-        // Pre-insert an unresolved entry for Jan 15
-        let existing = NightLog(
-            date: noonUTC(2026, 1, 15),
-            capturedAt: noonUTC(2026, 1, 15),
-            source: .automatic,
-            status: .unresolved
-        )
+    func testImportUpdatesExistingEmptyCityEntry() {
+        // Pre-insert an entry with no city for Jan 15
+        let existing = makeDailyEntry(date: noonUTC(2026, 1, 15), city: "")
         context.insert(existing)
         try! context.save()
-        let originalID = existing.id
 
         let json = """
-[{"date": "2026-01-15T12:00:00Z", "city": "Austin", "state": "TX", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"}]
+[{"date": "2026-01-15T12:00:00Z", "city": "Austin", "region": "TX", "country": "US", "source": "visit", "confidence": "high"}]
 """
 
         let result = DataImportService.importFile(content: json, format: .json, into: context)
@@ -319,32 +296,21 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.skipped, 0)
         XCTAssertEqual(result.malformed, 0)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs.count, 1)
-        XCTAssertEqual(logs[0].city, "Austin")
-        XCTAssertEqual(logs[0].state, "TX")
-        XCTAssertEqual(logs[0].country, "US")
-        XCTAssertEqual(logs[0].status, .confirmed)
-        XCTAssertEqual(logs[0].source, .manual)
-        XCTAssertEqual(logs[0].id, originalID) // UUID preserved
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].primaryCity, "Austin")
+        XCTAssertEqual(entries[0].primaryRegion, "TX")
+        XCTAssertEqual(entries[0].source, .manual)
     }
 
-    func testImportDoesNotOverwriteConfirmedEntry() {
-        // Pre-insert a confirmed entry for Jan 15
-        let existing = NightLog(
-            date: noonUTC(2026, 1, 15),
-            city: "Austin",
-            state: "TX",
-            country: "US",
-            capturedAt: noonUTC(2026, 1, 15),
-            source: .automatic,
-            status: .confirmed
-        )
+    func testImportDoesNotOverwriteExistingCityEntry() {
+        // Pre-insert a confirmed entry with city for Jan 15
+        let existing = makeDailyEntry(date: noonUTC(2026, 1, 15), city: "Austin")
         context.insert(existing)
         try! context.save()
 
         let json = """
-[{"date": "2026-01-15T12:00:00Z", "city": "NYC", "state": "NY", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"}]
+[{"date": "2026-01-15T12:00:00Z", "city": "NYC", "region": "NY", "country": "US", "source": "visit", "confidence": "high"}]
 """
 
         let result = DataImportService.importFile(content: json, format: .json, into: context)
@@ -354,24 +320,19 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.skipped, 1)
         XCTAssertEqual(result.malformed, 0)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs.count, 1)
-        XCTAssertEqual(logs[0].city, "Austin") // original preserved
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].primaryCity, "Austin") // original preserved
     }
 
-    func testImportSkipsUnresolvedWhenIncomingHasNoCity() {
-        // Pre-insert an unresolved entry
-        let existing = NightLog(
-            date: noonUTC(2026, 1, 15),
-            capturedAt: noonUTC(2026, 1, 15),
-            source: .automatic,
-            status: .unresolved
-        )
+    func testImportSkipsWhenIncomingHasNoCity() {
+        // Pre-insert an entry with no city
+        let existing = makeDailyEntry(date: noonUTC(2026, 1, 15), city: "")
         context.insert(existing)
         try! context.save()
 
         let json = """
-[{"date": "2026-01-15T12:00:00Z", "source": "automatic", "status": "unresolved", "captured_at": "2026-01-15T02:00:00Z"}]
+[{"date": "2026-01-15T12:00:00Z", "city": "", "source": "visit", "confidence": "low"}]
 """
 
         let result = DataImportService.importFile(content: json, format: .json, into: context)
@@ -381,17 +342,17 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.skipped, 1)
         XCTAssertEqual(result.malformed, 0)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs[0].status, .unresolved) // unchanged
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries[0].primaryCity, "") // unchanged
     }
 
-    // MARK: - Within-File Dedup (Bug 2)
+    // MARK: - Within-File Dedup
 
     func testImportDedupesWithinFile() {
         let json = """
 [
-    {"date": "2026-01-15T12:00:00Z", "city": "Austin", "state": "TX", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"},
-    {"date": "2026-01-15T12:00:00Z", "city": "NYC", "state": "NY", "country": "US", "source": "manual", "status": "manual", "captured_at": "2026-01-15T12:00:00Z"}
+    {"date": "2026-01-15T12:00:00Z", "city": "Austin", "region": "TX", "country": "US", "source": "visit", "confidence": "high"},
+    {"date": "2026-01-15T12:00:00Z", "city": "NYC", "region": "NY", "country": "US", "source": "manual", "confidence": "high"}
 ]
 """
 
@@ -401,25 +362,19 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.skipped, 1)
         XCTAssertEqual(result.malformed, 0)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs.count, 1)
-        XCTAssertEqual(logs[0].city, "Austin") // first entry wins
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].primaryCity, "Austin") // first entry wins
     }
 
     func testImportNormalizesNonNoonDates() {
         // Import a date that is already noon UTC — should match an existing entry at noon UTC
-        let existing = NightLog(
-            date: noonUTC(2026, 1, 15),
-            capturedAt: noonUTC(2026, 1, 15),
-            source: .automatic,
-            status: .unresolved
-        )
+        let existing = makeDailyEntry(date: noonUTC(2026, 1, 15), city: "")
         context.insert(existing)
         try! context.save()
 
-        // The date in the JSON is noon UTC, matching the existing entry
         let json = """
-[{"date": "2026-01-15T12:00:00Z", "city": "Austin", "state": "TX", "country": "US", "source": "automatic", "status": "confirmed", "captured_at": "2026-01-15T02:00:00Z"}]
+[{"date": "2026-01-15T12:00:00Z", "city": "Austin", "region": "TX", "country": "US", "source": "visit", "confidence": "high"}]
 """
 
         let result = DataImportService.importFile(content: json, format: .json, into: context)
@@ -428,9 +383,9 @@ final class DataImportServiceTests: XCTestCase {
         XCTAssertEqual(result.imported, 0)
         XCTAssertEqual(result.malformed, 0)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs.count, 1)
-        XCTAssertEqual(logs[0].city, "Austin")
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].primaryCity, "Austin")
     }
 
     // MARK: - Helpers
@@ -439,5 +394,20 @@ final class DataImportServiceTests: XCTestCase {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
         return cal.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
+    }
+
+    private func makeDailyEntry(date: Date, city: String) -> DailyEntry {
+        let entry = DailyEntry()
+        entry.date = date
+        entry.primaryCity = city
+        entry.primaryRegion = ""
+        entry.primaryCountry = ""
+        entry.primaryLatitude = 0.0
+        entry.primaryLongitude = 0.0
+        entry.source = .visit
+        entry.confidence = .high
+        entry.createdAt = date
+        entry.updatedAt = date
+        return entry
     }
 }

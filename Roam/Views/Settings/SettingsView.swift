@@ -6,12 +6,9 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
     @Query private var settingsArray: [UserSettings]
     @Query(
-        filter: #Predicate<NightLog> {
-            $0.statusRaw != "unresolved"
-        },
-        sort: \NightLog.capturedAt,
+        sort: \DailyEntry.updatedAt,
         order: .reverse
-    ) private var confirmedLogs: [NightLog]
+    ) private var allEntries: [DailyEntry]
     @State private var showingCitySearch = false
     @State private var selectedCity: String?
     @State private var selectedState: String?
@@ -20,7 +17,7 @@ struct SettingsView: View {
     @State private var selectedLongitude: Double?
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled: Bool = true
     @State private var showSyncRestartAlert = false
-    @State private var debugCaptureResult: String?
+    @State private var aboutTapCount = 0
 
     private var settings: UserSettings {
         if let existing = settingsArray.first {
@@ -30,6 +27,10 @@ struct SettingsView: View {
         context.insert(new)
         try? context.save()
         return new
+    }
+
+    private var latestEntry: DailyEntry? {
+        allEntries.first { !$0.primaryCity.isEmpty }
     }
 
     var body: some View {
@@ -49,55 +50,22 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("Capture Schedule") {
-                    DatePicker(
-                        "Primary check",
-                        selection: Binding(
-                            get: { timeFromComponents(hour: settings.primaryCheckHour, minute: settings.primaryCheckMinute) },
-                            set: { newValue in
-                                let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-                                settings.primaryCheckHour = comps.hour ?? 2
-                                settings.primaryCheckMinute = comps.minute ?? 0
-                                BackgroundTaskService.schedulePrimaryCapture(hour: settings.primaryCheckHour, minute: settings.primaryCheckMinute)
-                                syncScheduleToSupabase()
-                            }
-                        ),
-                        displayedComponents: .hourAndMinute
-                    )
-
-                    DatePicker(
-                        "Retry check",
-                        selection: Binding(
-                            get: { timeFromComponents(hour: settings.retryCheckHour, minute: settings.retryCheckMinute) },
-                            set: { newValue in
-                                let comps = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-                                settings.retryCheckHour = comps.hour ?? 5
-                                settings.retryCheckMinute = comps.minute ?? 0
-                                BackgroundTaskService.scheduleRetryCapture(hour: settings.retryCheckHour, minute: settings.retryCheckMinute)
-                                syncScheduleToSupabase()
-                            }
-                        ),
-                        displayedComponents: .hourAndMinute
-                    )
-                }
-
-                Section("Capture Status") {
-                    if let latest = confirmedLogs.first {
-                        LabeledContent("Last capture") {
+                Section("Tracking Status") {
+                    if let entry = latestEntry {
+                        LabeledContent("Last recorded") {
                             VStack(alignment: .trailing) {
-                                Text(latest.capturedAt.formatted(date: .abbreviated, time: .shortened))
-                                if let city = latest.city {
-                                    Text(city)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
+                                Text(entry.updatedAt.formatted(date: .abbreviated, time: .shortened))
+                                Text(CityDisplayFormatter.format(
+                                    city: entry.primaryCity,
+                                    state: entry.primaryRegion,
+                                    country: entry.primaryCountry
+                                ))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                             }
                         }
                     } else {
-                        LabeledContent("Last capture", value: "None yet")
-                    }
-                    LabeledContent("Next scheduled") {
-                        Text(nextScheduledTime)
+                        LabeledContent("Last recorded", value: "None yet")
                     }
                 }
 
@@ -107,10 +75,6 @@ struct SettingsView: View {
                             guard oldValue != newValue else { return }
                             showSyncRestartAlert = true
                         }
-                    Toggle("Unresolved Night Notifications", isOn: Binding(
-                        get: { settings.notificationsEnabled },
-                        set: { settings.notificationsEnabled = $0 }
-                    ))
                     NavigationLink("Export Data") {
                         DataExportView()
                     }
@@ -121,13 +85,23 @@ struct SettingsView: View {
 
                 Section("About") {
                     LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
-                    Text("Roam tracks your location once nightly to log which city you sleep in. Location data is stored on-device and synced via iCloud. Your data is never shared with third parties.")
+                    Text("Roam passively monitors your location to automatically track which cities you visit. Location data is stored on-device and synced via iCloud. Your data is never shared with third parties.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .onTapGesture {
+                            aboutTapCount += 1
+                        }
                 }
 
                 #if DEBUG
                 Section("Debug") {
+                    NavigationLink("Debug Tools") {
+                        // DebugScreen will be created in Task 13
+                        // Placeholder view until then
+                        Text("Debug screen coming soon")
+                            .foregroundStyle(.secondary)
+                            .navigationTitle("Debug")
+                    }
                     LabeledContent("Device ID") {
                         Text(DeviceTokenService.deviceID)
                             .font(.caption2)
@@ -141,35 +115,6 @@ struct SettingsView: View {
                             .monospaced()
                             .lineLimit(1)
                             .truncationMode(.middle)
-                    }
-                    Button("Trigger Capture Now") {
-                        Task {
-                            guard let container = AppDelegate.modelContainer else { return }
-                            let outcome = await BackgroundTaskService.performCapture(
-                                modelContainer: container,
-                                source: "debug",
-                                forceCaptureWindow: true
-                            )
-                            debugCaptureResult = switch outcome {
-                            case .captured: "Captured!"
-                            case .skipped: "Skipped"
-                            case .failed: "Failed"
-                            }
-                        }
-                    }
-                    if let result = debugCaptureResult {
-                        Text(result)
-                            .font(.caption)
-                            .foregroundStyle(result == "Captured!" ? .green : .red)
-                    }
-                    Button("Delete Today's Entry", role: .destructive) {
-                        let nightDate = DateNormalization.normalizedNightDate(from: .now)
-                        if let entry = try? context.fetch(
-                            FetchDescriptor<NightLog>(predicate: #Predicate { $0.date == nightDate })
-                        ).first {
-                            context.delete(entry)
-                            try? context.save()
-                        }
                     }
                 }
                 #endif
@@ -211,25 +156,5 @@ struct SettingsView: View {
         let state = parts.count > 1 ? String(parts[1]) : nil
         let country = parts.count > 2 ? String(parts[2]) : nil
         return CityDisplayFormatter.format(city: String(city), state: state, country: country)
-    }
-
-    private var nextScheduledTime: String {
-        let hour = settings.primaryCheckHour
-        let minute = settings.primaryCheckMinute
-        let time = Calendar.current.date(from: DateComponents(hour: hour, minute: minute)) ?? .now
-        return "Tonight, \(time.formatted(date: .omitted, time: .shortened))"
-    }
-
-    private func timeFromComponents(hour: Int, minute: Int) -> Date {
-        Calendar.current.date(from: DateComponents(hour: hour, minute: minute)) ?? .now
-    }
-
-    private func syncScheduleToSupabase() {
-        DeviceTokenService.syncSchedule(
-            primaryHour: settings.primaryCheckHour,
-            primaryMinute: settings.primaryCheckMinute,
-            retryHour: settings.retryCheckHour,
-            retryMinute: settings.retryCheckMinute
-        )
     }
 }

@@ -13,7 +13,7 @@ struct DataImportView: View {
     var body: some View {
         Form {
             Section {
-                Text("Import NightLog entries from a CSV or JSON file previously exported from Roam.")
+                Text("Import daily entries from a CSV or JSON file previously exported from Roam.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -62,9 +62,8 @@ struct DataImportView: View {
                 let format: DataImportService.ImportFormat =
                     url.pathExtension.lowercased() == "json" ? .json : .csv
                 importResult = DataImportService.importFile(content: content, format: format, into: context)
-                DeduplicationService.deduplicateNightLogs(context: context)
-                DeduplicationService.deduplicateCityColors(context: context)
-                CityColorService.assignMissingColors(context: context)
+                DeduplicationService.deduplicateDailyEntries(context: context)
+                DeduplicationService.deduplicateCityRecords(context: context)
                 showingResult = true
             } catch {
                 importError = error.localizedDescription

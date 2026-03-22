@@ -77,6 +77,9 @@ struct ContentView: View {
                 DayDetailSheet(entry: entry)
             }
             .task {
+                // Deduplicate new pipeline data
+                DeduplicationService.deduplicateDailyEntries(context: context)
+                DeduplicationService.deduplicateCityRecords(context: context)
                 // Legacy deduplication -- still needed while NightLog data exists
                 DeduplicationService.deduplicateNightLogs(context: context)
                 DeduplicationService.deduplicateCityColors(context: context)

@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct DataExportView: View {
-    @Query(sort: \NightLog.date) private var allLogs: [NightLog]
+    @Query(sort: \DailyEntry.date) private var allEntries: [DailyEntry]
 
     @State private var exportFormat: ExportFormat = .csv
     @State private var filterYear: Int? = nil
@@ -23,22 +23,22 @@ struct DataExportView: View {
         }
     }
 
-    private var filteredLogs: [NightLog] {
-        let logs: [NightLog]
+    private var filteredEntries: [DailyEntry] {
+        let entries: [DailyEntry]
         if let year = filterYear {
             var cal = Calendar(identifier: .gregorian)
             cal.timeZone = TimeZone(identifier: "UTC")!
-            logs = allLogs.filter { cal.component(.year, from: $0.date) == year }
+            entries = allEntries.filter { cal.component(.year, from: $0.date) == year }
         } else {
-            logs = Array(allLogs)
+            entries = Array(allEntries)
         }
-        return DataExportService.deduplicatedLogs(logs)
+        return DataExportService.deduplicatedEntries(entries)
     }
 
     private var availableYears: [Int] {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        let years = Set(allLogs.map { cal.component(.year, from: $0.date) })
+        let years = Set(allEntries.map { cal.component(.year, from: $0.date) })
         return years.sorted().reversed()
     }
 
@@ -67,14 +67,14 @@ struct DataExportView: View {
                     exportData()
                 } label: {
                     HStack {
-                        Text("Export \(filteredLogs.count) entries")
+                        Text("Export \(filteredEntries.count) entries")
                         if isExporting {
                             Spacer()
                             ProgressView()
                         }
                     }
                 }
-                .disabled(filteredLogs.isEmpty || isExporting)
+                .disabled(filteredEntries.isEmpty || isExporting)
             }
         }
         .navigationTitle("Export Data")
@@ -90,15 +90,15 @@ struct DataExportView: View {
 
     private func exportData() {
         isExporting = true
-        let logs = filteredLogs
+        let entries = filteredEntries
         let format = exportFormat
 
         let content: String
         switch format {
         case .csv:
-            content = DataExportService.generateCSV(from: logs)
+            content = DataExportService.generateCSV(from: entries)
         case .json:
-            content = DataExportService.generateJSON(from: logs)
+            content = DataExportService.generateJSON(from: entries)
         }
 
         let fileName = "roam-export.\(format.fileExtension)"

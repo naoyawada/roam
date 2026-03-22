@@ -17,13 +17,15 @@ enum DataImportService {
 
     struct ParsedEntry {
         let date: Date
-        let city: String?
-        let state: String?
-        let country: String?
-        let latitude: Double?
-        let longitude: Double?
-        let capturedAt: Date?
-        let horizontalAccuracy: Double?
+        let city: String
+        let region: String
+        let country: String
+        let latitude: Double
+        let longitude: Double
+        let totalVisitHours: Double
+        let isTravelDay: Bool
+        let confidence: String
+        let updatedAt: Date?
     }
 
     // MARK: - Public API
@@ -34,19 +36,19 @@ enum DataImportService {
         case .json: parseJSON(content)
         }
 
-        let existingLogs = (try? context.fetch(FetchDescriptor<NightLog>())) ?? []
+        let existingEntries = (try? context.fetch(FetchDescriptor<DailyEntry>())) ?? []
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        var existingEntries: [DateComponents: NightLog] = [:]
-        for log in existingLogs {
-            let comps = cal.dateComponents([.year, .month, .day], from: log.date)
-            // If multiple exist for same date, keep the best one for our lookup
-            if let current = existingEntries[comps] {
-                if DeduplicationService.statusPriority(log.status) < DeduplicationService.statusPriority(current.status) {
-                    existingEntries[comps] = log
+        var existingByDate: [DateComponents: DailyEntry] = [:]
+        for entry in existingEntries {
+            let comps = cal.dateComponents([.year, .month, .day], from: entry.date)
+            if let current = existingByDate[comps] {
+                // Keep the more recently updated entry in our lookup
+                if entry.updatedAt > current.updatedAt {
+                    existingByDate[comps] = entry
                 }
             } else {
-                existingEntries[comps] = log
+                existingByDate[comps] = entry
             }
         }
 
@@ -54,22 +56,24 @@ enum DataImportService {
         var updated = 0
         var skipped = 0
 
-        for entry in entries {
-            let normalizedDate = DateNormalization.normalizedNightDate(from: entry.date)
+        for parsed in entries {
+            let normalizedDate = DateNormalization.normalizedNightDate(from: parsed.date)
             let dateComps = cal.dateComponents([.year, .month, .day], from: normalizedDate)
 
-            if let existing = existingEntries[dateComps] {
-                // Date already seen — check if we should update
-                if existing.status == .unresolved && entry.city != nil {
-                    existing.city = entry.city
-                    existing.state = entry.state
-                    existing.country = entry.country
-                    existing.latitude = entry.latitude
-                    existing.longitude = entry.longitude
-                    existing.horizontalAccuracy = entry.horizontalAccuracy
-                    existing.capturedAt = entry.capturedAt ?? .now
-                    existing.source = .manual
-                    existing.status = .confirmed
+            if let existing = existingByDate[dateComps] {
+                // Date already present — update only if imported data is newer or existing has no city
+                let importedUpdatedAt = parsed.updatedAt ?? .now
+                if existing.primaryCity.isEmpty && !parsed.city.isEmpty {
+                    existing.primaryCity = parsed.city
+                    existing.primaryRegion = parsed.region
+                    existing.primaryCountry = parsed.country
+                    existing.primaryLatitude = parsed.latitude
+                    existing.primaryLongitude = parsed.longitude
+                    existing.totalVisitHours = parsed.totalVisitHours
+                    existing.isTravelDay = parsed.isTravelDay
+                    existing.confidenceRaw = parsed.confidence
+                    existing.sourceRaw = EntrySource.manualRaw
+                    existing.updatedAt = importedUpdatedAt
                     updated += 1
                 } else {
                     skipped += 1
@@ -77,20 +81,21 @@ enum DataImportService {
                 continue
             }
 
-            let log = NightLog(
-                date: normalizedDate,
-                city: entry.city,
-                state: entry.state,
-                country: entry.country,
-                latitude: entry.latitude,
-                longitude: entry.longitude,
-                capturedAt: entry.capturedAt ?? .now,
-                horizontalAccuracy: entry.horizontalAccuracy,
-                source: .manual,
-                status: .confirmed
-            )
-            context.insert(log)
-            existingEntries[dateComps] = log
+            let entry = DailyEntry()
+            entry.date = normalizedDate
+            entry.primaryCity = parsed.city
+            entry.primaryRegion = parsed.region
+            entry.primaryCountry = parsed.country
+            entry.primaryLatitude = parsed.latitude
+            entry.primaryLongitude = parsed.longitude
+            entry.totalVisitHours = parsed.totalVisitHours
+            entry.isTravelDay = parsed.isTravelDay
+            entry.confidenceRaw = parsed.confidence
+            entry.sourceRaw = EntrySource.manualRaw
+            entry.createdAt = .now
+            entry.updatedAt = parsed.updatedAt ?? .now
+            context.insert(entry)
+            existingByDate[dateComps] = entry
             imported += 1
         }
 
@@ -110,23 +115,40 @@ enum DataImportService {
         var entries: [ParsedEntry] = []
         var malformed = 0
 
+        // Parse header to find column indices
+        let headers = parseCSVLine(lines[0]).map { $0.trimmingCharacters(in: .whitespaces) }
+        let idx = buildColumnIndex(headers)
+
         for line in lines.dropFirst() {
             let fields = parseCSVLine(line)
-            guard fields.count >= 10,
-                  let date = formatter.date(from: fields[0]) else {
+            guard let dateIdx = idx["date"],
+                  dateIdx < fields.count,
+                  let date = formatter.date(from: fields[dateIdx]) else {
                 malformed += 1
                 continue
             }
 
+            let city = field(fields, idx["city"]) ?? ""
+            let region = field(fields, idx["region"]) ?? field(fields, idx["state"]) ?? ""
+            let country = field(fields, idx["country"]) ?? ""
+            let latitude = field(fields, idx["latitude"]).flatMap { Double($0) } ?? 0.0
+            let longitude = field(fields, idx["longitude"]).flatMap { Double($0) } ?? 0.0
+            let totalVisitHours = field(fields, idx["total_visit_hours"]).flatMap { Double($0) } ?? 0.0
+            let isTravelDay = field(fields, idx["is_travel_day"]) == "true"
+            let confidence = field(fields, idx["confidence"]) ?? EntryConfidence.highRaw
+            let updatedAt = field(fields, idx["updated_at"]).flatMap { formatter.date(from: $0) }
+
             let entry = ParsedEntry(
                 date: date,
-                city: fields[1].nilIfEmpty,
-                state: fields[2].nilIfEmpty,
-                country: fields[3].nilIfEmpty,
-                latitude: Double(fields[4]),
-                longitude: Double(fields[5]),
-                capturedAt: formatter.date(from: fields[8]),
-                horizontalAccuracy: Double(fields[9])
+                city: city,
+                region: region,
+                country: country,
+                latitude: latitude,
+                longitude: longitude,
+                totalVisitHours: totalVisitHours,
+                isTravelDay: isTravelDay,
+                confidence: confidence,
+                updatedAt: updatedAt
             )
             entries.append(entry)
         }
@@ -153,15 +175,27 @@ enum DataImportService {
                 continue
             }
 
+            let city = dict["city"] as? String ?? ""
+            let region = dict["region"] as? String ?? dict["state"] as? String ?? ""
+            let country = dict["country"] as? String ?? ""
+            let latitude = dict["latitude"] as? Double ?? 0.0
+            let longitude = dict["longitude"] as? Double ?? 0.0
+            let totalVisitHours = dict["total_visit_hours"] as? Double ?? 0.0
+            let isTravelDay = dict["is_travel_day"] as? Bool ?? false
+            let confidence = dict["confidence"] as? String ?? EntryConfidence.highRaw
+            let updatedAt = (dict["updated_at"] as? String).flatMap { formatter.date(from: $0) }
+
             let entry = ParsedEntry(
                 date: date,
-                city: dict["city"] as? String,
-                state: dict["state"] as? String,
-                country: dict["country"] as? String,
-                latitude: dict["latitude"] as? Double,
-                longitude: dict["longitude"] as? Double,
-                capturedAt: (dict["captured_at"] as? String).flatMap { formatter.date(from: $0) },
-                horizontalAccuracy: dict["accuracy"] as? Double
+                city: city,
+                region: region,
+                country: country,
+                latitude: latitude,
+                longitude: longitude,
+                totalVisitHours: totalVisitHours,
+                isTravelDay: isTravelDay,
+                confidence: confidence,
+                updatedAt: updatedAt
             )
             entries.append(entry)
         }
@@ -206,6 +240,20 @@ enum DataImportService {
         }
         fields.append(current)
         return fields
+    }
+
+    private static func buildColumnIndex(_ headers: [String]) -> [String: Int] {
+        var index: [String: Int] = [:]
+        for (i, header) in headers.enumerated() {
+            index[header] = i
+        }
+        return index
+    }
+
+    private static func field(_ fields: [String], _ idx: Int?) -> String? {
+        guard let idx, idx < fields.count else { return nil }
+        let value = fields[idx]
+        return value.isEmpty ? nil : value
     }
 }
 
