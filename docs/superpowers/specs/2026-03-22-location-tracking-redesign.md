@@ -64,14 +64,16 @@ One record per calendar day. The app's primary data — what the UI reads, what 
 | `primaryLatitude` | Double | Canonical coordinates for the city |
 | `primaryLongitude` | Double | Canonical coordinates for the city |
 | `isTravelDay` | Bool | True if multiple cities above the 2-hour threshold |
-| `citiesVisitedJSON` | String | JSON array of city strings, chronological order. Example: `'["Portland, OR", "San Francisco, CA"]'` |
+| `citiesVisitedJSON` | String | JSON array of structured city objects, chronological order. Example: `'[{"city":"Portland","region":"OR","country":"US"},{"city":"San Francisco","region":"CA","country":"US"}]'` |
 | `totalVisitHours` | Double | Total tracked hours for this day |
-| `source` | String | `"visit"` \| `"manual"` \| `"propagated"` \| `"fallback"` \| `"migrated"` \| `"debug"` |
-| `confidence` | String | `"high"` \| `"medium"` \| `"low"` |
+| `sourceRaw` | String | `"visit"` \| `"manual"` \| `"propagated"` \| `"fallback"` \| `"migrated"` \| `"debug"` |
+| `confidenceRaw` | String | `"high"` \| `"medium"` \| `"low"` |
 | `createdAt` | Date | When the record was created |
 | `updatedAt` | Date | Last modification time |
 
 **Date convention:** Noon UTC, consistent with the existing system. This is timezone-independent and compares correctly across devices via CloudKit.
+
+**String-backed enums:** `sourceRaw` and `confidenceRaw` are stored as String for SwiftData predicate safety (same pattern as current `statusRaw` on NightLog). Companion Swift enums (`EntrySource`, `EntryConfidence`) with raw values provide type safety in non-predicate code. Static raw value constants (e.g., `EntryConfidence.highRaw`) are used in `#Predicate` macros.
 
 **Confidence levels:**
 
@@ -126,8 +128,14 @@ Auto-pruned: events older than 7 days deleted on app launch.
 
 Two ModelConfigurations in one ModelContainer (same pattern as existing codebase):
 
-- **Local**: RawVisit + PipelineEvent — `cloudKitDatabase: .none`
+- **Local**: RawVisit + PipelineEvent + UserSettings — `cloudKitDatabase: .none`
 - **Synced**: DailyEntry + CityRecord — `cloudKitDatabase: .automatic`
+
+UserSettings is preserved as-is from the current system (home city, onboarding state, notification preferences). It moves to the local configuration alongside the new local-only models.
+
+**During migration transition:** The container also registers legacy models (NightLog, CityColor) in a third read-only configuration so the migrator can read existing data. After migration completes, legacy models remain in the schema (SwiftData does not support removing models from a live store) but are never written to. The CloudKit schema retains the old record types — this is harmless and expected.
+
+**Deduplication:** Since CloudKit does not support unique constraints, DailyEntry may have duplicates for the same date after sync. The app uses a fetch-before-insert pattern when upserting: query for existing DailyEntry matching the noon-UTC date, update if found, insert if not. A periodic deduplication pass (adapted from the existing DeduplicationService) handles any sync-created duplicates by preferring the most recently updated entry.
 
 ---
 
@@ -159,10 +167,11 @@ Wraps `CLLocationManager` with visit monitoring.
 
 - `requestAlwaysAuthorization()`
 - `allowsBackgroundLocationUpdates = true`
-- `pausesLocationUpdatesAutomatically = false`
 - `startMonitoringVisits()`
 - Delegate method `didVisit` creates `VisitData` and fires callback
 - Must handle Swift 6 concurrency: `@MainActor` isolation with `nonisolated` delegate methods trampolining via `Task { @MainActor in ... }`
+
+Note: `pausesLocationUpdatesAutomatically` applies to continuous location updates, not visit monitoring. It is not set here since we only use `startMonitoringVisits()`.
 
 ### 3.3 MockLocationProvider
 
@@ -193,7 +202,7 @@ Reverse geocodes RawVisit coordinates to city/region/country via `CLGeocoder`.
 
 ### 4.2 Coordinate Cache
 
-If a new coordinate is within ~5km of a previously resolved coordinate, reuse the cached city name. This:
+If a new coordinate is within 5.0 km of a previously resolved coordinate, reuse the cached city name. This:
 - Avoids CLGeocoder rate limiting
 - Normalizes geocoder inconsistencies ("New York" vs "New York City")
 - Cache is in-memory, rebuilt from RawVisit data on launch
@@ -212,12 +221,14 @@ Failed geocoding attempts (offline, rate-limited):
 
 ### 5.1 Core Algorithm
 
+**Timezone rule:** Calendar date boundaries use the **user's local timezone** (device setting at the time of aggregation). A visit spanning local midnight gets split at local midnight. The resulting DailyEntry's `date` is stored as noon UTC for that calendar date (e.g., March 22 local → `2026-03-22T12:00:00Z` regardless of timezone). This separates the aggregation boundary (local midnight, for correctness) from the storage format (noon UTC, for cross-device consistency).
+
 Given all resolved RawVisits for a calendar date, produce a DailyEntry:
 
-1. **Gather visits overlapping this calendar date** — a visit spanning midnight gets split (hours before midnight → yesterday, hours after → today)
+1. **Gather visits overlapping this calendar date** — using local timezone midnight boundaries. A visit spanning midnight gets split (hours before midnight → yesterday, hours after → today)
 2. **Clamp ongoing visits** — if `departureDate == .distantFuture`, use `min(departureDate, now)` for duration calculation
 3. **Calculate hours per city** for this date
-4. **Filter short visits** — below 2-hour threshold (filters layovers). If ALL visits are below threshold, fall back to longest
+4. **Filter short visits** — below 2-hour threshold (filters layovers). If ALL visits are below threshold, fall back to longest but mark confidence as `"low"` (a day of only sub-2-hour visits is uncertain)
 5. **Longest stay wins** → `primaryCity`
 6. **Multiple cities above threshold** → `isTravelDay = true`, store chronological list in `citiesVisitedJSON`
 7. **Create/update DailyEntry** with confidence `"high"`, source `"visit"`
@@ -229,11 +240,11 @@ The aggregation is **idempotent** — running it multiple times for the same dat
 When the aggregator runs for a date and finds **no RawVisits**:
 
 1. Look up the most recent DailyEntry before this date
-2. Check: has a departure CLVisit been recorded since that entry? (Did the user leave that city?)
-3. **No departure detected** → propagate that city forward. Create DailyEntry with confidence `"medium"`, source `"propagated"`
-4. **Departure detected but no arrival** → create DailyEntry with confidence `"low"`, source `"fallback"`, using current GPS if available or marking as needs-attention
+2. Check: does any RawVisit exist after that entry's date, at a **different city** than the last known city? This indicates the user departed. (Note: CLVisit does not have an explicit "departure" event type — a departure is inferred when a visit at a new location appears.)
+3. **No departure detected** (no RawVisits at a different city) → propagate that city forward. Create DailyEntry with confidence `"medium"`, source `"propagated"`
+4. **Departure detected but no arrival at a new city for this date** → create DailyEntry with confidence `"low"`, source `"fallback"`, using current GPS if available or marking as needs-attention
 
-**The absence of a departure IS the signal.** If the last known event was "arrived in Atlanta" and no departure has been seen, the user is still in Atlanta.
+**The absence of a departure IS the signal.** If the last known event was "arrived in Atlanta" and no visit at a different city has been seen, the user is still in Atlanta.
 
 ### 5.3 Propagated Entry Upgrades
 
@@ -298,7 +309,8 @@ After upserting a DailyEntry:
 - Find or create CityRecord for the primary city
 - Update `totalDays`, `lastVisitedDate`
 - If new city, assign next `colorIndex` in sequence
-- CityRecord stats are denormalized for fast UI access but can be recomputed from DailyEntry data
+- **When a DailyEntry's primary city changes** (manual edit, re-aggregation replacing a propagated entry): decrement the old city's `totalDays` and update its `lastVisitedDate`, then increment the new city's stats
+- CityRecord stats are denormalized for fast UI access. If stats drift (e.g., due to CloudKit sync conflicts), a full recomputation from DailyEntry data can be triggered from the debug screen
 
 ---
 
@@ -307,6 +319,8 @@ After upserting a DailyEntry:
 ### 7.1 PipelineLogger
 
 An `@ModelActor` that owns its own ModelContext (Swift 6 concurrency safe). All pipeline components call into it via async methods.
+
+Created once at app launch with the app's `ModelContainer`, and shared across all pipeline components via dependency injection (not a global singleton). The VisitPipeline holds a reference to it and passes it to CityResolver, DailyAggregator, etc.
 
 Also writes to `os.Logger` for Xcode console and Console.app access.
 
@@ -378,7 +392,7 @@ Accessible from Settings. Consolidates all debug/testing functionality:
   - Red-Eye Flight (SF 11 PM → NYC 7 AM)
   - Day Trip (Portland base, 4hrs at coast)
   - Data Gap (3 days empty — tests catch-up)
-  - Date Line Crossing (Tokyo → Honolulu)
+  - Date Line Crossing (Tokyo → Honolulu — user crosses date line and "gains" hours, arriving same calendar date they departed; tests that the aggregator correctly handles two cities on the same local calendar date despite timezone shift)
 - **Pipeline Inspector** — View RawVisits, DailyEntries, CityRecords with status indicators
 - **Log Viewer** — Chronological PipelineEvent feed with category filters, app-state indicators, expandable metadata, JSON export
 - **Data Controls** — Wipe all, wipe local only, export JSON, re-aggregate date range
@@ -419,11 +433,11 @@ Run once on first launch of the new version.
 
 ### 9.3 Travel Day Inference
 
-Based on existing data patterns, these city transitions get flagged:
-- Atlanta ↔ Asheville (multiple round trips)
-- Atlanta ↔ San Francisco (one round trip)
+The general rule: if the city on day N differs from the city on day N-1, mark day N as a travel day. This is applied algorithmically to all entries — no city-specific logic.
 
-On flagged travel days, `citiesVisitedJSON` contains both cities. `primaryCity` is the arrival city (where the user ended up).
+In the existing data, this would flag transitions like Atlanta ↔ Asheville (multiple round trips) and Atlanta ↔ San Francisco (one round trip) as examples.
+
+On flagged travel days, `citiesVisitedJSON` contains both cities as structured objects. `primaryCity` is the arrival city (where the user ended up).
 
 ---
 
@@ -474,7 +488,7 @@ Any DailyEntry can be edited:
 - Dashboard, Timeline, Insights views — swap NightLog → DailyEntry queries
 - `AnalyticsService` — rewrite queries, preserve method signatures
 - `CityDisplayFormatter` — adapt field names
-- `DeduplicationService` — adapt for DailyEntry
+- `DeduplicationService` — adapt for DailyEntry (deduplicate by noon-UTC date, prefer most recently updated entry; no LogStatus priority since that concept is replaced by confidence)
 - `DataExportService` / `DataImportService` — new models
 - `ContentView` — keep tabs, replace capture with catch-up
 - `AppDelegate` — keep push as trigger, remove capture logic
@@ -539,5 +553,4 @@ All use in-memory SwiftData containers (`ModelConfiguration(isStoredInMemoryOnly
 ### CLLocationManager
 - `requestAlwaysAuthorization()`
 - `allowsBackgroundLocationUpdates = true`
-- `pausesLocationUpdatesAutomatically = false`
 - `startMonitoringVisits()`
