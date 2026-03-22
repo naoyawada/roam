@@ -1,6 +1,7 @@
 // Roam/Services/CityResolver.swift
 import Foundation
 import CoreLocation
+@preconcurrency import MapKit
 import SwiftData
 
 struct CachedCity {
@@ -35,7 +36,6 @@ final class CoordinateCache: @unchecked Sendable {
 
 /// Non-actor class — called from VisitPipeline which owns the ModelContext.
 final class CityResolver {
-    private let geocoder = CLGeocoder()
     let cache = CoordinateCache()
     private let maxAttempts = 5
 
@@ -51,15 +51,23 @@ final class CityResolver {
             return true
         }
 
-        // Geocode
+        // Reverse geocode using MapKit (iOS 26+)
         do {
             let location = CLLocation(latitude: visit.latitude, longitude: visit.longitude)
-            let placemarks = try await geocoder.reverseGeocodeLocation(location)
-            guard let placemark = placemarks.first else { return false }
+            guard let request = MKReverseGeocodingRequest(location: location) else { return false }
+            let mapItems = try await request.mapItems
+            guard let mapItem = mapItems.first,
+                  let reps = mapItem.addressRepresentations else { return false }
 
-            let city = placemark.locality ?? placemark.subAdministrativeArea ?? "Unknown"
-            let region = placemark.administrativeArea ?? ""
-            let country = placemark.isoCountryCode ?? ""
+            let city = reps.cityName ?? "Unknown"
+            let region: String = {
+                // Extract state from cityWithContext: "Austin, TX" -> "TX"
+                guard let ctx = reps.cityWithContext, let cityName = reps.cityName else { return "" }
+                let prefix = "\(cityName), "
+                guard ctx.hasPrefix(prefix) else { return "" }
+                return String(ctx.dropFirst(prefix.count))
+            }()
+            let country = reps.region?.identifier ?? ""
 
             visit.resolvedCity = city
             visit.resolvedRegion = region
