@@ -46,7 +46,7 @@ struct InsightsView: View {
 
                     let yoyData = years.suffix(2).map { year in
                         let awayNights = analytics.confirmedLogs(year: year).filter {
-                            CityDisplayFormatter.cityKey(city: $0.city, state: $0.state, country: $0.country) != homeCityKey
+                            $0.cityKey != homeCityKey
                         }.count
                         return (
                             year: year,

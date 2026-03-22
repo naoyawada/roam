@@ -26,27 +26,27 @@ final class AnalyticsService {
 
     // MARK: - Core Queries
 
-    func confirmedLogs(year: Int) -> [NightLog] {
+    func confirmedLogs(year: Int) -> [DailyEntry] {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
         let startOfYear = cal.date(from: DateComponents(year: year, month: 1, day: 1, hour: 0))!
         let endOfYear = cal.date(from: DateComponents(year: year + 1, month: 1, day: 1, hour: 0))!
 
-        let unresolvedRaw = LogStatus.unresolvedRaw
-        let descriptor = FetchDescriptor<NightLog>(
-            predicate: #Predicate<NightLog> {
+        let lowRaw = EntryConfidence.lowRaw
+        let descriptor = FetchDescriptor<DailyEntry>(
+            predicate: #Predicate<DailyEntry> {
                 $0.date >= startOfYear && $0.date < endOfYear &&
-                $0.statusRaw != unresolvedRaw
+                $0.confidenceRaw != lowRaw
             },
             sortBy: [SortDescriptor(\.date)]
         )
         return (try? context.fetch(descriptor)) ?? []
     }
 
-    func allConfirmedLogs() -> [NightLog] {
-        let unresolvedRaw = LogStatus.unresolvedRaw
-        let descriptor = FetchDescriptor<NightLog>(
-            predicate: #Predicate<NightLog> { $0.statusRaw != unresolvedRaw },
+    func allConfirmedLogs() -> [DailyEntry] {
+        let lowRaw = EntryConfidence.lowRaw
+        let descriptor = FetchDescriptor<DailyEntry>(
+            predicate: #Predicate<DailyEntry> { $0.confidenceRaw != lowRaw },
             sortBy: [SortDescriptor(\.date)]
         )
         return (try? context.fetch(descriptor)) ?? []
@@ -55,11 +55,10 @@ final class AnalyticsService {
     // MARK: - Days Per City
 
     func daysPerCity(year: Int) -> [String: Int] {
-        let logs = confirmedLogs(year: year)
+        let entries = confirmedLogs(year: year)
         var result: [String: Int] = [:]
-        for log in logs {
-            let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
-            result[key, default: 0] += 1
+        for entry in entries {
+            result[entry.cityKey, default: 0] += 1
         }
         return result
     }
@@ -67,64 +66,63 @@ final class AnalyticsService {
     // MARK: - Streaks
 
     func currentStreak(asOf today: Date) -> StreakInfo {
-        let logs = allConfirmedLogs().reversed()
-        guard let first = logs.first else { return StreakInfo(city: "", days: 0) }
+        let entries = allConfirmedLogs().reversed()
+        guard let first = entries.first else { return StreakInfo(city: "", days: 0) }
 
-        let firstKey = CityDisplayFormatter.cityKey(city: first.city, state: first.state, country: first.country)
+        let firstKey = first.cityKey
         var count = 1
         var previousDate = first.date
 
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
 
-        for log in logs.dropFirst() {
-            let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
-            let daysBetween = cal.dateComponents([.day], from: log.date, to: previousDate).day ?? 0
+        for entry in entries.dropFirst() {
+            let daysBetween = cal.dateComponents([.day], from: entry.date, to: previousDate).day ?? 0
 
-            if key == firstKey && daysBetween == 1 {
+            if entry.cityKey == firstKey && daysBetween == 1 {
                 count += 1
-                previousDate = log.date
+                previousDate = entry.date
             } else {
                 break
             }
         }
-        return StreakInfo(city: first.city ?? "", days: count)
+        return StreakInfo(city: first.primaryCity, days: count)
     }
 
     func longestStreak(year: Int) -> StreakInfo {
-        let logs = confirmedLogs(year: year)
-        guard !logs.isEmpty else { return StreakInfo(city: "", days: 0) }
+        let entries = confirmedLogs(year: year)
+        guard !entries.isEmpty else { return StreakInfo(city: "", days: 0) }
 
         var bestCity = ""
         var bestCount = 0
-        var currentCity = ""
+        var currentCityKey = ""
         var currentCount = 0
         var previousDate: Date?
 
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
 
-        for log in logs {
-            let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
+        for entry in entries {
+            let key = entry.cityKey
 
             if let prev = previousDate {
-                let daysBetween = cal.dateComponents([.day], from: prev, to: log.date).day ?? 0
-                if key == currentCity && daysBetween == 1 {
+                let daysBetween = cal.dateComponents([.day], from: prev, to: entry.date).day ?? 0
+                if key == currentCityKey && daysBetween == 1 {
                     currentCount += 1
                 } else {
-                    currentCity = key
+                    currentCityKey = key
                     currentCount = 1
                 }
             } else {
-                currentCity = key
+                currentCityKey = key
                 currentCount = 1
             }
 
             if currentCount > bestCount {
                 bestCount = currentCount
-                bestCity = log.city ?? ""
+                bestCity = entry.primaryCity
             }
-            previousDate = log.date
+            previousDate = entry.date
         }
         return StreakInfo(city: bestCity, days: bestCount)
     }
@@ -138,42 +136,40 @@ final class AnalyticsService {
     // MARK: - Home / Away
 
     func homeAwayRatio(year: Int, homeCityKey: String) -> HomeAwayRatio {
-        let logs = confirmedLogs(year: year)
-        guard !logs.isEmpty else { return HomeAwayRatio(homePercentage: 0, awayPercentage: 0) }
+        let entries = confirmedLogs(year: year)
+        guard !entries.isEmpty else { return HomeAwayRatio(homePercentage: 0, awayPercentage: 0) }
 
-        let homeCount = logs.filter {
-            CityDisplayFormatter.cityKey(city: $0.city, state: $0.state, country: $0.country) == homeCityKey
-        }.count
-        let total = Double(logs.count)
+        let homeCount = entries.filter { $0.cityKey == homeCityKey }.count
+        let total = Double(entries.count)
 
         return HomeAwayRatio(
             homePercentage: Double(homeCount) / total,
-            awayPercentage: Double(logs.count - homeCount) / total
+            awayPercentage: Double(entries.count - homeCount) / total
         )
     }
 
     // MARK: - Monthly Breakdown
 
     func monthlyBreakdown(year: Int) -> [MonthlyBreakdown] {
-        let logs = confirmedLogs(year: year)
+        let entries = confirmedLogs(year: year)
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
 
-        var byMonth: [Int: [NightLog]] = [:]
-        for log in logs {
-            let month = cal.component(.month, from: log.date)
-            byMonth[month, default: []].append(log)
+        var byMonth: [Int: [DailyEntry]] = [:]
+        for entry in entries {
+            let month = cal.component(.month, from: entry.date)
+            byMonth[month, default: []].append(entry)
         }
 
         return (1...12).map { month in
-            let monthLogs = byMonth[month] ?? []
+            let monthEntries = byMonth[month] ?? []
             var cityDays: [String: (city: String, days: Int)] = [:]
-            for log in monthLogs {
-                let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
+            for entry in monthEntries {
+                let key = entry.cityKey
                 if cityDays[key] != nil {
                     cityDays[key]!.days += 1
                 } else {
-                    cityDays[key] = (city: log.city ?? "Unknown", days: 1)
+                    cityDays[key] = (city: entry.primaryCity, days: 1)
                 }
             }
             let sorted = cityDays.map { (cityKey: $0.key, city: $0.value.city, days: $0.value.days) }
@@ -196,13 +192,12 @@ final class AnalyticsService {
     // MARK: - Average Trip Length
 
     func averageTripLength(year: Int, homeCityKey: String) -> Double {
-        let logs = confirmedLogs(year: year)
+        let entries = confirmedLogs(year: year)
         var trips: [Int] = []
         var awayCount = 0
 
-        for log in logs {
-            let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
-            if key == homeCityKey {
+        for entry in entries {
+            if entry.cityKey == homeCityKey {
                 if awayCount > 0 {
                     trips.append(awayCount)
                     awayCount = 0
@@ -219,10 +214,10 @@ final class AnalyticsService {
     // MARK: - Available Years
 
     func availableYears() -> [Int] {
-        let logs = allConfirmedLogs()
+        let entries = allConfirmedLogs()
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        let years = Set(logs.map { cal.component(.year, from: $0.date) })
+        let years = Set(entries.map { cal.component(.year, from: $0.date) })
         return years.sorted().reversed()
     }
 }
