@@ -2,6 +2,7 @@
 import Foundation
 import CoreLocation
 
+@MainActor
 protocol LocationProvider: AnyObject {
     func startMonitoring()
     func stopMonitoring()
