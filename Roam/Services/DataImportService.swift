@@ -101,10 +101,37 @@ enum DataImportService {
 
         try? context.save()
 
-        // Ensure CityRecords exist for all imported cities (for color assignment)
+        // Infer travel days from city transitions and build missing CityRecords
+        inferTravelDays(context: context)
         buildMissingCityRecords(context: context)
 
         return ImportResult(imported: imported, updated: updated, skipped: skipped, malformed: malformed)
+    }
+
+    // MARK: - Travel Day Inference
+
+    /// Infer travel days from city transitions: if city on day N differs from day N-1, mark as travel day.
+    static func inferTravelDays(context: ModelContext) {
+        let descriptor = FetchDescriptor<DailyEntry>(sortBy: [SortDescriptor(\.date)])
+        guard let entries = try? context.fetch(descriptor), entries.count > 1 else { return }
+
+        for i in 1..<entries.count {
+            let prev = entries[i - 1]
+            let curr = entries[i]
+
+            if curr.cityKey != prev.cityKey && !curr.primaryCity.isEmpty && !prev.primaryCity.isEmpty {
+                curr.isTravelDay = true
+                // Build citiesVisitedJSON with both cities
+                let cityObjects: [[String: String]] = [
+                    ["city": prev.primaryCity, "region": prev.primaryRegion, "country": prev.primaryCountry],
+                    ["city": curr.primaryCity, "region": curr.primaryRegion, "country": curr.primaryCountry]
+                ]
+                curr.citiesVisitedJSON = (try? JSONEncoder().encode(cityObjects))
+                    .flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
+            }
+        }
+
+        try? context.save()
     }
 
     // MARK: - CityRecord Builder
