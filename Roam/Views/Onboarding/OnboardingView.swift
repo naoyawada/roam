@@ -38,14 +38,11 @@ struct OnboardingView: View {
         .grainBackground()
         .tint(RoamTheme.accent)
         .onChange(of: locationService.authorizationStatus) { oldStatus, newStatus in
-            guard oldStatus != newStatus else { return }
+            guard oldStatus != newStatus, step == .requestingPermission else { return }
             switch newStatus {
-            case .authorizedWhenInUse:
-                if step == .requestingPermission {
-                    // Got When In Use from the system prompt — direct to Settings for Always
-                    step = .needsSettingsUpgrade
-                }
-            case .authorizedAlways:
+            case .authorizedWhenInUse, .authorizedAlways:
+                // Got some level of authorization — proceed to complete.
+                // ContentView will prompt for Always upgrade if needed.
                 step = .complete
             case .denied, .restricted:
                 step = .complete
@@ -95,12 +92,9 @@ struct OnboardingView: View {
 
             Button("Allow Location Access") {
                 let current = locationService.authorizationStatus
-                if current == .authorizedAlways {
-                    step = .complete
-                } else if current == .authorizedWhenInUse {
-                    // Already have When In Use — need to direct to Settings for Always
-                    step = .needsSettingsUpgrade
-                } else if current == .denied || current == .restricted {
+                if current == .authorizedWhenInUse || current == .authorizedAlways || current == .denied || current == .restricted {
+                    // Permission already determined — proceed to complete.
+                    // ContentView will prompt for Always upgrade if only When In Use.
                     step = .complete
                 } else {
                     // Not determined — request Always directly.
