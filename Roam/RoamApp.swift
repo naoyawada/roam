@@ -69,7 +69,7 @@ struct RoamApp: App {
         // Make pipeline available to AppDelegate
         AppDelegate.visitPipeline = pipeline
 
-        // Create and wire location provider
+        // Create and wire location provider (don't start monitoring yet — wait until after onboarding)
         let provider = LiveLocationProvider()
         provider.onVisitReceived = { [pipeline] visitData in
             Task { @MainActor in
@@ -77,7 +77,6 @@ struct RoamApp: App {
             }
         }
         locationProvider = provider
-        provider.startMonitoring()
 
         // Run legacy migration if needed
         // Note: migration reads from the "cloud" store (where old NightLog/CityColor data lives)
@@ -114,6 +113,8 @@ struct RoamApp: App {
         .modelContainer(modelContainer)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
+                // Start CLVisit monitoring if not already started and user has completed onboarding
+                locationProvider.startMonitoring()
                 Self.scheduleDailyAggregation()
                 Task { @MainActor in
                     await visitPipeline.runCatchup()

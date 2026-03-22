@@ -33,73 +33,79 @@ struct ContentView: View {
     }
 
     var body: some View {
-        if !hasCompletedOnboarding {
-            OnboardingView(
-                locationService: locationService,
-                hasCompletedOnboarding: Binding(
-                    get: { hasCompletedOnboarding },
-                    set: { newValue in
-                        if newValue {
-                            let s = settings.first ?? UserSettings()
-                            if settings.first == nil { context.insert(s) }
-                            s.hasCompletedOnboarding = true
-                            try? context.save()
-                            // Set local state immediately so SwiftUI transitions without waiting for @Query
-                            onboardingComplete = true
+        Group {
+            if !hasCompletedOnboarding {
+                OnboardingView(
+                    locationService: locationService,
+                    hasCompletedOnboarding: Binding(
+                        get: { hasCompletedOnboarding },
+                        set: { newValue in
+                            if newValue {
+                                let s = settings.first ?? UserSettings()
+                                if settings.first == nil { context.insert(s) }
+                                s.hasCompletedOnboarding = true
+                                try? context.save()
+                                // Set local state immediately so SwiftUI transitions without waiting for @Query
+                                onboardingComplete = true
+                            }
                         }
-                    }
+                    )
                 )
-            )
-        } else {
-            TabView(selection: $selectedTab) {
-                Tab("Dashboard", systemImage: "chart.bar.fill", value: .dashboard) {
-                    NavigationStack {
-                        DashboardView(
-                            showingSettings: $showingSettings,
-                            lowConfidenceEntries: lowConfidenceEntries,
-                            onResolveLowConfidence: { entryToResolve = $0 }
-                        )
-                    }
-                }
-                Tab("Timeline", systemImage: "calendar", value: .timeline) {
-                    NavigationStack {
-                        TimelineView()
-                    }
-                }
-                Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
-                    NavigationStack {
-                        InsightsView()
-                    }
-                }
+            } else {
+                mainTabView
             }
-            .tint(RoamTheme.accent)
-            .sheet(isPresented: $showingSettings) {
+        }
+    }
+
+    private var mainTabView: some View {
+        TabView(selection: $selectedTab) {
+            Tab("Dashboard", systemImage: "chart.bar.fill", value: .dashboard) {
                 NavigationStack {
-                    SettingsView()
+                    DashboardView(
+                        showingSettings: $showingSettings,
+                        lowConfidenceEntries: lowConfidenceEntries,
+                        onResolveLowConfidence: { entryToResolve = $0 }
+                    )
                 }
             }
-            .sheet(item: $entryToResolve) { entry in
-                DayDetailSheet(entry: entry)
-            }
-            .task {
-                DeduplicationService.deduplicateDailyEntries(context: context)
-                DeduplicationService.deduplicateCityRecords(context: context)
-            }
-            .onAppear {
-                setWindowBackground()
-                configureNavigationBarAppearance()
-                checkLocationAuthorization()
-            }
-            .alert("Background Location Required", isPresented: $showingLocationUpgradeAlert) {
-                Button("Open Settings") {
-                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
-                    }
+            Tab("Timeline", systemImage: "calendar", value: .timeline) {
+                NavigationStack {
+                    TimelineView()
                 }
-                Button("Later", role: .cancel) {}
-            } message: {
-                Text("Roam needs \"Always\" location access to track your city in the background. Please change location access to \"Always\" in Settings.")
             }
+            Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
+                NavigationStack {
+                    InsightsView()
+                }
+            }
+        }
+        .tint(RoamTheme.accent)
+        .sheet(isPresented: $showingSettings) {
+            NavigationStack {
+                SettingsView()
+            }
+        }
+        .sheet(item: $entryToResolve) { entry in
+            DayDetailSheet(entry: entry)
+        }
+        .task {
+            DeduplicationService.deduplicateDailyEntries(context: context)
+            DeduplicationService.deduplicateCityRecords(context: context)
+        }
+        .onAppear {
+            setWindowBackground()
+            configureNavigationBarAppearance()
+            checkLocationAuthorization()
+        }
+        .alert("Background Location Required", isPresented: $showingLocationUpgradeAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Later", role: .cancel) {}
+        } message: {
+            Text("Roam needs \"Always\" location access to track your city in the background. Please change location access to \"Always\" in Settings.")
         }
     }
 
