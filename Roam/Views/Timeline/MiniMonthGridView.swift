@@ -3,8 +3,8 @@ import SwiftUI
 struct MiniMonthGridView: View {
     let year: Int
     let month: Int
-    let logs: [NightLog]
-    let cityColors: [CityColor]
+    let entries: [DailyEntry]
+    let cityRecords: [CityRecord]
 
     private var calendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
@@ -25,7 +25,7 @@ struct MiniMonthGridView: View {
         return (weekday - calendar.firstWeekday + 7) % 7
     }
 
-    /// Total cells used (offset + days). Pad to 42 (6 rows × 7) for uniform grid height.
+    /// Total cells used (offset + days). Pad to 42 (6 rows x 7) for uniform grid height.
     private var trailingPadCount: Int {
         let totalUsed = firstWeekdayOffset + daysInMonth
         let maxCells = 42 // 6 rows
@@ -38,16 +38,24 @@ struct MiniMonthGridView: View {
         return cal.dateComponents([.year, .month, .day], from: BackfillService.calendarTodayNoonUTC())
     }
 
-    private func logFor(day: Int) -> NightLog? {
+    private func entryFor(day: Int) -> DailyEntry? {
         let targetDate = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
-        return logs.first { calendar.isDate($0.date, inSameDayAs: targetDate) }
+        return entries.first { calendar.isDate($0.date, inSameDayAs: targetDate) }
     }
 
-    private func colorFor(log: NightLog?) -> Color? {
-        guard let log, log.status != .unresolved else { return nil }
-        let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
-        guard let cityColor = cityColors.first(where: { $0.cityKey == key }) else { return nil }
-        return ColorPalette.color(for: cityColor.colorIndex)
+    private func colorFor(entry: DailyEntry?) -> Color? {
+        guard let entry, entry.confidence != .low else { return nil }
+        guard let record = cityRecords.first(where: { $0.cityKey == entry.cityKey }) else { return nil }
+        return ColorPalette.color(for: record.colorIndex)
+    }
+
+    private func confidenceOpacity(for entry: DailyEntry?) -> Double {
+        guard let entry else { return 1.0 }
+        switch entry.confidence {
+        case .high: return 1.0
+        case .medium: return 0.7
+        case .low: return 0.5
+        }
     }
 
     var body: some View {
@@ -68,7 +76,7 @@ struct MiniMonthGridView: View {
 
                 // Day cells
                 ForEach(1...daysInMonth, id: \.self) { day in
-                    let log = logFor(day: day)
+                    let entry = entryFor(day: day)
                     let isFuture = (year > today.year! || (year == today.year! && month > today.month!) ||
                                    (year == today.year! && month == today.month! && day > today.day!))
 
@@ -77,7 +85,7 @@ struct MiniMonthGridView: View {
                             .fill(RoamTheme.surfaceSubtle)
                             .opacity(0.5)
                             .aspectRatio(1, contentMode: .fit)
-                    } else if log?.status == .unresolved {
+                    } else if entry?.confidence == .low {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(RoamTheme.unresolvedFill)
                             .overlay(
@@ -85,9 +93,10 @@ struct MiniMonthGridView: View {
                                     .strokeBorder(RoamTheme.unresolvedBorder, style: StrokeStyle(lineWidth: 0.5, dash: [2]))
                             )
                             .aspectRatio(1, contentMode: .fit)
-                    } else if let color = colorFor(log: log) {
+                    } else if let color = colorFor(entry: entry) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(color)
+                            .opacity(confidenceOpacity(for: entry))
                             .aspectRatio(1, contentMode: .fit)
                     } else {
                         Color.clear.aspectRatio(1, contentMode: .fit)

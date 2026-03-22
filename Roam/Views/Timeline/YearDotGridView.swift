@@ -2,8 +2,8 @@ import SwiftUI
 
 struct YearDotGridView: View {
     let year: Int
-    let logs: [NightLog]
-    let cityColors: [CityColor]
+    let entries: [DailyEntry]
+    let cityRecords: [CityRecord]
     let onMonthTapped: (Int) -> Void
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 4)
@@ -14,8 +14,8 @@ struct YearDotGridView: View {
                 MiniMonthGridView(
                     year: year,
                     month: month,
-                    logs: logs,
-                    cityColors: cityColors
+                    entries: entries,
+                    cityRecords: cityRecords
                 )
                 .contentShape(Rectangle())
                 .onTapGesture {

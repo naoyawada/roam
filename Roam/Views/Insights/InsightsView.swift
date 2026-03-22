@@ -3,7 +3,7 @@ import SwiftData
 
 struct InsightsView: View {
     @Environment(\.modelContext) private var context
-    @Query private var cityColors: [CityColor]
+    @Query private var cityRecords: [CityRecord]
     @Query private var settings: [UserSettings]
 
     @State private var selectedYear: Int = Calendar.current.component(.year, from: .now)
@@ -29,7 +29,7 @@ struct InsightsView: View {
                 } else {
                     MonthlyBreakdownChart(
                         breakdown: analytics.monthlyBreakdown(year: selectedYear),
-                        cityColors: cityColors
+                        cityRecords: cityRecords
                     )
 
                     let cityDays = analytics.daysPerCity(year: selectedYear)

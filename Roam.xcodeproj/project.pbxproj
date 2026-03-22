@@ -18,6 +18,7 @@
 		184B69BA26427783634B861B /* QuickStatsRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F67CDC698821F03244B048F9 /* QuickStatsRow.swift */; };
 		1F83049070C1A069782B8963 /* HighlightsGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31F25DCF3A3939AD86AD4553 /* HighlightsGrid.swift */; };
 		207CFA38EBC84291A829F85A /* CalendarGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E630A600F22424A78983ED2A /* CalendarGridView.swift */; };
+		213F2B12E2918C88B3355403 /* ConfidenceBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA2C97E3F80B3FBD6462299 /* ConfidenceBanner.swift */; };
 		2293862100765F7BA574183A /* LocationValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88AF720A3F1A8AFAF528D559 /* LocationValidationTests.swift */; };
 		2347BEF2A0A079264C3D2386 /* SupabaseClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA8408E8888AC91F7D55EBC4 /* SupabaseClient.swift */; };
 		257C9005F6C1998BAA2CA774 /* DataExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B83452B970024E3BA1C1E06 /* DataExportTests.swift */; };
@@ -191,6 +192,7 @@
 		DCB87FA04018026E1981F420 /* RoamTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamTests.swift; sourceTree = "<group>"; };
 		DE7CBA279D973D46AF45F0DE /* BuildNumber.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BuildNumber.xcconfig; sourceTree = "<group>"; };
 		E630A600F22424A78983ED2A /* CalendarGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarGridView.swift; sourceTree = "<group>"; };
+		EEA2C97E3F80B3FBD6462299 /* ConfidenceBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceBanner.swift; sourceTree = "<group>"; };
 		F599F069C99AF75FDF413E61 /* SignificantLocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignificantLocationService.swift; sourceTree = "<group>"; };
 		F67CDC698821F03244B048F9 /* QuickStatsRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickStatsRow.swift; sourceTree = "<group>"; };
 		F6D7CA43E45C39FC47382F99 /* GrainBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrainBackground.swift; sourceTree = "<group>"; };
@@ -282,6 +284,7 @@
 			children = (
 				23864012AE9AA4481A21698F /* AllCitiesSheet.swift */,
 				14D1DFDD0307FCAD8E5F7FFB /* AnimatingNumber.swift */,
+				EEA2C97E3F80B3FBD6462299 /* ConfidenceBanner.swift */,
 				824E0EF02F8A45DC8F52BDF6 /* FlowLayout.swift */,
 				F6D7CA43E45C39FC47382F99 /* GrainBackground.swift */,
 				F9FCD0FC937244CF77D549C4 /* UnresolvedBanner.swift */,
@@ -549,6 +552,7 @@
 				F8120078911A78B2E7FC73CC /* CityResolver.swift in Sources */,
 				6FE146D73EA61052BC262C22 /* CitySearchView.swift in Sources */,
 				7B4E9326C95605459F6895A1 /* ColorPalette.swift in Sources */,
+				213F2B12E2918C88B3355403 /* ConfidenceBanner.swift in Sources */,
 				548F7A9523DFD7FB13D6995E /* ContentView.swift in Sources */,
 				F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */,
 				F70BA9613B02ADCA70D6528F /* DailyAggregator.swift in Sources */,

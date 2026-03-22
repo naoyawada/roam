@@ -3,7 +3,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class DailyEntry {
+final class DailyEntry: Identifiable {
     var id: UUID = UUID()
     var date: Date = Date()  // Noon UTC on the calendar date
     var primaryCity: String = ""

@@ -15,14 +15,14 @@ struct ContentView: View {
     @StateObject private var locationService = LocationCaptureService()
     @State private var selectedTab: AppTab = .dashboard
 
-    // Legacy: DashboardView still expects these parameters (will be removed in Task 11)
-    @Query private var allLogs: [NightLog]
-    @State private var unresolvedToResolve: NightLog?
+    @Query(sort: \DailyEntry.date, order: .reverse) private var allEntries: [DailyEntry]
+    @State private var entryToResolve: DailyEntry?
 
     @State private var showingSettings = false
 
-    private var unresolvedLogs: [NightLog] {
-        UnresolvedFilter.actionable(allLogs, today: BackfillService.calendarTodayNoonUTC())
+    private var lowConfidenceEntries: [DailyEntry] {
+        let lowRaw = EntryConfidence.lowRaw
+        return allEntries.filter { $0.confidenceRaw == lowRaw }
     }
 
     private var hasCompletedOnboarding: Bool {
@@ -51,8 +51,8 @@ struct ContentView: View {
                     NavigationStack {
                         DashboardView(
                             showingSettings: $showingSettings,
-                            unresolvedLogs: unresolvedLogs,
-                            onResolve: { unresolvedToResolve = $0 }
+                            lowConfidenceEntries: lowConfidenceEntries,
+                            onResolveLowConfidence: { entryToResolve = $0 }
                         )
                     }
                 }
@@ -73,11 +73,11 @@ struct ContentView: View {
                     SettingsView()
                 }
             }
-            .sheet(item: $unresolvedToResolve) { log in
-                UnresolvedResolutionView(log: log)
+            .sheet(item: $entryToResolve) { entry in
+                DayDetailSheet(entry: entry)
             }
             .task {
-                // Legacy deduplication — still needed while NightLog data exists
+                // Legacy deduplication -- still needed while NightLog data exists
                 DeduplicationService.deduplicateNightLogs(context: context)
                 DeduplicationService.deduplicateCityColors(context: context)
                 CityColorService.assignMissingColors(context: context)
