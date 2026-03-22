@@ -101,9 +101,6 @@ struct RoamApp: App {
         }
         Self.scheduleDailyAggregation()
 
-        // Keep old BGTask registrations so iOS doesn't complain about unregistered identifiers
-        BackgroundTaskService.register(modelContainer: modelContainer)
-
         Self.logger.info("RoamApp initialized with CLVisit pipeline")
     }
 

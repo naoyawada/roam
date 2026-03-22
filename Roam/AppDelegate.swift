@@ -17,7 +17,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        DeviceTokenService.ensureDeviceID()
         application.registerForRemoteNotifications()
         Self.logger.info("Registered for remote notifications")
         return true
@@ -27,7 +26,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
-        DeviceTokenService.didRegister(tokenData: deviceToken)
+        let hex = deviceToken.map { String(format: "%02x", $0) }.joined()
+        UserDefaults.standard.set(hex, forKey: "apns_device_token")
+        Self.logger.info("APNs token registered: \(hex.prefix(8))...")
     }
 
     func application(

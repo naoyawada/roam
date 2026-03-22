@@ -57,7 +57,7 @@ enum DataImportService {
         var skipped = 0
 
         for parsed in entries {
-            let normalizedDate = DateNormalization.normalizedNightDate(from: parsed.date)
+            let normalizedDate = DateHelpers.noonUTC(from: parsed.date)
             let dateComps = cal.dateComponents([.year, .month, .day], from: normalizedDate)
 
             if let existing = existingByDate[dateComps] {

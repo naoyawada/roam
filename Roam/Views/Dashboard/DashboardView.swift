@@ -33,7 +33,7 @@ struct DashboardView: View {
                 }
             } else {
                 VStack(alignment: .leading, spacing: 20) {
-                    let streak = analytics.currentStreak(asOf: DateNormalization.normalizedNightDate(from: .now))
+                    let streak = analytics.currentStreak(asOf: DateHelpers.noonUTC(from: .now))
 
                     CurrentCityBanner(
                         cityName: streak.city.isEmpty ? "No data yet" : streak.city,

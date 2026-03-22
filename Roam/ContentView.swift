@@ -12,7 +12,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var context
     @Query private var settings: [UserSettings]
 
-    @StateObject private var locationService = LocationCaptureService()
+    @StateObject private var locationService = OnboardingLocationManager()
     @State private var selectedTab: AppTab = .dashboard
 
     @Query(sort: \DailyEntry.date, order: .reverse) private var allEntries: [DailyEntry]
@@ -77,13 +77,8 @@ struct ContentView: View {
                 DayDetailSheet(entry: entry)
             }
             .task {
-                // Deduplicate new pipeline data
                 DeduplicationService.deduplicateDailyEntries(context: context)
                 DeduplicationService.deduplicateCityRecords(context: context)
-                // Legacy deduplication -- still needed while NightLog data exists
-                DeduplicationService.deduplicateNightLogs(context: context)
-                DeduplicationService.deduplicateCityColors(context: context)
-                CityColorService.assignMissingColors(context: context)
             }
             .onAppear {
                 setWindowBackground()

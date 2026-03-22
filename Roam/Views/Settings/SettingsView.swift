@@ -98,15 +98,8 @@ struct SettingsView: View {
                     NavigationLink("Debug Tools") {
                         DebugScreen()
                     }
-                    LabeledContent("Device ID") {
-                        Text(DeviceTokenService.deviceID)
-                            .font(.caption2)
-                            .monospaced()
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
                     LabeledContent("APNs Token") {
-                        Text(DeviceTokenService.currentToken ?? "Not registered")
+                        Text(UserDefaults.standard.string(forKey: "apns_device_token") ?? "Not registered")
                             .font(.caption2)
                             .monospaced()
                             .lineLimit(1)

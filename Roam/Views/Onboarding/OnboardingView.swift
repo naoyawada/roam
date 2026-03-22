@@ -2,7 +2,7 @@ import SwiftUI
 import CoreLocation
 
 struct OnboardingView: View {
-    @ObservedObject var locationService: LocationCaptureService
+    @ObservedObject var locationService: OnboardingLocationManager
     @Binding var hasCompletedOnboarding: Bool
 
     @State private var step: OnboardingStep = .welcome

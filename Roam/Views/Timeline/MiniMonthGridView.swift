@@ -35,7 +35,7 @@ struct MiniMonthGridView: View {
     private var today: DateComponents {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        return cal.dateComponents([.year, .month, .day], from: BackfillService.calendarTodayNoonUTC())
+        return cal.dateComponents([.year, .month, .day], from: DateHelpers.noonUTC(from: .now))
     }
 
     private func entryFor(day: Int) -> DailyEntry? {
