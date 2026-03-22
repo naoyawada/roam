@@ -10,7 +10,7 @@ struct CitySearchView: View {
     @Binding var selectedLongitude: Double?
 
     @Environment(\.dismiss) private var dismiss
-    @Query(sort: \NightLog.date, order: .reverse) private var allLogs: [NightLog]
+    @Query(sort: \DailyEntry.date, order: .reverse) private var allEntries: [DailyEntry]
     @State private var searchText = ""
     @State private var results: [MKLocalSearchCompletion] = []
     @State private var completer = CitySearchCompleter()
@@ -23,17 +23,18 @@ struct CitySearchView: View {
         var seen = Set<String>()
         var cities: [(city: String, state: String?, country: String?, displayName: String)] = []
 
-        for log in allLogs {
-            guard cal.component(.year, from: log.date) == currentYear,
-                  log.status != .unresolved,
-                  let city = log.city, !city.isEmpty else { continue }
+        let lowRaw = EntryConfidence.lowRaw
+        for entry in allEntries {
+            guard cal.component(.year, from: entry.date) == currentYear,
+                  entry.confidenceRaw != lowRaw,
+                  !entry.primaryCity.isEmpty else { continue }
 
-            let key = CityDisplayFormatter.cityKey(city: city, state: log.state, country: log.country)
+            let key = entry.cityKey
             guard !seen.contains(key) else { continue }
             seen.insert(key)
 
-            let displayName = CityDisplayFormatter.format(city: city, state: log.state, country: log.country)
-            cities.append((city: city, state: log.state, country: log.country, displayName: displayName))
+            let displayName = CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
+            cities.append((city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry, displayName: displayName))
         }
         return cities
     }
