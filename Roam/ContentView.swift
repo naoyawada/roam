@@ -38,6 +38,11 @@ struct ContentView: View {
                     hasCompletedOnboarding: $hasCompletedOnboarding
                 )
             }
+            .onChange(of: hasCompletedOnboarding) { _, completed in
+                if completed {
+                    checkLocationAuthorization()
+                }
+            }
     }
 
     private var mainTabView: some View {
