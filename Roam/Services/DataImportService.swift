@@ -100,7 +100,65 @@ enum DataImportService {
         }
 
         try? context.save()
+
+        // Ensure CityRecords exist for all imported cities (for color assignment)
+        buildMissingCityRecords(context: context)
+
         return ImportResult(imported: imported, updated: updated, skipped: skipped, malformed: malformed)
+    }
+
+    // MARK: - CityRecord Builder
+
+    /// Create CityRecords for any cities in DailyEntry that don't have one yet.
+    /// Assigns colorIndex sequentially starting from the highest existing index.
+    static func buildMissingCityRecords(context: ModelContext) {
+        let allEntries = (try? context.fetch(FetchDescriptor<DailyEntry>())) ?? []
+        let existingRecords = (try? context.fetch(FetchDescriptor<CityRecord>())) ?? []
+        let existingKeys = Set(existingRecords.map(\.cityKey))
+        var maxColorIndex = existingRecords.map(\.colorIndex).max() ?? -1
+
+        // Group entries by city key to build stats
+        var cityGroups: [String: (city: String, region: String, country: String, lat: Double, lng: Double, count: Int, firstDate: Date, lastDate: Date)] = [:]
+
+        for entry in allEntries {
+            let key = entry.cityKey
+            guard !existingKeys.contains(key), !entry.primaryCity.isEmpty else { continue }
+            if var group = cityGroups[key] {
+                group.count += 1
+                if entry.date < group.firstDate { group.firstDate = entry.date }
+                if entry.date > group.lastDate { group.lastDate = entry.date }
+                cityGroups[key] = group
+            } else {
+                cityGroups[key] = (
+                    city: entry.primaryCity,
+                    region: entry.primaryRegion,
+                    country: entry.primaryCountry,
+                    lat: entry.primaryLatitude,
+                    lng: entry.primaryLongitude,
+                    count: 1,
+                    firstDate: entry.date,
+                    lastDate: entry.date
+                )
+            }
+        }
+
+        for (_, group) in cityGroups.sorted(by: { $0.value.firstDate < $1.value.firstDate }) {
+            maxColorIndex += 1
+            let record = CityRecord()
+            record.cityName = group.city
+            record.region = group.region
+            record.country = group.country
+            record.canonicalLatitude = group.lat
+            record.canonicalLongitude = group.lng
+            record.colorIndex = maxColorIndex
+            record.totalDays = group.count
+            record.firstVisitedDate = group.firstDate
+            record.lastVisitedDate = group.lastDate
+            record.updatedAt = Date()
+            context.insert(record)
+        }
+
+        try? context.save()
     }
 
     // MARK: - CSV Parsing
