@@ -45,6 +45,23 @@ struct CalendarGridView: View {
         return ColorPalette.color(for: record.colorIndex)
     }
 
+    /// Resolve colors for travel day cities from citiesVisitedJSON
+    private func travelColorsFor(entry: DailyEntry?) -> [Color] {
+        guard let entry, entry.isTravelDay,
+              let data = entry.citiesVisitedJSON.data(using: .utf8),
+              let cities = try? JSONDecoder().decode([[String: String]].self, from: data) else {
+            return []
+        }
+        return cities.compactMap { cityDict in
+            guard let city = cityDict["city"],
+                  let region = cityDict["region"],
+                  let country = cityDict["country"] else { return nil }
+            let key = CityDisplayFormatter.cityKey(city: city, state: region, country: country)
+            guard let record = cityRecords.first(where: { $0.cityKey == key }) else { return nil }
+            return ColorPalette.color(for: record.colorIndex)
+        }
+    }
+
     var body: some View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
 
@@ -66,6 +83,7 @@ struct CalendarGridView: View {
                 DayCell(
                     day: day,
                     color: colorFor(entry: entry),
+                    travelColors: travelColorsFor(entry: entry),
                     confidence: entry?.confidence ?? .high,
                     isLowConfidence: entry?.confidence == .low,
                     isTravelDay: entry?.isTravelDay ?? false,

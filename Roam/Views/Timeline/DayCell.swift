@@ -3,6 +3,7 @@ import SwiftUI
 struct DayCell: View {
     let day: Int
     let color: Color?
+    let travelColors: [Color]  // For travel days: gradient from first city to last
     let confidence: EntryConfidence
     let isLowConfidence: Bool
     let isTravelDay: Bool
@@ -19,7 +20,18 @@ struct DayCell: View {
 
     var body: some View {
         ZStack {
-            if let color, !isFuture {
+            if isTravelDay && travelColors.count >= 2 && !isFuture {
+                // Gradient for travel days
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(
+                        LinearGradient(
+                            colors: travelColors,
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .opacity(confidenceOpacity)
+            } else if let color, !isFuture {
                 RoundedRectangle(cornerRadius: 8)
                     .fill(color)
                     .opacity(confidenceOpacity)
@@ -41,7 +53,7 @@ struct DayCell: View {
                     .font(.caption)
                     .fontWeight(isToday ? .semibold : .regular)
                     .foregroundStyle(
-                        (color != nil && !isFuture) ? .white :
+                        (color != nil && !isFuture) || (isTravelDay && !travelColors.isEmpty && !isFuture) ? .white :
                         isFuture ? RoamTheme.textTertiary : RoamTheme.textSecondary
                     )
 
@@ -49,7 +61,7 @@ struct DayCell: View {
                     Image(systemName: "airplane")
                         .font(.system(size: 6))
                         .foregroundStyle(
-                            color != nil ? .white.opacity(0.8) : RoamTheme.textTertiary
+                            (color != nil || !travelColors.isEmpty) ? .white.opacity(0.8) : RoamTheme.textTertiary
                         )
                 }
             }
