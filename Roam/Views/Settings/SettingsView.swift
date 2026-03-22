@@ -96,11 +96,7 @@ struct SettingsView: View {
                 #if DEBUG
                 Section("Debug") {
                     NavigationLink("Debug Tools") {
-                        // DebugScreen will be created in Task 13
-                        // Placeholder view until then
-                        Text("Debug screen coming soon")
-                            .foregroundStyle(.secondary)
-                            .navigationTitle("Debug")
+                        DebugScreen()
                     }
                     LabeledContent("Device ID") {
                         Text(DeviceTokenService.deviceID)
