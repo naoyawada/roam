@@ -4,6 +4,7 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
+		<string>com.roamapp.dailyAggregation</string>
 		<string>com.roamapp.nightCapture</string>
 		<string>com.roamapp.nightCaptureRetry</string>
 	</array>

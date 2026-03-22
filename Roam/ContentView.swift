@@ -9,16 +9,17 @@ enum AppTab: Int, CaseIterable {
 }
 
 struct ContentView: View {
-    private static let logger = Logger(subsystem: "com.naoyawada.roam", category: "ForegroundCatch")
-
     @Environment(\.modelContext) private var context
     @Query private var settings: [UserSettings]
-    @Query private var allLogs: [NightLog]
 
     @StateObject private var locationService = LocationCaptureService()
     @State private var selectedTab: AppTab = .dashboard
-    @State private var showingSettings = false
+
+    // Legacy: DashboardView still expects these parameters (will be removed in Task 11)
+    @Query private var allLogs: [NightLog]
     @State private var unresolvedToResolve: NightLog?
+
+    @State private var showingSettings = false
 
     private var unresolvedLogs: [NightLog] {
         UnresolvedFilter.actionable(allLogs, today: BackfillService.calendarTodayNoonUTC())
@@ -60,7 +61,7 @@ struct ContentView: View {
                         TimelineView()
                     }
                 }
-Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
+                Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
                     NavigationStack {
                         InsightsView()
                     }
@@ -76,8 +77,7 @@ Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
                 UnresolvedResolutionView(log: log)
             }
             .task {
-                await attemptForegroundCapture()
-                BackfillService.backfillMissedNights(context: context)
+                // Legacy deduplication — still needed while NightLog data exists
                 DeduplicationService.deduplicateNightLogs(context: context)
                 DeduplicationService.deduplicateCityColors(context: context)
                 CityColorService.assignMissingColors(context: context)
@@ -131,33 +131,4 @@ Tab("Insights", systemImage: "lightbulb.fill", value: .insights) {
             }
         }
     }
-
-    private func attemptForegroundCapture() async {
-        guard SignificantLocationService.isInCaptureWindow(date: .now) else { return }
-
-        let nightDate = DateNormalization.normalizedNightDate(from: .now)
-
-        let existing = try? context.fetch(
-            FetchDescriptor<NightLog>(predicate: #Predicate { $0.date == nightDate })
-        ).first
-
-        let unresolvedRaw = LogStatus.unresolvedRaw
-        if let existing, existing.statusRaw != unresolvedRaw {
-            return
-        }
-
-        guard locationService.authorizationStatus == .authorizedAlways else {
-            return
-        }
-
-        Self.logger.info("Attempting foreground capture for \(nightDate)")
-        guard let result = await locationService.captureNight() else {
-            Self.logger.error("Foreground capture failed")
-            return
-        }
-
-        CaptureResultSaver.save(result: result, context: context)
-        Self.logger.info("Foreground capture succeeded: \(result.city)")
-    }
-
 }

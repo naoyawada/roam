@@ -9,6 +9,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
     /// Set by RoamApp.init() before the delegate is created.
     @MainActor static var modelContainer: ModelContainer!
 
+    /// Set by RoamApp.init() so push handler can trigger catch-up.
+    @MainActor static var visitPipeline: VisitPipeline?
+
     @MainActor
     func application(
         _ application: UIApplication,
@@ -43,28 +46,14 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
         Self.logger.info("Silent push received (test=\(isTest))")
 
         Task { @MainActor in
-            HeartbeatService.log(.pushReceived)
-
-            guard let container = AppDelegate.modelContainer else {
-                Self.logger.error("modelContainer not available for push handling")
+            guard let pipeline = AppDelegate.visitPipeline else {
+                Self.logger.error("VisitPipeline not available for push handling")
                 completionHandler(.failed)
                 return
             }
 
-            let outcome = await BackgroundTaskService.performCapture(
-                modelContainer: container,
-                source: isTest ? "test-push" : "push",
-                forceCaptureWindow: true
-            )
-
-            switch outcome {
-            case .captured:
-                completionHandler(.newData)
-            case .skipped:
-                completionHandler(.noData)
-            case .failed:
-                completionHandler(.failed)
-            }
+            await pipeline.runCatchup()
+            completionHandler(.newData)
         }
     }
 }
