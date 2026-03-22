@@ -80,4 +80,38 @@ struct DailyAggregator {
 
         return entry
     }
+
+    /// Propagate the last known city when no visits exist for a date.
+    /// Returns nil if a departure was detected (visit at a different city exists).
+    func propagate(
+        for date: Date,
+        lastEntry: DailyEntry,
+        recentVisits: [RawVisit]
+    ) -> DailyEntry? {
+        let departureDetected = recentVisits.contains { visit in
+            visit.isCityResolved &&
+            (visit.resolvedCity != lastEntry.primaryCity ||
+             visit.resolvedRegion != lastEntry.primaryRegion)
+        }
+
+        if departureDetected {
+            return nil
+        }
+
+        let entry = DailyEntry()
+        entry.date = date
+        entry.primaryCity = lastEntry.primaryCity
+        entry.primaryRegion = lastEntry.primaryRegion
+        entry.primaryCountry = lastEntry.primaryCountry
+        entry.primaryLatitude = lastEntry.primaryLatitude
+        entry.primaryLongitude = lastEntry.primaryLongitude
+        entry.isTravelDay = false
+        entry.citiesVisitedJSON = "[]"
+        entry.totalVisitHours = 0
+        entry.sourceRaw = EntrySource.propagatedRaw
+        entry.confidenceRaw = EntryConfidence.mediumRaw
+        entry.updatedAt = Date()
+
+        return entry
+    }
 }
