@@ -28,16 +28,16 @@ struct ContentView: View {
     }
 
     var body: some View {
-        Group {
-            if !hasCompletedOnboarding {
+        mainTabView
+            .fullScreenCover(isPresented: Binding(
+                get: { !hasCompletedOnboarding },
+                set: { if !$0 { hasCompletedOnboarding = true } }
+            )) {
                 OnboardingView(
                     locationService: locationService,
                     hasCompletedOnboarding: $hasCompletedOnboarding
                 )
-            } else {
-                mainTabView
             }
-        }
     }
 
     private var mainTabView: some View {
