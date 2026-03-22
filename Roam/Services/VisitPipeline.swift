@@ -46,7 +46,13 @@ final class VisitPipeline {
         await retryUnresolvedGeocoding(context: context)
         let lastEntry = fetchLastEntry(context: context)
         let today = DateHelpers.noonUTC(from: Date())
-        let missingDates = findMissingDates(from: lastEntry?.date, to: today)
+        // Don't propagate for today — wait for actual CLVisit data.
+        // Only propagate for past dates where we missed capture.
+        let yesterday = DateHelpers.noonUTC(
+            from: Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+        )
+        let propagationEnd = min(yesterday, today)
+        let missingDates = findMissingDates(from: lastEntry?.date, to: propagationEnd)
         for date in missingDates {
             let visits = fetchVisits(for: date, context: context)
             if !visits.isEmpty {
@@ -85,6 +91,17 @@ final class VisitPipeline {
                     await logger.log(category: "aggregation", event: "entry_created",
                                    detail: "fallback: \(fallback.primaryCity)", dailyEntryID: fallback.id)
                 }
+            }
+        }
+
+        // For today: only create an entry if we have actual RawVisit data (no propagation)
+        let todayVisits = fetchVisits(for: today, context: context)
+        if !todayVisits.isEmpty {
+            if let entry = aggregator.aggregate(visits: todayVisits, for: today) {
+                let _ = upsertEntry(entry, context: context)
+                updateCityRecord(for: entry, context: context)
+                await logger.log(category: "aggregation", event: "entry_created",
+                               detail: "today: \(entry.primaryCity)", dailyEntryID: entry.id)
             }
         }
     }
