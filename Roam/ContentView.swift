@@ -20,16 +20,11 @@ struct ContentView: View {
 
     @State private var showingSettings = false
     @State private var showingLocationUpgradeAlert = false
-    @State private var onboardingComplete: Bool? = nil  // nil = not yet determined
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     private var lowConfidenceEntries: [DailyEntry] {
         let lowRaw = EntryConfidence.lowRaw
         return allEntries.filter { $0.confidenceRaw == lowRaw }
-    }
-
-    private var hasCompletedOnboarding: Bool {
-        // Use local state if set, otherwise read from SwiftData
-        onboardingComplete ?? (settings.first?.hasCompletedOnboarding ?? false)
     }
 
     var body: some View {
@@ -37,19 +32,7 @@ struct ContentView: View {
             if !hasCompletedOnboarding {
                 OnboardingView(
                     locationService: locationService,
-                    hasCompletedOnboarding: Binding(
-                        get: { hasCompletedOnboarding },
-                        set: { newValue in
-                            if newValue {
-                                let s = settings.first ?? UserSettings()
-                                if settings.first == nil { context.insert(s) }
-                                s.hasCompletedOnboarding = true
-                                try? context.save()
-                                // Set local state immediately so SwiftUI transitions without waiting for @Query
-                                onboardingComplete = true
-                            }
-                        }
-                    )
+                    hasCompletedOnboarding: $hasCompletedOnboarding
                 )
             } else {
                 mainTabView

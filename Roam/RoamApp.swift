@@ -113,12 +113,14 @@ struct RoamApp: App {
         .modelContainer(modelContainer)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                // Start CLVisit monitoring if not already started and user has completed onboarding
-                locationProvider.startMonitoring()
-                Self.scheduleDailyAggregation()
-                Task { @MainActor in
-                    await visitPipeline.runCatchup()
-                    await pipelineLogger.pruneOldEvents()
+                // Only start monitoring after onboarding (avoids permission prompt before onboarding)
+                if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+                    locationProvider.startMonitoring()
+                    Self.scheduleDailyAggregation()
+                    Task { @MainActor in
+                        await visitPipeline.runCatchup()
+                        await pipelineLogger.pruneOldEvents()
+                    }
                 }
             }
         }
