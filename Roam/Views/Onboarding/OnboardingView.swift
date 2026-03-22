@@ -11,6 +11,7 @@ struct OnboardingView: View {
         case welcome
         case locationExplanation
         case requestingPermission
+        case needsSettingsUpgrade
         case complete
     }
 
@@ -25,6 +26,8 @@ struct OnboardingView: View {
                 locationExplanationView
             case .requestingPermission:
                 requestingView
+            case .needsSettingsUpgrade:
+                settingsUpgradeView
             case .complete:
                 completeView
             }
@@ -38,10 +41,10 @@ struct OnboardingView: View {
             guard oldStatus != newStatus else { return }
             switch newStatus {
             case .authorizedWhenInUse:
-                // Request Always upgrade — iOS grants it provisionally in the background.
-                // Don't wait for .authorizedAlways; it won't arrive during onboarding.
-                locationService.requestAlwaysAuthorization()
-                step = .complete
+                if step == .requestingPermission {
+                    // Got When In Use from the system prompt — direct to Settings for Always
+                    step = .needsSettingsUpgrade
+                }
             case .authorizedAlways:
                 step = .complete
             case .denied, .restricted:
@@ -92,15 +95,18 @@ struct OnboardingView: View {
 
             Button("Allow Location Access") {
                 let current = locationService.authorizationStatus
-                if current == .authorizedWhenInUse || current == .authorizedAlways || current == .denied || current == .restricted {
-                    // Permission already determined — skip the spinner
-                    if current == .authorizedWhenInUse {
-                        locationService.requestAlwaysAuthorization()
-                    }
+                if current == .authorizedAlways {
+                    step = .complete
+                } else if current == .authorizedWhenInUse {
+                    // Already have When In Use — need to direct to Settings for Always
+                    step = .needsSettingsUpgrade
+                } else if current == .denied || current == .restricted {
                     step = .complete
                 } else {
+                    // Not determined — request Always directly.
+                    // iOS will show: "Allow While Using", "Allow Once", "Don't Allow"
                     step = .requestingPermission
-                    locationService.requestWhenInUseAuthorization()
+                    locationService.requestAlwaysAuthorization()
                 }
             }
             .buttonStyle(.borderedProminent)
@@ -118,6 +124,34 @@ struct OnboardingView: View {
             ProgressView()
             Text("Waiting for permission...")
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    private var settingsUpgradeView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "location.fill")
+                .font(.system(size: 48))
+                .foregroundStyle(.orange)
+            Text("One More Step")
+                .font(.title2)
+                .fontWeight(.bold)
+            Text("Roam needs \"Always\" location access to track your city in the background. Please open Settings and change location access to \"Always\".")
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+
+            Button("Continue Without Background Tracking") {
+                step = .complete
+            }
+            .foregroundStyle(.secondary)
+            .font(.callout)
         }
     }
 
