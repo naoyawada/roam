@@ -134,6 +134,12 @@ struct DebugScreen: View {
             }
             .foregroundStyle(RoamTheme.accent)
 
+            Button("Infer Travel Days") {
+                DataImportService.inferTravelDays(context: context)
+                withAnimation { lastAction = "Travel days inferred from city transitions" }
+            }
+            .foregroundStyle(RoamTheme.accent)
+
             Button("Wipe All Data", role: .destructive) {
                 showWipeConfirm = true
             }
