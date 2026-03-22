@@ -48,7 +48,7 @@ struct DayCell: View {
                     .opacity(isFuture ? 0.5 : 1)
             }
 
-            VStack(spacing: 0) {
+            ZStack {
                 Text("\(day)")
                     .font(.caption)
                     .fontWeight(isToday ? .semibold : .regular)
@@ -58,11 +58,15 @@ struct DayCell: View {
                     )
 
                 if isTravelDay && !isFuture {
-                    Image(systemName: "airplane")
-                        .font(.system(size: 6))
-                        .foregroundStyle(
-                            (color != nil || !travelColors.isEmpty) ? .white.opacity(0.8) : RoamTheme.textTertiary
-                        )
+                    VStack {
+                        Spacer()
+                        Image(systemName: "airplane")
+                            .font(.system(size: 6))
+                            .foregroundStyle(
+                                (color != nil || !travelColors.isEmpty) ? .white.opacity(0.8) : RoamTheme.textTertiary
+                            )
+                            .padding(.bottom, 4)
+                    }
                 }
             }
         }
