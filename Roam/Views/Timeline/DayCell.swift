@@ -58,15 +58,12 @@ struct DayCell: View {
                     )
 
                 if isTravelDay && !isFuture {
-                    VStack {
-                        Spacer()
-                        Image(systemName: "airplane")
-                            .font(.system(size: 6))
-                            .foregroundStyle(
-                                (color != nil || !travelColors.isEmpty) ? .white.opacity(0.8) : RoamTheme.textTertiary
-                            )
-                            .padding(.bottom, 4)
-                    }
+                    Image(systemName: "airplane")
+                        .font(.system(size: 6))
+                        .foregroundStyle(
+                            (color != nil || !travelColors.isEmpty) ? .white.opacity(0.8) : RoamTheme.textTertiary
+                        )
+                        .offset(y: 10)
                 }
             }
         }
