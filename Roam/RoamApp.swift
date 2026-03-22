@@ -28,16 +28,17 @@ struct RoamApp: App {
             )
 
             // Synced config: DailyEntry, CityRecord — syncs via iCloud (or local if toggled off)
+            // Named "synced" (not "cloud") because "cloud" is the old store name used by NightLog/CityColor
             let syncedConfig = ModelConfiguration(
-                "cloud",
+                "synced",
                 schema: Schema([DailyEntry.self, CityRecord.self]),
                 cloudKitDatabase: iCloudSyncEnabled ? .automatic : .none
             )
 
-            // Legacy config: NightLog, CityColor — kept for migration reads, never syncs to iCloud
-            // Uses a separate store name so the old CloudKit data is still readable.
+            // Legacy config: NightLog, CityColor — uses the OLD "cloud" store name so migration
+            // can read existing data. Set to .none to avoid re-syncing legacy models.
             let legacyConfig = ModelConfiguration(
-                "legacy",
+                "cloud",
                 schema: Schema([NightLog.self, CityColor.self]),
                 cloudKitDatabase: .none
             )
@@ -79,6 +80,8 @@ struct RoamApp: App {
         provider.startMonitoring()
 
         // Run legacy migration if needed
+        // Note: migration reads from the "cloud" store (where old NightLog/CityColor data lives)
+        // and writes DailyEntry/CityRecord to the "synced" store
         if !LegacyMigrator.isMigrationComplete {
             let context = ModelContext(modelContainer)
             LegacyMigrator().migrate(context: context)
