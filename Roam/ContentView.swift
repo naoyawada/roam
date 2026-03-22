@@ -91,9 +91,18 @@ struct ContentView: View {
                     UIApplication.shared.open(url)
                 }
             }
-            Button("Later", role: .cancel) {}
+            Button("Later", role: .cancel) {
+                // Don't ask again this session, but will ask on next fresh launch
+                UserDefaults.standard.set(true, forKey: "userConfirmedAlwaysLocation")
+            }
         } message: {
             Text("Roam needs \"Always\" location access to track your city in the background. Please change location access to \"Always\" in Settings.")
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            // When returning from Settings, check if they enabled Always
+            if locationService.authorizationStatus == .authorizedAlways {
+                UserDefaults.standard.set(true, forKey: "userConfirmedAlwaysLocation")
+            }
         }
     }
 
@@ -126,15 +135,13 @@ struct ContentView: View {
 
     private func checkLocationAuthorization() {
         let status = locationService.authorizationStatus
-        if status == .authorizedWhenInUse {
-            // Try the programmatic upgrade first — iOS may show the prompt
-            locationService.requestAlwaysAuthorization()
-            // Show alert after a short delay to give iOS a chance to show its own prompt
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                if locationService.authorizationStatus == .authorizedWhenInUse {
-                    showingLocationUpgradeAlert = true
-                }
-            }
+        // After onboarding, iOS may report .authorizedAlways (provisional) even though
+        // Settings shows "While Using App". We can't distinguish provisional Always from
+        // real Always via the API. Instead, check if the user has explicitly confirmed
+        // Always via a UserDefaults flag that gets set when they return from Settings.
+        if status == .authorizedWhenInUse ||
+           (status == .authorizedAlways && !UserDefaults.standard.bool(forKey: "userConfirmedAlwaysLocation")) {
+            showingLocationUpgradeAlert = true
         }
     }
 
