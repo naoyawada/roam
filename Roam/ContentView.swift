@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var entryToResolve: DailyEntry?
 
     @State private var showingSettings = false
+    @State private var showingLocationUpgradeAlert = false
 
     private var lowConfidenceEntries: [DailyEntry] {
         let lowRaw = EntryConfidence.lowRaw
@@ -83,6 +84,17 @@ struct ContentView: View {
             .onAppear {
                 setWindowBackground()
                 configureNavigationBarAppearance()
+                checkLocationAuthorization()
+            }
+            .alert("Background Location Required", isPresented: $showingLocationUpgradeAlert) {
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button("Later", role: .cancel) {}
+            } message: {
+                Text("Roam needs \"Always\" location access to track your city in the background. Please change location access to \"Always\" in Settings.")
             }
         }
     }
@@ -112,6 +124,20 @@ struct ContentView: View {
 
         UINavigationBar.appearance().scrollEdgeAppearance = scrollEdge
         UINavigationBar.appearance().standardAppearance = standard
+    }
+
+    private func checkLocationAuthorization() {
+        let status = locationService.authorizationStatus
+        if status == .authorizedWhenInUse {
+            // Try the programmatic upgrade first — iOS may show the prompt
+            locationService.requestAlwaysAuthorization()
+            // Show alert after a short delay to give iOS a chance to show its own prompt
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                if locationService.authorizationStatus == .authorizedWhenInUse {
+                    showingLocationUpgradeAlert = true
+                }
+            }
+        }
     }
 
     private func setWindowBackground() {
