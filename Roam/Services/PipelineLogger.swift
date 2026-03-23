@@ -47,7 +47,6 @@ actor PipelineLogger {
     }
 
     private static func currentAppState() -> String {
-        // UIApplication.shared must be accessed on main thread
         if Thread.isMainThread {
             switch UIApplication.shared.applicationState {
             case .active: return "foreground"
@@ -56,7 +55,7 @@ actor PipelineLogger {
             @unknown default: return "foreground"
             }
         }
-        return "background"  // If called off main thread, we're likely in background
+        return "background"
     }
 
     private static func encodeMetadata(_ metadata: [String: String]) -> String {
