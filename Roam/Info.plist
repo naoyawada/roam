@@ -15,7 +15,7 @@
 		<string>remote-notification</string>
 	</array>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Roam uses your location to automatically log which city you sleep in each night.</string>
+	<string>Roam uses your location to automatically log which city you are in each day.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Roam uses your location to log which city you are in.</string>
 	<key>UILaunchScreen</key>

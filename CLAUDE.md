@@ -1,6 +1,6 @@
 # Roam
 
-An iOS app that automatically tracks which city you spend each night in. CLVisit-based passive monitoring with last-known-city propagation, confidence levels, travel day detection, and iCloud sync.
+An iOS app that automatically tracks which city you spend each day in. CLVisit-based passive monitoring with last-known-city propagation, confidence levels, travel day detection, and iCloud sync.
 
 ## Stack
 
