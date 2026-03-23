@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MiniMonthGridView: View {
+    @Environment(\.colorTheme) private var colorTheme
     let year: Int
     let month: Int
     let entries: [DailyEntry]
@@ -46,7 +47,7 @@ struct MiniMonthGridView: View {
     private func colorFor(entry: DailyEntry?) -> Color? {
         guard let entry, entry.confidence != .low else { return nil }
         guard let record = cityRecords.first(where: { $0.cityKey == entry.cityKey }) else { return nil }
-        return ColorPalette.color(for: record.colorIndex)
+        return ColorPalette.color(for: record.colorIndex, theme: colorTheme)
     }
 
     private func confidenceOpacity(for entry: DailyEntry?) -> Double {

@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct CalendarGridView: View {
+    @Environment(\.colorTheme) private var colorTheme
     let year: Int
     let month: Int
     let entries: [DailyEntry]
@@ -42,7 +43,7 @@ struct CalendarGridView: View {
     private func colorFor(entry: DailyEntry?) -> Color? {
         guard let entry, entry.confidence != .low else { return nil }
         guard let record = cityRecords.first(where: { $0.cityKey == entry.cityKey }) else { return nil }
-        return ColorPalette.color(for: record.colorIndex)
+        return ColorPalette.color(for: record.colorIndex, theme: colorTheme)
     }
 
     /// Resolve colors for travel day cities from citiesVisitedJSON
@@ -58,7 +59,7 @@ struct CalendarGridView: View {
                   let country = cityDict["country"] else { return nil }
             let key = CityDisplayFormatter.cityKey(city: city, state: region, country: country)
             guard let record = cityRecords.first(where: { $0.cityKey == key }) else { return nil }
-            return ColorPalette.color(for: record.colorIndex)
+            return ColorPalette.color(for: record.colorIndex, theme: colorTheme)
         }
     }
 

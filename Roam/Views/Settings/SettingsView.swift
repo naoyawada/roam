@@ -3,7 +3,9 @@ import SwiftData
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorTheme) private var colorTheme
     @Environment(\.modelContext) private var context
+    @AppStorage("colorTheme") private var colorThemeRaw: String = ColorTheme.default.rawValue
     @Query private var settingsArray: [UserSettings]
     @Query(
         sort: \DailyEntry.updatedAt,
@@ -48,6 +50,23 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+                }
+
+                Section("Appearance") {
+                    Picker("Color Theme", selection: selectedTheme) {
+                        ForEach(ColorTheme.allCases) { theme in
+                            HStack(spacing: 4) {
+                                ForEach(0..<5, id: \.self) { i in
+                                    Circle()
+                                        .fill(theme.colors[i])
+                                        .frame(width: 10, height: 10)
+                                }
+                                Text(theme.displayName)
+                            }
+                            .tag(theme)
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
                 }
 
                 Section("Tracking Status") {
@@ -112,7 +131,7 @@ struct SettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
-                        .foregroundStyle(RoamTheme.accent)
+                        .foregroundStyle(colorTheme.accent)
                 }
             }
             .sheet(isPresented: $showingCitySearch) {
@@ -136,6 +155,13 @@ struct SettingsView: View {
                 Text("iCloud sync change takes effect next time you open the app.")
             }
         }
+    }
+
+    private var selectedTheme: Binding<ColorTheme> {
+        Binding(
+            get: { ColorTheme(rawValue: colorThemeRaw) ?? .earthy },
+            set: { colorThemeRaw = $0.rawValue }
+        )
     }
 
     private var homeCityDisplay: String {

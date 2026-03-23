@@ -10,6 +10,7 @@ enum AppTab: Int, CaseIterable {
 
 struct ContentView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.colorTheme) private var colorTheme
     @Query private var settings: [UserSettings]
 
     @StateObject private var locationService = OnboardingLocationManager()
@@ -67,7 +68,7 @@ struct ContentView: View {
                 }
             }
         }
-        .tint(RoamTheme.accent)
+        .tint(colorTheme.accent)
         .sheet(isPresented: $showingSettings) {
             NavigationStack {
                 SettingsView()

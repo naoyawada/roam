@@ -8,6 +8,7 @@ struct TopCitiesList: View {
     let allCities: [(name: String, days: Int)]
 
     @State private var showingAllCities = false
+    @Environment(\.colorTheme) private var colorTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animatedRows: Set<Int> = []
 
@@ -21,24 +22,13 @@ struct TopCitiesList: View {
 
             ForEach(Array(cities.enumerated()), id: \.offset) { index, city in
                 let rowAnimated = animatedRows.contains(index)
-                HStack {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(city.color)
-                        .frame(width: 10, height: 10)
-                    Text(city.name)
-                        .font(.subheadline)
-                        .foregroundStyle(RoamTheme.textPrimary)
-                    Spacer()
-                    Text("\(city.days)")
-                        .fontWeight(.medium)
-                        .font(.subheadline)
-                        .foregroundStyle(RoamTheme.textPrimary)
-                    Text("\(Int(city.percentage * 100))%")
-                        .font(.caption)
-                        .foregroundStyle(RoamTheme.textTertiary)
-                        .frame(width: 32, alignment: .trailing)
-                }
-                .padding(.vertical, 7)
+                cityRow(
+                    color: city.color,
+                    name: city.name,
+                    nameStyle: RoamTheme.textPrimary,
+                    days: city.days,
+                    pct: Int(city.percentage * 100)
+                )
                 .opacity(rowAnimated ? 1 : 0)
 
                 Rectangle()
@@ -52,24 +42,13 @@ struct TopCitiesList: View {
                 let otherIndex = cities.count
                 let otherAnimated = animatedRows.contains(otherIndex)
                 let pct = totalDays > 0 ? Int(Double(otherDays) / Double(totalDays) * 100) : 0
-                HStack {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(ColorPalette.otherColor)
-                        .frame(width: 10, height: 10)
-                    Text("\(otherCount) other cit\(otherCount == 1 ? "y" : "ies")")
-                        .font(.subheadline)
-                        .foregroundStyle(RoamTheme.textSecondary)
-                    Spacer()
-                    Text("\(otherDays)")
-                        .fontWeight(.medium)
-                        .font(.subheadline)
-                        .foregroundStyle(RoamTheme.textPrimary)
-                    Text("\(pct)%")
-                        .font(.caption)
-                        .foregroundStyle(RoamTheme.textTertiary)
-                        .frame(width: 32, alignment: .trailing)
-                }
-                .padding(.vertical, 7)
+                cityRow(
+                    color: ColorPalette.otherColor,
+                    name: "\(otherCount) other cit\(otherCount == 1 ? "y" : "ies")",
+                    nameStyle: RoamTheme.textSecondary,
+                    days: otherDays,
+                    pct: pct
+                )
                 .opacity(otherAnimated ? 1 : 0)
             }
 
@@ -81,7 +60,7 @@ struct TopCitiesList: View {
                     Text("See all \(allCities.count) cities \u{2192}")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundStyle(RoamTheme.accent)
+                        .foregroundStyle(colorTheme.accent)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 12)
                 }
@@ -92,6 +71,7 @@ struct TopCitiesList: View {
             AllCitiesSheet(cities: allCities, totalDays: totalDays)
                 .presentationDetents([.medium, .large])
         }
+        .monospacedDigit()
         .onAppear {
             guard animatedRows.isEmpty else { return }
             let totalRows = cities.count + (otherCount > 0 ? 1 : 0)
@@ -106,5 +86,29 @@ struct TopCitiesList: View {
                 }
             }
         }
+    }
+
+    private func cityRow(color: Color, name: String, nameStyle: Color, days: Int, pct: Int) -> some View {
+        HStack {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(color)
+                .frame(width: 10, height: 10)
+            Text(name)
+                .font(.subheadline)
+                .foregroundStyle(nameStyle)
+                .lineLimit(1)
+            Spacer()
+            Text("\(days)")
+                .fontWeight(.medium)
+                .font(.subheadline)
+                .foregroundStyle(RoamTheme.textPrimary)
+                .fixedSize()
+            Text("\(pct)%")
+                .font(.caption)
+                .foregroundStyle(RoamTheme.textTertiary)
+                .fixedSize()
+                .frame(width: 40, alignment: .trailing)
+        }
+        .padding(.vertical, 7)
     }
 }

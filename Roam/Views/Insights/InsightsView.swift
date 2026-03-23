@@ -41,7 +41,9 @@ struct InsightsView: View {
                         mostVisited: (city: topCityName, days: topCity?.value ?? 0),
                         longestStreak: analytics.longestStreak(year: selectedYear),
                         newCityCount: analytics.newCities(year: selectedYear).count,
-                        homeAwayRatio: analytics.homeAwayRatio(year: selectedYear, homeCityKey: homeCityKey)
+                        homeAwayRatio: analytics.homeAwayRatio(year: selectedYear, homeCityKey: homeCityKey),
+                        travelDays: analytics.travelDayCount(year: selectedYear),
+                        trips: analytics.tripCount(year: selectedYear, homeCityKey: homeCityKey)
                     )
 
                 }

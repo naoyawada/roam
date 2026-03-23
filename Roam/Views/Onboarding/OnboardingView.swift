@@ -2,6 +2,7 @@ import SwiftUI
 import CoreLocation
 
 struct OnboardingView: View {
+    @Environment(\.colorTheme) private var colorTheme
     @ObservedObject var locationService: OnboardingLocationManager
     @Binding var hasCompletedOnboarding: Bool
 
@@ -36,7 +37,7 @@ struct OnboardingView: View {
         }
         .padding(32)
         .grainBackground()
-        .tint(RoamTheme.accent)
+        .tint(colorTheme.accent)
         .onChange(of: locationService.authorizationStatus) { oldStatus, newStatus in
             guard oldStatus != newStatus, step == .requestingPermission else { return }
             switch newStatus {

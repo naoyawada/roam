@@ -4,6 +4,7 @@ import SwiftData
 struct DayDetailSheet: View {
     let entry: DailyEntry
 
+    @Environment(\.colorTheme) private var colorTheme
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @State private var showingCitySearch = false
@@ -133,7 +134,7 @@ struct DayDetailSheet: View {
                 try? context.save()
             }
         }
-        .tint(RoamTheme.accent)
+        .tint(colorTheme.accent)
         .presentationDetents([.medium, .large])
     }
 }

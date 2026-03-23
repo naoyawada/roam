@@ -16,6 +16,7 @@ struct TimelineView: View {
     @State private var selectedEntry: DailyEntry?
     @State private var mode: TimelineMode = .month
     @State private var navigatingForward = true
+    @Environment(\.colorTheme) private var colorTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var zoomAnimation: Animation {
@@ -288,7 +289,7 @@ struct TimelineView: View {
                 ForEach(sorted, id: \.cityKey) { record in
                     HStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(ColorPalette.color(for: record.colorIndex))
+                            .fill(ColorPalette.color(for: record.colorIndex, theme: colorTheme))
                             .frame(width: 10, height: 10)
                         let parts = record.cityKey.split(separator: "|")
                         let city = parts.first.map(String.init)

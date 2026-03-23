@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ConfidenceBanner: View {
+    @Environment(\.colorTheme) private var colorTheme
     let lowConfidenceCount: Int
     let onTap: () -> Void
 
@@ -9,7 +10,7 @@ struct ConfidenceBanner: View {
             Button(action: onTap) {
                 HStack {
                     Image(systemName: "exclamationmark.circle.fill")
-                        .foregroundStyle(RoamTheme.accent)
+                        .foregroundStyle(colorTheme.accent)
                     Text("\(lowConfidenceCount) day\(lowConfidenceCount == 1 ? "" : "s") need\(lowConfidenceCount == 1 ? "s" : "") review")
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
@@ -19,7 +20,7 @@ struct ConfidenceBanner: View {
                         .foregroundStyle(RoamTheme.textTertiary)
                 }
                 .padding()
-                .background(RoamTheme.accentLight)
+                .background(colorTheme.accentLight)
                 .clipShape(RoundedRectangle(cornerRadius: RoamTheme.cornerRadiusSmall))
             }
             .buttonStyle(.plain)

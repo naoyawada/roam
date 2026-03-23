@@ -5,6 +5,8 @@ struct HighlightsGrid: View {
     let longestStreak: StreakInfo
     let newCityCount: Int
     let homeAwayRatio: HomeAwayRatio
+    let travelDays: Int
+    let trips: (count: Int, avgDays: Double)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -36,30 +38,46 @@ struct HighlightsGrid: View {
                     label: "Away",
                     largeValue: "\(Int(homeAwayRatio.awayPercentage * 100))%"
                 )
+                HighlightCard(
+                    icon: "airplane",
+                    label: "Travel Days",
+                    largeValue: "\(travelDays)"
+                )
+                HighlightCard(
+                    icon: "map",
+                    label: "Trips",
+                    largeValue: "\(trips.count)"
+                )
             }
         }
     }
 }
 
 private struct HighlightCard: View {
+    @Environment(\.colorTheme) private var colorTheme
     let icon: String
     let label: String
     var value: String = ""
     var detail: String = ""
     var largeValue: String = ""
 
+    private let cardHeight: CGFloat = 90
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .light))
-                .foregroundStyle(RoamTheme.accent)
-                .padding(.bottom, 12)
+                .foregroundStyle(colorTheme.accent)
+                .frame(width: 24, height: 24, alignment: .leading)
+                .padding(.bottom, 8)
 
             Text(label)
                 .font(.system(size: 9, weight: .medium))
                 .textCase(.uppercase)
                 .foregroundStyle(RoamTheme.textSecondary)
                 .padding(.bottom, 4)
+
+            Spacer(minLength: 0)
 
             if !largeValue.isEmpty {
                 Text(largeValue)
@@ -71,6 +89,7 @@ private struct HighlightCard: View {
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundStyle(RoamTheme.textPrimary)
+                    .lineLimit(1)
                 if !detail.isEmpty {
                     Text(detail)
                         .font(.caption)
@@ -79,6 +98,7 @@ private struct HighlightCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: cardHeight)
         .padding(RoamTheme.cardPadding)
         .overlay(
             RoundedRectangle(cornerRadius: RoamTheme.cornerRadiusSmall)

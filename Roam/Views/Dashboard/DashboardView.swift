@@ -3,6 +3,7 @@ import SwiftData
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.colorTheme) private var colorTheme
     @Query(sort: \DailyEntry.date, order: .reverse) private var allEntries: [DailyEntry]
     @Query private var cityRecords: [CityRecord]
     @Query private var settings: [UserSettings]
@@ -17,6 +18,14 @@ struct DashboardView: View {
 
     private func colorIndex(for cityKey: String) -> Int {
         cityRecords.first(where: { $0.cityKey == cityKey })?.colorIndex ?? 0
+    }
+
+    private func todayRawVisitCount() -> Int {
+        let startOfDay = Calendar.current.startOfDay(for: .now)
+        let descriptor = FetchDescriptor<RawVisit>(
+            predicate: #Predicate<RawVisit> { $0.createdAt >= startOfDay }
+        )
+        return (try? context.fetchCount(descriptor)) ?? 0
     }
 
     var body: some View {
@@ -34,10 +43,21 @@ struct DashboardView: View {
             } else {
                 VStack(alignment: .leading, spacing: 20) {
                     let streak = analytics.currentStreak(asOf: DateHelpers.noonUTC(from: .now))
+                    let pingsToday = todayRawVisitCount()
+
+                    let latestCityKey = allEntries.first?.cityKey ?? ""
+                    let cityParts = latestCityKey.split(separator: "|")
+                    let bannerCity = cityParts.count > 0 ? String(cityParts[0]) : ""
+                    let bannerState = cityParts.count > 1 ? String(cityParts[1]) : nil
+                    let bannerCountry = cityParts.count > 2 ? String(cityParts[2]) : nil
+                    let deviceRegion = Locale.current.region?.identifier
+                    let bannerName = bannerCity.isEmpty
+                        ? "No data yet"
+                        : CityDisplayFormatter.format(city: bannerCity, state: bannerState, country: bannerCountry, deviceRegion: deviceRegion)
 
                     CurrentCityBanner(
-                        cityName: streak.city.isEmpty ? "No data yet" : streak.city,
-                        streakDays: streak.days
+                        cityName: bannerName,
+                        pingsToday: pingsToday
                     )
 
                     let cityDaysMap = analytics.daysPerCity(year: currentYear)
@@ -48,12 +68,11 @@ struct DashboardView: View {
                         cityDays: sortedCities.map { entry in
                             let parts = entry.key.split(separator: "|")
                             let idx = colorIndex(for: entry.key)
-                            return (name: String(parts.first ?? ""), days: entry.value, color: ColorPalette.color(for: idx))
+                            return (name: String(parts.first ?? ""), days: entry.value, color: ColorPalette.color(for: idx, theme: colorTheme))
                         },
                         totalDays: totalDays
                     )
 
-                    let deviceRegion = Locale.current.region?.identifier
                     let top5 = sortedCities.prefix(5)
                     let others = sortedCities.dropFirst(5)
                     let otherDaysCount = others.reduce(0) { $0 + $1.value }
@@ -74,7 +93,7 @@ struct DashboardView: View {
                             let country = parts.count > 2 ? String(parts[2]) : nil
                             let displayName = CityDisplayFormatter.format(city: city, state: state, country: country, deviceRegion: deviceRegion)
                             let idx = colorIndex(for: entry.key)
-                            return (name: displayName, days: entry.value, percentage: totalDays > 0 ? Double(entry.value) / Double(totalDays) : 0, color: ColorPalette.color(for: idx))
+                            return (name: displayName, days: entry.value, percentage: totalDays > 0 ? Double(entry.value) / Double(totalDays) : 0, color: ColorPalette.color(for: idx, theme: colorTheme))
                         },
                         otherCount: others.count,
                         otherDays: otherDaysCount,
@@ -83,13 +102,12 @@ struct DashboardView: View {
                     )
 
                     let homeCityKey = settings.first?.homeCityKey ?? ""
-                    let longestStreak = analytics.longestStreak(year: currentYear)
                     let ratio = analytics.homeAwayRatio(year: currentYear, homeCityKey: homeCityKey)
 
                     QuickStatsRow(
                         citiesVisited: analytics.uniqueCitiesCount(year: currentYear),
-                        longestStreak: longestStreak.days,
-                        homeRatio: Int(ratio.homePercentage * 100)
+                        currentStreak: streak.days,
+                        awayRatio: Int(ratio.awayPercentage * 100)
                     )
                 }
                 .padding()
@@ -108,7 +126,7 @@ struct DashboardView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(RoamTheme.accent, in: Capsule())
+                                .background(colorTheme.accent, in: Capsule())
                         }
                     }
                     Button {

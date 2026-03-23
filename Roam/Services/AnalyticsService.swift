@@ -211,6 +211,33 @@ final class AnalyticsService {
         return Double(trips.reduce(0, +)) / Double(trips.count)
     }
 
+    func tripCount(year: Int, homeCityKey: String) -> (count: Int, avgDays: Double) {
+        let entries = confirmedLogs(year: year)
+        var trips: [Int] = []
+        var awayCount = 0
+
+        for entry in entries {
+            if entry.cityKey == homeCityKey {
+                if awayCount > 0 {
+                    trips.append(awayCount)
+                    awayCount = 0
+                }
+            } else {
+                awayCount += 1
+            }
+        }
+        if awayCount > 0 { trips.append(awayCount) }
+        guard !trips.isEmpty else { return (count: 0, avgDays: 0) }
+        let avg = Double(trips.reduce(0, +)) / Double(trips.count)
+        return (count: trips.count, avgDays: avg)
+    }
+
+    // MARK: - Travel Days
+
+    func travelDayCount(year: Int) -> Int {
+        confirmedLogs(year: year).filter { $0.isTravelDay }.count
+    }
+
     // MARK: - Available Years
 
     func availableYears() -> [Int] {

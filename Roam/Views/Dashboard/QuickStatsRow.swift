@@ -2,8 +2,8 @@ import SwiftUI
 
 struct QuickStatsRow: View {
     let citiesVisited: Int
-    let longestStreak: Int
-    let homeRatio: Int
+    let currentStreak: Int
+    let awayRatio: Int
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animatedCards: Set<Int> = []
@@ -17,15 +17,15 @@ struct QuickStatsRow: View {
                 suffix: ""
             )
             StatCard(
-                icon: "flame",
-                label: "Streak",
-                value: animatedCards.contains(1) ? longestStreak : 0,
+                icon: "mappin.and.ellipse",
+                label: "Days Here",
+                value: animatedCards.contains(1) ? currentStreak : 0,
                 suffix: ""
             )
             StatCard(
-                icon: "house",
-                label: "Home Rate",
-                value: animatedCards.contains(2) ? homeRatio : 0,
+                icon: "suitcase",
+                label: "Away",
+                value: animatedCards.contains(2) ? awayRatio : 0,
                 suffix: "%"
             )
         }
