@@ -45,13 +45,14 @@ final class VisitPipeline {
         let today = DateHelpers.noonUTC(from: Date())
         let lastEntry = fetchLastEntry(context: context)
 
-        // Skip entirely if last entry is today with high confidence — nothing to do
+        // Always log the trigger so the log viewer shows activity
+        await logger.log(category: "trigger", event: "trigger_foreground")
+
+        // Skip aggregation if last entry is today with high confidence — nothing to do
         let highRaw = EntryConfidence.highRaw
         if let last = lastEntry, last.date == today, last.confidenceRaw == highRaw {
             return
         }
-
-        await logger.log(category: "trigger", event: "trigger_foreground")
         await retryUnresolvedGeocoding(context: context)
 
         // Propagate for past dates only (not today)
