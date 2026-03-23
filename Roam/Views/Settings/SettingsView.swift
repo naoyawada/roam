@@ -112,20 +112,20 @@ struct SettingsView: View {
                         }
                 }
 
-                #if DEBUG
-                Section("Debug") {
-                    NavigationLink("Debug Tools") {
-                        DebugScreen()
-                    }
-                    LabeledContent("APNs Token") {
-                        Text(UserDefaults.standard.string(forKey: "apns_device_token") ?? "Not registered")
-                            .font(.caption2)
-                            .monospaced()
-                            .lineLimit(1)
-                            .truncationMode(.middle)
+                if aboutTapCount >= 3 {
+                    Section("Debug") {
+                        NavigationLink("Debug Tools") {
+                            DebugScreen()
+                        }
+                        LabeledContent("APNs Token") {
+                            Text(UserDefaults.standard.string(forKey: "apns_device_token") ?? "Not registered")
+                                .font(.caption2)
+                                .monospaced()
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
                     }
                 }
-                #endif
             }
             .navigationTitle("Settings")
             .toolbar {
