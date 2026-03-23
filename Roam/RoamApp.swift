@@ -1,63 +1,109 @@
 import SwiftUI
 import SwiftData
+import BackgroundTasks
+import os
 
 @main
 struct RoamApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) private var scenePhase
+
     let modelContainer: ModelContainer
-    let significantLocationService: SignificantLocationService
+    let locationProvider: LiveLocationProvider
+    let visitPipeline: VisitPipeline
+    let pipelineLogger: PipelineLogger
+
+    private static let logger = Logger(subsystem: "com.naoyawada.roam", category: "RoamApp")
+    static let dailyAggregationTaskID = "com.roamapp.dailyAggregation"
 
     init() {
         let iCloudSyncEnabled = UserDefaults.standard.object(forKey: "iCloudSyncEnabled") as? Bool ?? true
 
         do {
-            // "cloud" config: NightLog + CityColor
-            // Uses the same store name regardless of toggle so data is preserved when switching.
-            let cloudConfig = ModelConfiguration(
-                "cloud",
-                schema: Schema([NightLog.self, CityColor.self]),
-                cloudKitDatabase: iCloudSyncEnabled ? .automatic : .none
-            )
-
-            // "local" config: UserSettings — always local, never syncs
+            // Local config: RawVisit, PipelineEvent, UserSettings — never syncs
             let localConfig = ModelConfiguration(
                 "local",
-                schema: Schema([UserSettings.self]),
+                schema: Schema([RawVisit.self, PipelineEvent.self, UserSettings.self]),
                 cloudKitDatabase: .none
             )
 
-            modelContainer = try ModelContainer(
-                for: NightLog.self, CityColor.self, UserSettings.self,
-                configurations: cloudConfig, localConfig
+            // Synced config: DailyEntry, CityRecord — syncs via iCloud (or local if toggled off)
+            // Named "synced" (not "cloud") because "cloud" is the old store name used by NightLog/CityColor
+            let syncedConfig = ModelConfiguration(
+                "synced",
+                schema: Schema([DailyEntry.self, CityRecord.self]),
+                cloudKitDatabase: iCloudSyncEnabled ? .automatic : .none
             )
+
+            // Legacy config: NightLog, CityColor — uses the OLD "cloud" store name so migration
+            // can read existing data. Set to .none to avoid re-syncing legacy models.
+            let legacyConfig = ModelConfiguration(
+                "cloud",
+                schema: Schema([NightLog.self, CityColor.self]),
+                cloudKitDatabase: .none
+            )
+
+            let container = try ModelContainer(
+                for: RawVisit.self, PipelineEvent.self, UserSettings.self,
+                    DailyEntry.self, CityRecord.self,
+                    NightLog.self, CityColor.self,
+                configurations: localConfig, syncedConfig, legacyConfig
+            )
+
+            modelContainer = container
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
 
-        // Make container available to AppDelegate for push-triggered captures
+        // Make container available to AppDelegate for push-triggered catch-ups
         AppDelegate.modelContainer = modelContainer
 
-        significantLocationService = SignificantLocationService(modelContainer: modelContainer)
+        // Create pipeline logger (uses ModelActor with its own context)
+        let logger = PipelineLogger(modelContainer: modelContainer)
+        pipelineLogger = logger
 
-        BackgroundTaskService.register(modelContainer: modelContainer)
-        BackgroundTaskService.schedulePrimaryCapture()
-        significantLocationService.startMonitoring()
-    }
+        // Create pipeline
+        let pipeline = VisitPipeline(modelContainer: modelContainer, logger: logger)
+        visitPipeline = pipeline
 
-    private func syncScheduleToSupabase() {
-        let context = ModelContext(modelContainer)
-        let settings = (try? context.fetch(FetchDescriptor<UserSettings>()))?.first
-        let primaryHour = settings?.primaryCheckHour ?? 2
-        let primaryMinute = settings?.primaryCheckMinute ?? 0
-        let retryHour = settings?.retryCheckHour ?? 5
-        let retryMinute = settings?.retryCheckMinute ?? 0
-        DeviceTokenService.syncSchedule(
-            primaryHour: primaryHour,
-            primaryMinute: primaryMinute,
-            retryHour: retryHour,
-            retryMinute: retryMinute
-        )
+        // Make pipeline available to AppDelegate
+        AppDelegate.visitPipeline = pipeline
+
+        // Create and wire location provider (don't start monitoring yet — wait until after onboarding)
+        let provider = LiveLocationProvider()
+        provider.onVisitReceived = { [pipeline] visitData in
+            Task { @MainActor in
+                await pipeline.handleVisit(visitData)
+            }
+        }
+        locationProvider = provider
+
+        // Run legacy migration if needed
+        // Note: migration reads from the "cloud" store (where old NightLog/CityColor data lives)
+        // and writes DailyEntry/CityRecord to the "synced" store
+        if !LegacyMigrator.isMigrationComplete {
+            let context = ModelContext(modelContainer)
+            LegacyMigrator().migrate(context: context)
+            Self.logger.info("Legacy migration completed")
+        }
+
+        // Register BGTask for daily aggregation
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: Self.dailyAggregationTaskID,
+            using: nil
+        ) { task in
+            guard let refreshTask = task as? BGAppRefreshTask else {
+                task.setTaskCompleted(success: false)
+                return
+            }
+            Task { @MainActor in
+                await pipeline.runCatchup()
+                refreshTask.setTaskCompleted(success: true)
+            }
+        }
+        Self.scheduleDailyAggregation()
+
+        Self.logger.info("RoamApp initialized with CLVisit pipeline")
     }
 
     var body: some Scene {
@@ -67,12 +113,35 @@ struct RoamApp: App {
         .modelContainer(modelContainer)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                // Reschedule on every foreground return — ensures the task
-                // survives force-quits, reboots, and iOS pruning the schedule.
-                BackgroundTaskService.schedulePrimaryCapture()
-                HeartbeatService.log(.appForegrounded)
-                syncScheduleToSupabase()
+                // Only start monitoring after onboarding (avoids permission prompt before onboarding)
+                if UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+                    locationProvider.startMonitoring()
+                    Self.scheduleDailyAggregation()
+                    Task { @MainActor in
+                        await visitPipeline.runCatchup()
+                        await pipelineLogger.pruneOldEvents()
+                    }
+                }
             }
+        }
+    }
+
+    static func scheduleDailyAggregation() {
+        let request = BGAppRefreshTaskRequest(identifier: dailyAggregationTaskID)
+        // Schedule for 3 AM tomorrow
+        var calendar = Calendar.current
+        calendar.timeZone = .current
+        var components = calendar.dateComponents([.year, .month, .day], from: Date())
+        components.hour = 3
+        components.minute = 0
+        let candidate = calendar.date(from: components)!
+        request.earliestBeginDate = candidate > Date()
+            ? candidate
+            : calendar.date(byAdding: .day, value: 1, to: candidate)!
+        do {
+            try BGTaskScheduler.shared.submit(request)
+        } catch {
+            logger.error("Failed to schedule daily aggregation: \(error.localizedDescription)")
         }
     }
 }

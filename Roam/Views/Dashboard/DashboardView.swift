@@ -3,22 +3,26 @@ import SwiftData
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \NightLog.date, order: .reverse) private var allLogs: [NightLog]
-    @Query private var cityColors: [CityColor]
+    @Query(sort: \DailyEntry.date, order: .reverse) private var allEntries: [DailyEntry]
+    @Query private var cityRecords: [CityRecord]
     @Query private var settings: [UserSettings]
 
     @Binding var showingSettings: Bool
-    var unresolvedLogs: [NightLog]
-    var onResolve: (NightLog) -> Void
+    var lowConfidenceEntries: [DailyEntry]
+    var onResolveLowConfidence: (DailyEntry) -> Void
 
     private var currentYear: Int {
         Calendar.current.component(.year, from: .now)
     }
 
+    private func colorIndex(for cityKey: String) -> Int {
+        cityRecords.first(where: { $0.cityKey == cityKey })?.colorIndex ?? 0
+    }
+
     var body: some View {
         let analytics = AnalyticsService(context: context)
         ScrollView {
-            if allLogs.isEmpty {
+            if allEntries.isEmpty {
                 VStack {
                     Spacer(minLength: 120)
                     Text("Your first night will appear here")
@@ -29,7 +33,7 @@ struct DashboardView: View {
                 }
             } else {
                 VStack(alignment: .leading, spacing: 20) {
-                    let streak = analytics.currentStreak(asOf: DateNormalization.normalizedNightDate(from: .now))
+                    let streak = analytics.currentStreak(asOf: DateHelpers.noonUTC(from: .now))
 
                     CurrentCityBanner(
                         cityName: streak.city.isEmpty ? "No data yet" : streak.city,
@@ -41,9 +45,10 @@ struct DashboardView: View {
                     let sortedCities = cityDaysMap.sorted { $0.value > $1.value }
 
                     YearSummaryBar(
-                        cityDays: sortedCities.enumerated().map { index, entry in
+                        cityDays: sortedCities.map { entry in
                             let parts = entry.key.split(separator: "|")
-                            return (name: String(parts.first ?? ""), days: entry.value, color: ColorPalette.color(for: index))
+                            let idx = colorIndex(for: entry.key)
+                            return (name: String(parts.first ?? ""), days: entry.value, color: ColorPalette.color(for: idx))
                         },
                         totalDays: totalDays
                     )
@@ -62,13 +67,14 @@ struct DashboardView: View {
                     }
 
                     TopCitiesList(
-                        cities: top5.enumerated().map { index, entry in
+                        cities: top5.map { entry in
                             let parts = entry.key.split(separator: "|")
                             let city = parts.count > 0 ? String(parts[0]) : ""
                             let state = parts.count > 1 ? String(parts[1]) : nil
                             let country = parts.count > 2 ? String(parts[2]) : nil
                             let displayName = CityDisplayFormatter.format(city: city, state: state, country: country, deviceRegion: deviceRegion)
-                            return (name: displayName, nights: entry.value, percentage: totalDays > 0 ? Double(entry.value) / Double(totalDays) : 0, color: ColorPalette.color(for: index))
+                            let idx = colorIndex(for: entry.key)
+                            return (name: displayName, nights: entry.value, percentage: totalDays > 0 ? Double(entry.value) / Double(totalDays) : 0, color: ColorPalette.color(for: idx))
                         },
                         otherCount: others.count,
                         otherNights: otherNightsCount,
@@ -93,11 +99,11 @@ struct DashboardView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    if !unresolvedLogs.isEmpty {
+                    if !lowConfidenceEntries.isEmpty {
                         Button {
-                            onResolve(unresolvedLogs[0])
+                            onResolveLowConfidence(lowConfidenceEntries[0])
                         } label: {
-                            Text("\(unresolvedLogs.count)")
+                            Text("\(lowConfidenceEntries.count)")
                                 .font(.caption.bold())
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 8)

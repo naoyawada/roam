@@ -2,7 +2,7 @@ import SwiftUI
 import CoreLocation
 
 struct OnboardingView: View {
-    @ObservedObject var locationService: LocationCaptureService
+    @ObservedObject var locationService: OnboardingLocationManager
     @Binding var hasCompletedOnboarding: Bool
 
     @State private var step: OnboardingStep = .welcome
@@ -11,6 +11,7 @@ struct OnboardingView: View {
         case welcome
         case locationExplanation
         case requestingPermission
+        case needsSettingsUpgrade
         case complete
     }
 
@@ -25,6 +26,8 @@ struct OnboardingView: View {
                 locationExplanationView
             case .requestingPermission:
                 requestingView
+            case .needsSettingsUpgrade:
+                settingsUpgradeView
             case .complete:
                 completeView
             }
@@ -35,14 +38,11 @@ struct OnboardingView: View {
         .grainBackground()
         .tint(RoamTheme.accent)
         .onChange(of: locationService.authorizationStatus) { oldStatus, newStatus in
-            guard oldStatus != newStatus else { return }
+            guard oldStatus != newStatus, step == .requestingPermission else { return }
             switch newStatus {
-            case .authorizedWhenInUse:
-                // Request Always upgrade — iOS grants it provisionally in the background.
-                // Don't wait for .authorizedAlways; it won't arrive during onboarding.
-                locationService.requestAlwaysAuthorization()
-                step = .complete
-            case .authorizedAlways:
+            case .authorizedWhenInUse, .authorizedAlways:
+                // Got some level of authorization — proceed to complete.
+                // ContentView will prompt for Always upgrade if needed.
                 step = .complete
             case .denied, .restricted:
                 step = .complete
@@ -82,7 +82,7 @@ struct OnboardingView: View {
             Text("Location Access")
                 .font(.title2)
                 .fontWeight(.bold)
-            Text("Roam checks your location once at night (around 2 AM) to determine which city you're in. This requires \"Always\" location access so it can work while you sleep.")
+            Text("Roam passively monitors your location to automatically track which cities you visit. This requires \"Always\" location access so it can detect city changes in the background.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
             Text("Your location data stays on your device and in your private iCloud account. It is never shared.")
@@ -93,14 +93,14 @@ struct OnboardingView: View {
             Button("Allow Location Access") {
                 let current = locationService.authorizationStatus
                 if current == .authorizedWhenInUse || current == .authorizedAlways || current == .denied || current == .restricted {
-                    // Permission already determined — skip the spinner
-                    if current == .authorizedWhenInUse {
-                        locationService.requestAlwaysAuthorization()
-                    }
+                    // Permission already determined — proceed to complete.
+                    // ContentView will prompt for Always upgrade if only When In Use.
                     step = .complete
                 } else {
+                    // Not determined — request Always directly.
+                    // iOS will show: "Allow While Using", "Allow Once", "Don't Allow"
                     step = .requestingPermission
-                    locationService.requestWhenInUseAuthorization()
+                    locationService.requestAlwaysAuthorization()
                 }
             }
             .buttonStyle(.borderedProminent)
@@ -118,6 +118,34 @@ struct OnboardingView: View {
             ProgressView()
             Text("Waiting for permission...")
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    private var settingsUpgradeView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "location.fill")
+                .font(.system(size: 48))
+                .foregroundStyle(.orange)
+            Text("One More Step")
+                .font(.title2)
+                .fontWeight(.bold)
+            Text("Roam needs \"Always\" location access to track your city in the background. Please open Settings and change location access to \"Always\".")
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+
+            Button("Continue Without Background Tracking") {
+                step = .complete
+            }
+            .foregroundStyle(.secondary)
+            .font(.callout)
         }
     }
 

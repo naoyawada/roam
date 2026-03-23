@@ -1,16 +1,16 @@
 import SwiftUI
 
-struct UnresolvedBanner: View {
-    let unresolvedCount: Int
+struct ConfidenceBanner: View {
+    let lowConfidenceCount: Int
     let onTap: () -> Void
 
     var body: some View {
-        if unresolvedCount > 0 {
+        if lowConfidenceCount > 0 {
             Button(action: onTap) {
                 HStack {
                     Image(systemName: "exclamationmark.circle.fill")
                         .foregroundStyle(RoamTheme.accent)
-                    Text("\(unresolvedCount) night\(unresolvedCount == 1 ? "" : "s") need\(unresolvedCount == 1 ? "s" : "") your input")
+                    Text("\(lowConfidenceCount) night\(lowConfidenceCount == 1 ? "" : "s") need\(lowConfidenceCount == 1 ? "s" : "") review")
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
                     Spacer()

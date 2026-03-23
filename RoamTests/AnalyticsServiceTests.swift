@@ -9,29 +9,16 @@ final class AnalyticsServiceTests: XCTestCase {
     var context: ModelContext!
 
     override func setUp() async throws {
-        let cloudConfig = ModelConfiguration(
-            "cloud",
-            schema: Schema([NightLog.self, CityColor.self]),
-            isStoredInMemoryOnly: true,
-            cloudKitDatabase: .none
-        )
-        let localConfig = ModelConfiguration(
-            "local",
-            schema: Schema([UserSettings.self]),
-            isStoredInMemoryOnly: true,
-            cloudKitDatabase: .none
-        )
-        container = try ModelContainer(
-            for: NightLog.self, CityColor.self, UserSettings.self,
-            configurations: cloudConfig, localConfig
-        )
+        let schema = Schema([DailyEntry.self, CityRecord.self, UserSettings.self])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        container = try ModelContainer(for: schema, configurations: [config])
         context = container.mainContext
     }
 
     func testDaysPerCity() {
-        insertLog(date: noonUTC(2026, 1, 1), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 2), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 3), city: "New York", state: "NY", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 1), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 2), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 3), city: "New York", region: "NY", country: "US")
 
         let analytics = AnalyticsService(context: context)
         let result = analytics.daysPerCity(year: 2026)
@@ -41,9 +28,9 @@ final class AnalyticsServiceTests: XCTestCase {
     }
 
     func testCurrentStreak() {
-        insertLog(date: noonUTC(2026, 3, 13), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 3, 14), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 3, 15), city: "Austin", state: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 3, 13), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 3, 14), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 3, 15), city: "Austin", region: "TX", country: "US")
 
         let analytics = AnalyticsService(context: context)
         let streak = analytics.currentStreak(asOf: noonUTC(2026, 3, 16))
@@ -53,9 +40,9 @@ final class AnalyticsServiceTests: XCTestCase {
     }
 
     func testCurrentStreakBrokenByDifferentCity() {
-        insertLog(date: noonUTC(2026, 3, 13), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 3, 14), city: "New York", state: "NY", country: "US")
-        insertLog(date: noonUTC(2026, 3, 15), city: "Austin", state: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 3, 13), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 3, 14), city: "New York", region: "NY", country: "US")
+        insertEntry(date: noonUTC(2026, 3, 15), city: "Austin", region: "TX", country: "US")
 
         let analytics = AnalyticsService(context: context)
         let streak = analytics.currentStreak(asOf: noonUTC(2026, 3, 16))
@@ -65,11 +52,11 @@ final class AnalyticsServiceTests: XCTestCase {
     }
 
     func testLongestStreak() {
-        insertLog(date: noonUTC(2026, 1, 1), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 2), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 3), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 4), city: "New York", state: "NY", country: "US")
-        insertLog(date: noonUTC(2026, 1, 5), city: "New York", state: "NY", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 1), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 2), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 3), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 4), city: "New York", region: "NY", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 5), city: "New York", region: "NY", country: "US")
 
         let analytics = AnalyticsService(context: context)
         let streak = analytics.longestStreak(year: 2026)
@@ -79,19 +66,19 @@ final class AnalyticsServiceTests: XCTestCase {
     }
 
     func testUniqueCitiesCount() {
-        insertLog(date: noonUTC(2026, 1, 1), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 2), city: "New York", state: "NY", country: "US")
-        insertLog(date: noonUTC(2026, 1, 3), city: "Austin", state: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 1), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 2), city: "New York", region: "NY", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 3), city: "Austin", region: "TX", country: "US")
 
         let analytics = AnalyticsService(context: context)
         XCTAssertEqual(analytics.uniqueCitiesCount(year: 2026), 2)
     }
 
     func testHomeAwayRatio() {
-        insertLog(date: noonUTC(2026, 1, 1), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 2), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 3), city: "Austin", state: "TX", country: "US")
-        insertLog(date: noonUTC(2026, 1, 4), city: "New York", state: "NY", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 1), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 2), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 3), city: "Austin", region: "TX", country: "US")
+        insertEntry(date: noonUTC(2026, 1, 4), city: "New York", region: "NY", country: "US")
 
         let analytics = AnalyticsService(context: context)
         let ratio = analytics.homeAwayRatio(year: 2026, homeCityKey: "Austin|TX|US")
@@ -102,17 +89,19 @@ final class AnalyticsServiceTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func insertLog(date: Date, city: String, state: String, country: String) {
-        let log = NightLog(
-            date: date,
-            city: city,
-            state: state,
-            country: country,
-            capturedAt: date,
-            source: .automatic,
-            status: .confirmed
-        )
-        context.insert(log)
+    private func insertEntry(date: Date, city: String, region: String, country: String) {
+        let entry = DailyEntry()
+        entry.date = date
+        entry.primaryCity = city
+        entry.primaryRegion = region
+        entry.primaryCountry = country
+        entry.primaryLatitude = 0.0
+        entry.primaryLongitude = 0.0
+        entry.source = .visit
+        entry.confidence = .high
+        entry.createdAt = date
+        entry.updatedAt = date
+        context.insert(entry)
         try! context.save()
     }
 

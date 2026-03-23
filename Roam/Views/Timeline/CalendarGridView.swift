@@ -4,9 +4,9 @@ import SwiftData
 struct CalendarGridView: View {
     let year: Int
     let month: Int
-    let logs: [NightLog]
-    let cityColors: [CityColor]
-    let onDayTapped: (NightLog?, Date) -> Void
+    let entries: [DailyEntry]
+    let cityRecords: [CityRecord]
+    let onDayTapped: (DailyEntry?, Date) -> Void
 
     private var calendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
@@ -31,19 +31,35 @@ struct CalendarGridView: View {
     private var today: DateComponents {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        return cal.dateComponents([.year, .month, .day], from: BackfillService.calendarTodayNoonUTC())
+        return cal.dateComponents([.year, .month, .day], from: DateHelpers.noonUTC(from: .now))
     }
 
-    private func logFor(day: Int) -> NightLog? {
+    private func entryFor(day: Int) -> DailyEntry? {
         let targetDate = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
-        return logs.first { calendar.isDate($0.date, inSameDayAs: targetDate) }
+        return entries.first { calendar.isDate($0.date, inSameDayAs: targetDate) }
     }
 
-    private func colorFor(log: NightLog?) -> Color? {
-        guard let log, log.status != .unresolved else { return nil }
-        let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
-        guard let cityColor = cityColors.first(where: { $0.cityKey == key }) else { return nil }
-        return ColorPalette.color(for: cityColor.colorIndex)
+    private func colorFor(entry: DailyEntry?) -> Color? {
+        guard let entry, entry.confidence != .low else { return nil }
+        guard let record = cityRecords.first(where: { $0.cityKey == entry.cityKey }) else { return nil }
+        return ColorPalette.color(for: record.colorIndex)
+    }
+
+    /// Resolve colors for travel day cities from citiesVisitedJSON
+    private func travelColorsFor(entry: DailyEntry?) -> [Color] {
+        guard let entry, entry.isTravelDay,
+              let data = entry.citiesVisitedJSON.data(using: .utf8),
+              let cities = try? JSONDecoder().decode([[String: String]].self, from: data) else {
+            return []
+        }
+        return cities.compactMap { cityDict in
+            guard let city = cityDict["city"],
+                  let region = cityDict["region"],
+                  let country = cityDict["country"] else { return nil }
+            let key = CityDisplayFormatter.cityKey(city: city, state: region, country: country)
+            guard let record = cityRecords.first(where: { $0.cityKey == key }) else { return nil }
+            return ColorPalette.color(for: record.colorIndex)
+        }
     }
 
     var body: some View {
@@ -57,7 +73,7 @@ struct CalendarGridView: View {
 
             // Day cells
             ForEach(1...daysInMonth, id: \.self) { day in
-                let log = logFor(day: day)
+                let entry = entryFor(day: day)
                 let isFuture = (year > today.year! || (year == today.year! && month > today.month!) ||
                                (year == today.year! && month == today.month! && day > today.day!))
                 let isToday = (year == today.year! && month == today.month! && day == today.day!)
@@ -66,15 +82,18 @@ struct CalendarGridView: View {
 
                 DayCell(
                     day: day,
-                    color: colorFor(log: log),
-                    isUnresolved: log?.status == .unresolved,
+                    color: colorFor(entry: entry),
+                    travelColors: travelColorsFor(entry: entry),
+                    confidence: entry?.confidence ?? .high,
+                    isLowConfidence: entry?.confidence == .low,
+                    isTravelDay: entry?.isTravelDay ?? false,
                     isFuture: isFuture,
                     isToday: isToday
                 )
                 .onTapGesture {
                     if !isFuture {
                         HapticService.selection()
-                        onDayTapped(log, dayDate)
+                        onDayTapped(entry, dayDate)
                     }
                 }
             }

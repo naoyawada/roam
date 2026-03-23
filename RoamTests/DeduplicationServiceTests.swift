@@ -9,142 +9,122 @@ final class DeduplicationServiceTests: XCTestCase {
     private var context: ModelContext!
 
     override func setUp() async throws {
-        let schema = Schema([NightLog.self, CityColor.self])
+        let schema = Schema([DailyEntry.self, CityRecord.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         container = try ModelContainer(for: schema, configurations: [config])
         context = container.mainContext
     }
 
-    func testNoDuplicates_noChanges() {
-        let log1 = NightLog(date: noonUTC(2026, 3, 15), city: "Atlanta", status: .confirmed)
-        let log2 = NightLog(date: noonUTC(2026, 3, 16), city: "Atlanta", status: .confirmed)
-        context.insert(log1)
-        context.insert(log2)
+    // MARK: - DailyEntry deduplication
+
+    func testNoDuplicateDailyEntries_noChanges() {
+        let e1 = makeDailyEntry(date: noonUTC(2026, 3, 15), city: "Atlanta", updatedAt: date(hour: 2))
+        let e2 = makeDailyEntry(date: noonUTC(2026, 3, 16), city: "Asheville", updatedAt: date(hour: 3))
+        context.insert(e1)
+        context.insert(e2)
         try! context.save()
 
-        DeduplicationService.deduplicateNightLogs(context: context)
+        DeduplicationService.deduplicateDailyEntries(context: context)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>(sortBy: [SortDescriptor(\.date)]))
-        XCTAssertEqual(logs.count, 2)
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries.count, 2)
     }
 
-    func testTwoConfirmedSameDate_keepsMostRecentCapturedAt() {
-        let date = noonUTC(2026, 3, 15)
-        let older = NightLog(date: date, city: "Atlanta", capturedAt: captureDate(2026, 3, 16, hour: 2), status: .confirmed)
-        let newer = NightLog(date: date, city: "Atlanta", capturedAt: captureDate(2026, 3, 16, hour: 5), status: .confirmed)
+    func testTwoDuplicateDailyEntries_keepsMostRecentUpdatedAt() {
+        let d = noonUTC(2026, 3, 15)
+        let older = makeDailyEntry(date: d, city: "Atlanta", updatedAt: date(hour: 2))
+        let newer = makeDailyEntry(date: d, city: "Atlanta", updatedAt: date(hour: 5))
         context.insert(older)
         context.insert(newer)
         try! context.save()
 
-        DeduplicationService.deduplicateNightLogs(context: context)
+        DeduplicationService.deduplicateDailyEntries(context: context)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs.count, 1)
-        XCTAssertEqual(logs[0].capturedAt, newer.capturedAt)
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].updatedAt, newer.updatedAt)
     }
 
-    func testConfirmedBeatsUnresolved() {
-        let date = noonUTC(2026, 3, 15)
-        let unresolved = NightLog(date: date, status: .unresolved)
-        let confirmed = NightLog(date: date, city: "Atlanta", status: .confirmed)
-        context.insert(unresolved)
-        context.insert(confirmed)
+    func testThreeDuplicateDailyEntries_keepsOnlyMostRecent() {
+        let d = noonUTC(2026, 3, 15)
+        let e1 = makeDailyEntry(date: d, city: "Atlanta", updatedAt: date(hour: 1))
+        let e2 = makeDailyEntry(date: d, city: "Atlanta", updatedAt: date(hour: 3))
+        let e3 = makeDailyEntry(date: d, city: "Atlanta", updatedAt: date(hour: 6))
+        context.insert(e1)
+        context.insert(e2)
+        context.insert(e3)
         try! context.save()
 
-        DeduplicationService.deduplicateNightLogs(context: context)
+        DeduplicationService.deduplicateDailyEntries(context: context)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs.count, 1)
-        XCTAssertEqual(logs[0].status, .confirmed)
-        XCTAssertEqual(logs[0].city, "Atlanta")
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>())
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries[0].updatedAt, e3.updatedAt)
     }
 
-    func testManualBeatsUnresolved() {
-        let date = noonUTC(2026, 3, 15)
-        let unresolved = NightLog(date: date, status: .unresolved)
-        let manual = NightLog(date: date, city: "Asheville", status: .manual)
-        context.insert(unresolved)
-        context.insert(manual)
+    func testMixedDuplicateAndUniqueDates_correctCount() {
+        let d1 = noonUTC(2026, 3, 15)
+        let d2 = noonUTC(2026, 3, 16)
+        let e1a = makeDailyEntry(date: d1, city: "Atlanta", updatedAt: date(hour: 2))
+        let e1b = makeDailyEntry(date: d1, city: "Atlanta", updatedAt: date(hour: 5))
+        let e2 = makeDailyEntry(date: d2, city: "Asheville", updatedAt: date(hour: 3))
+        context.insert(e1a)
+        context.insert(e1b)
+        context.insert(e2)
         try! context.save()
 
-        DeduplicationService.deduplicateNightLogs(context: context)
+        DeduplicationService.deduplicateDailyEntries(context: context)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs.count, 1)
-        XCTAssertEqual(logs[0].status, .manual)
-        XCTAssertEqual(logs[0].city, "Asheville")
+        let entries = try! context.fetch(FetchDescriptor<DailyEntry>(sortBy: [SortDescriptor(\.date)]))
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertEqual(entries[0].date, d1)
+        XCTAssertEqual(entries[0].updatedAt, e1b.updatedAt)
+        XCTAssertEqual(entries[1].date, d2)
     }
 
-    func testThreeDuplicates_keepsOnlyOne() {
-        let date = noonUTC(2026, 3, 15)
-        let log1 = NightLog(date: date, city: "Atlanta", capturedAt: captureDate(2026, 3, 16, hour: 2), status: .confirmed)
-        let log2 = NightLog(date: date, city: "Atlanta", capturedAt: captureDate(2026, 3, 16, hour: 3), status: .confirmed)
-        let log3 = NightLog(date: date, city: "Atlanta", capturedAt: captureDate(2026, 3, 16, hour: 5), status: .confirmed)
-        context.insert(log1)
-        context.insert(log2)
-        context.insert(log3)
+    // MARK: - CityRecord deduplication
+
+    func testNoDuplicateCityRecords_noChanges() {
+        let r1 = makeCityRecord(key: "Atlanta|GA|US", colorIndex: 0)
+        let r2 = makeCityRecord(key: "Asheville|NC|US", colorIndex: 1)
+        context.insert(r1)
+        context.insert(r2)
         try! context.save()
 
-        DeduplicationService.deduplicateNightLogs(context: context)
+        DeduplicationService.deduplicateCityRecords(context: context)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>())
-        XCTAssertEqual(logs.count, 1)
-        XCTAssertEqual(logs[0].capturedAt, log3.capturedAt)
+        let records = try! context.fetch(FetchDescriptor<CityRecord>())
+        XCTAssertEqual(records.count, 2)
     }
 
-    func testMultipleDatesWithMixedDuplicates() {
-        let date1 = noonUTC(2026, 3, 15)
-        let date2 = noonUTC(2026, 3, 16)
-
-        let d1confirmed = NightLog(date: date1, city: "Atlanta", status: .confirmed)
-        let d1unresolved = NightLog(date: date1, status: .unresolved)
-
-        let d2older = NightLog(date: date2, city: "Asheville", capturedAt: captureDate(2026, 3, 17, hour: 2), status: .confirmed)
-        let d2newer = NightLog(date: date2, city: "Asheville", capturedAt: captureDate(2026, 3, 17, hour: 5), status: .confirmed)
-
-        context.insert(d1confirmed)
-        context.insert(d1unresolved)
-        context.insert(d2older)
-        context.insert(d2newer)
+    func testDuplicateCityRecords_keepsLowestColorIndex() {
+        let r1 = makeCityRecord(key: "Atlanta|GA|US", colorIndex: 3)
+        let r2 = makeCityRecord(key: "Atlanta|GA|US", colorIndex: 0)
+        context.insert(r1)
+        context.insert(r2)
         try! context.save()
 
-        DeduplicationService.deduplicateNightLogs(context: context)
+        DeduplicationService.deduplicateCityRecords(context: context)
 
-        let logs = try! context.fetch(FetchDescriptor<NightLog>(sortBy: [SortDescriptor(\.date)]))
-        XCTAssertEqual(logs.count, 2)
-        XCTAssertEqual(logs[0].date, date1)
-        XCTAssertEqual(logs[0].status, .confirmed)
-        XCTAssertEqual(logs[1].date, date2)
-        XCTAssertEqual(logs[1].capturedAt, d2newer.capturedAt)
+        let records = try! context.fetch(FetchDescriptor<CityRecord>())
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records[0].colorIndex, 0)
     }
 
-    // MARK: - CityColor deduplication
-
-    func testDuplicateCityColors_keepsLowestColorIndex() {
-        let color1 = CityColor(cityKey: "Atlanta|GA|US", colorIndex: 0)
-        let color2 = CityColor(cityKey: "Atlanta|GA|US", colorIndex: 3)
-        context.insert(color1)
-        context.insert(color2)
+    func testThreeDuplicateCityRecords_keepsLowest() {
+        let r1 = makeCityRecord(key: "Atlanta|GA|US", colorIndex: 5)
+        let r2 = makeCityRecord(key: "Atlanta|GA|US", colorIndex: 2)
+        let r3 = makeCityRecord(key: "Atlanta|GA|US", colorIndex: 0)
+        context.insert(r1)
+        context.insert(r2)
+        context.insert(r3)
         try! context.save()
 
-        DeduplicationService.deduplicateCityColors(context: context)
+        DeduplicationService.deduplicateCityRecords(context: context)
 
-        let colors = try! context.fetch(FetchDescriptor<CityColor>())
-        XCTAssertEqual(colors.count, 1)
-        XCTAssertEqual(colors[0].colorIndex, 0)
-    }
-
-    func testNoDuplicateCityColors_noChanges() {
-        let color1 = CityColor(cityKey: "Atlanta|GA|US", colorIndex: 0)
-        let color2 = CityColor(cityKey: "Asheville|NC|US", colorIndex: 1)
-        context.insert(color1)
-        context.insert(color2)
-        try! context.save()
-
-        DeduplicationService.deduplicateCityColors(context: context)
-
-        let colors = try! context.fetch(FetchDescriptor<CityColor>())
-        XCTAssertEqual(colors.count, 2)
+        let records = try! context.fetch(FetchDescriptor<CityRecord>())
+        XCTAssertEqual(records.count, 1)
+        XCTAssertEqual(records[0].colorIndex, 0)
     }
 
     // MARK: - Helpers
@@ -155,9 +135,30 @@ final class DeduplicationServiceTests: XCTestCase {
         return cal.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
     }
 
-    private func captureDate(_ year: Int, _ month: Int, _ day: Int, hour: Int) -> Date {
+    private func date(hour: Int) -> Date {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        return cal.date(from: DateComponents(year: year, month: month, day: day, hour: hour))!
+        return cal.date(from: DateComponents(year: 2026, month: 3, day: 16, hour: hour))!
+    }
+
+    private func makeDailyEntry(date: Date, city: String, updatedAt: Date) -> DailyEntry {
+        let entry = DailyEntry()
+        entry.date = date
+        entry.primaryCity = city
+        entry.primaryRegion = ""
+        entry.primaryCountry = "US"
+        entry.createdAt = updatedAt
+        entry.updatedAt = updatedAt
+        return entry
+    }
+
+    private func makeCityRecord(key: String, colorIndex: Int) -> CityRecord {
+        let parts = key.split(separator: "|")
+        let record = CityRecord()
+        record.cityName = parts.count > 0 ? String(parts[0]) : ""
+        record.region = parts.count > 1 ? String(parts[1]) : ""
+        record.country = parts.count > 2 ? String(parts[2]) : ""
+        record.colorIndex = colorIndex
+        return record
     }
 }
