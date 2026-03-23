@@ -12,7 +12,7 @@ struct QuickStatsRow: View {
         HStack(alignment: .top, spacing: 10) {
             StatCard(
                 icon: "building.2",
-                label: "Cities Visited",
+                label: "Cities",
                 value: animatedCards.contains(0) ? citiesVisited : 0,
                 suffix: ""
             )

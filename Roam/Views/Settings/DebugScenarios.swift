@@ -156,7 +156,7 @@ enum DebugScenarios {
 
         return DebugScenario(
             name: "Trip with Layover",
-            description: "Portland → Denver (90min) → San Francisco, 2 nights in SF",
+            description: "Portland → Denver (90min) → San Francisco, 2 days in SF",
             visits: [
                 DebugScenarioVisit(visitData: pdxVisit, resolvedCity: DebugCity.portland.name,
                                    resolvedRegion: DebugCity.portland.state, resolvedCountry: DebugCity.portland.country),

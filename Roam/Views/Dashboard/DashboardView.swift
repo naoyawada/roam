@@ -25,7 +25,7 @@ struct DashboardView: View {
             if allEntries.isEmpty {
                 VStack {
                     Spacer(minLength: 120)
-                    Text("Your first night will appear here")
+                    Text("Your first day will appear here")
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textSecondary)
                         .frame(maxWidth: .infinity)
@@ -56,14 +56,14 @@ struct DashboardView: View {
                     let deviceRegion = Locale.current.region?.identifier
                     let top5 = sortedCities.prefix(5)
                     let others = sortedCities.dropFirst(5)
-                    let otherNightsCount = others.reduce(0) { $0 + $1.value }
+                    let otherDaysCount = others.reduce(0) { $0 + $1.value }
 
-                    let allCitiesList: [(name: String, nights: Int)] = sortedCities.map { entry in
+                    let allCitiesList: [(name: String, days: Int)] = sortedCities.map { entry in
                         let parts = entry.key.split(separator: "|")
                         let city = parts.count > 0 ? String(parts[0]) : ""
                         let state = parts.count > 1 ? String(parts[1]) : nil
                         let country = parts.count > 2 ? String(parts[2]) : nil
-                        return (name: CityDisplayFormatter.format(city: city, state: state, country: country, deviceRegion: deviceRegion), nights: entry.value)
+                        return (name: CityDisplayFormatter.format(city: city, state: state, country: country, deviceRegion: deviceRegion), days: entry.value)
                     }
 
                     TopCitiesList(
@@ -74,11 +74,11 @@ struct DashboardView: View {
                             let country = parts.count > 2 ? String(parts[2]) : nil
                             let displayName = CityDisplayFormatter.format(city: city, state: state, country: country, deviceRegion: deviceRegion)
                             let idx = colorIndex(for: entry.key)
-                            return (name: displayName, nights: entry.value, percentage: totalDays > 0 ? Double(entry.value) / Double(totalDays) : 0, color: ColorPalette.color(for: idx))
+                            return (name: displayName, days: entry.value, percentage: totalDays > 0 ? Double(entry.value) / Double(totalDays) : 0, color: ColorPalette.color(for: idx))
                         },
                         otherCount: others.count,
-                        otherNights: otherNightsCount,
-                        totalNights: totalDays,
+                        otherDays: otherDaysCount,
+                        totalDays: totalDays,
                         allCities: allCitiesList
                     )
 

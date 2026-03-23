@@ -60,7 +60,7 @@ struct OnboardingView: View {
             Text("Welcome to Roam")
                 .font(.largeTitle)
                 .fontWeight(.bold)
-            Text("Track which city you sleep in each night, automatically.")
+            Text("Track which city you spend each day in, automatically.")
                 .font(.title3)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -160,7 +160,7 @@ struct OnboardingView: View {
 
             let hasAlways = locationService.authorizationStatus == .authorizedAlways
             Text(hasAlways
-                 ? "Roam will automatically log your city each night."
+                 ? "Roam will automatically log your city each day."
                  : "Roam will log your city when you open the app. Enable \"Always\" in Settings for automatic tracking.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)

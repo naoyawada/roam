@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct TopCitiesList: View {
-    let cities: [(name: String, nights: Int, percentage: Double, color: Color)]
+    let cities: [(name: String, days: Int, percentage: Double, color: Color)]
     let otherCount: Int
-    let otherNights: Int
-    let totalNights: Int
-    let allCities: [(name: String, nights: Int)]
+    let otherDays: Int
+    let totalDays: Int
+    let allCities: [(name: String, days: Int)]
 
     @State private var showingAllCities = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -29,7 +29,7 @@ struct TopCitiesList: View {
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
                     Spacer()
-                    Text("\(city.nights)")
+                    Text("\(city.days)")
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
@@ -51,7 +51,7 @@ struct TopCitiesList: View {
             if otherCount > 0 {
                 let otherIndex = cities.count
                 let otherAnimated = animatedRows.contains(otherIndex)
-                let pct = totalNights > 0 ? Int(Double(otherNights) / Double(totalNights) * 100) : 0
+                let pct = totalDays > 0 ? Int(Double(otherDays) / Double(totalDays) * 100) : 0
                 HStack {
                     RoundedRectangle(cornerRadius: 2)
                         .fill(ColorPalette.otherColor)
@@ -60,7 +60,7 @@ struct TopCitiesList: View {
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textSecondary)
                     Spacer()
-                    Text("\(otherNights)")
+                    Text("\(otherDays)")
                         .fontWeight(.medium)
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
@@ -89,7 +89,7 @@ struct TopCitiesList: View {
             }
         }
         .sheet(isPresented: $showingAllCities) {
-            AllCitiesSheet(cities: allCities, totalNights: totalNights)
+            AllCitiesSheet(cities: allCities, totalDays: totalDays)
                 .presentationDetents([.medium, .large])
         }
         .onAppear {

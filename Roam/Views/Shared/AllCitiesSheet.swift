@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct AllCitiesSheet: View {
-    let cities: [(name: String, nights: Int)]
-    let totalNights: Int
+    let cities: [(name: String, days: Int)]
+    let totalDays: Int
 
     @Environment(\.dismiss) private var dismiss
 
@@ -15,7 +15,7 @@ struct AllCitiesSheet: View {
                         Text("\(Calendar.current.component(.year, from: .now))")
                             .fontWeight(.medium)
                         Spacer()
-                        Text("\(totalNights) nights \u{00B7} \(cities.count) cities")
+                        Text("\(totalDays) days \u{00B7} \(cities.count) cities")
                             .font(.caption)
                             .foregroundStyle(RoamTheme.textSecondary)
                     }
@@ -39,12 +39,12 @@ struct AllCitiesSheet: View {
 
                             Spacer()
 
-                            Text("\(city.nights)")
+                            Text("\(city.days)")
                                 .font(isTop5 ? .body : .subheadline)
                                 .fontWeight(isTop5 ? .semibold : .medium)
                                 .foregroundStyle(isTop5 ? RoamTheme.textPrimary : RoamTheme.textSecondary)
 
-                            Text(city.nights == 1 ? "night" : "nights")
+                            Text(city.days == 1 ? "day" : "days")
                                 .font(.caption)
                                 .foregroundStyle(RoamTheme.textTertiary)
                         }

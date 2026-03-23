@@ -10,7 +10,7 @@ struct ConfidenceBanner: View {
                 HStack {
                     Image(systemName: "exclamationmark.circle.fill")
                         .foregroundStyle(RoamTheme.accent)
-                    Text("\(lowConfidenceCount) night\(lowConfidenceCount == 1 ? "" : "s") need\(lowConfidenceCount == 1 ? "s" : "") review")
+                    Text("\(lowConfidenceCount) day\(lowConfidenceCount == 1 ? "" : "s") need\(lowConfidenceCount == 1 ? "s" : "") review")
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textPrimary)
                     Spacer()

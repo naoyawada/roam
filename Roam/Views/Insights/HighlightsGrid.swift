@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HighlightsGrid: View {
-    let mostVisited: (city: String, nights: Int)
+    let mostVisited: (city: String, days: Int)
     let longestStreak: StreakInfo
     let newCityCount: Int
     let homeAwayRatio: HomeAwayRatio
@@ -18,17 +18,17 @@ struct HighlightsGrid: View {
                     icon: "chart.line.uptrend.xyaxis",
                     label: "Most Visited",
                     value: mostVisited.city,
-                    detail: "\(mostVisited.nights) Nights"
+                    detail: "\(mostVisited.days) Days"
                 )
                 HighlightCard(
                     icon: "flame",
                     label: "Longest Streak",
                     value: longestStreak.city,
-                    detail: "\(longestStreak.days) Nights"
+                    detail: "\(longestStreak.days) Days"
                 )
                 HighlightCard(
                     icon: "building.2",
-                    label: "New Cities This Year",
+                    label: "Cities This Year",
                     largeValue: "\(newCityCount)"
                 )
                 HighlightCard(
@@ -68,7 +68,7 @@ private struct HighlightCard: View {
                     .foregroundStyle(RoamTheme.textPrimary)
             } else {
                 Text(value)
-                    .font(.subheadline)
+                    .font(.body)
                     .fontWeight(.medium)
                     .foregroundStyle(RoamTheme.textPrimary)
                 if !detail.isEmpty {

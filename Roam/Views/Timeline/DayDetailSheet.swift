@@ -78,7 +78,7 @@ struct DayDetailSheet: View {
                     }
                 }
             }
-            .navigationTitle("Night Details")
+            .navigationTitle("Day Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

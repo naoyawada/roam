@@ -58,7 +58,7 @@ struct TimelineView: View {
                 }
 
                 if !currentViewHasEntries {
-                    Text("No nights logged")
+                    Text("No days logged")
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textSecondary)
                         .frame(maxWidth: .infinity)
