@@ -61,18 +61,23 @@ private struct HighlightCard: View {
     var detail: String = ""
     var largeValue: String = ""
 
+    private let cardHeight: CGFloat = 110
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .light))
                 .foregroundStyle(colorTheme.accent)
-                .padding(.bottom, 12)
+                .frame(width: 24, height: 24, alignment: .leading)
+                .padding(.bottom, 8)
 
             Text(label)
                 .font(.system(size: 9, weight: .medium))
                 .textCase(.uppercase)
                 .foregroundStyle(RoamTheme.textSecondary)
                 .padding(.bottom, 4)
+
+            Spacer(minLength: 0)
 
             if !largeValue.isEmpty {
                 Text(largeValue)
@@ -84,6 +89,7 @@ private struct HighlightCard: View {
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundStyle(RoamTheme.textPrimary)
+                    .lineLimit(1)
                 if !detail.isEmpty {
                     Text(detail)
                         .font(.caption)
@@ -92,6 +98,7 @@ private struct HighlightCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: cardHeight)
         .padding(RoamTheme.cardPadding)
         .overlay(
             RoundedRectangle(cornerRadius: RoamTheme.cornerRadiusSmall)
