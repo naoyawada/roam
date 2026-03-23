@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct DayDetailSheet: View {
-    let log: NightLog
+    let entry: DailyEntry
 
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -14,7 +14,26 @@ struct DayDetailSheet: View {
     @State private var selectedLongitude: Double?
 
     private var dateString: String {
-        log.date.formatted(date: .long, time: .omitted)
+        entry.date.formatted(date: .long, time: .omitted)
+    }
+
+    private var confidenceLabel: String {
+        switch entry.confidence {
+        case .high: return "High"
+        case .medium: return "Medium"
+        case .low: return "Low"
+        }
+    }
+
+    private var sourceLabel: String {
+        switch entry.source {
+        case .visit: return "Visit Detection"
+        case .manual: return "Manual"
+        case .propagated: return "Propagated"
+        case .fallback: return "Fallback"
+        case .migrated: return "Migrated"
+        case .debug: return "Debug"
+        }
     }
 
     var body: some View {
@@ -23,31 +42,43 @@ struct DayDetailSheet: View {
                 Section {
                     LabeledContent("Date", value: dateString)
                     LabeledContent("City", value: CityDisplayFormatter.format(
-                        city: log.city, state: log.state, country: log.country
+                        city: entry.primaryCity.isEmpty ? nil : entry.primaryCity,
+                        state: entry.primaryRegion.isEmpty ? nil : entry.primaryRegion,
+                        country: entry.primaryCountry.isEmpty ? nil : entry.primaryCountry
                     ))
-                    LabeledContent("Status", value: log.status.rawValue.capitalized)
-                }
-
-                if log.status == .confirmed || log.status == .manual {
-                    Section("Capture Details") {
-                        LabeledContent("Captured at", value: log.capturedAt.formatted(date: .omitted, time: .shortened))
-                        if let accuracy = log.horizontalAccuracy {
-                            LabeledContent("Accuracy", value: "\(Int(accuracy))m")
-                        }
-                        LabeledContent("Source", value: log.source.rawValue.capitalized)
-                        if let lat = log.latitude, let lon = log.longitude {
-                            LabeledContent("Coordinates", value: String(format: "%.4f, %.4f", lat, lon))
-                        }
+                    LabeledContent("Confidence", value: confidenceLabel)
+                    if entry.isTravelDay {
+                        LabeledContent("Travel Day", value: "Yes")
                     }
                 }
 
-                Section {
-                    Button("Edit City") {
-                        showingCitySearch = true
+                Section("Details") {
+                    LabeledContent("Source", value: sourceLabel)
+                    if entry.primaryLatitude != 0 || entry.primaryLongitude != 0 {
+                        LabeledContent("Coordinates", value: String(format: "%.4f, %.4f", entry.primaryLatitude, entry.primaryLongitude))
+                    }
+                    if entry.totalVisitHours > 0 {
+                        LabeledContent("Visit Hours", value: String(format: "%.1f", entry.totalVisitHours))
+                    }
+                }
+
+                if entry.confidence != .high {
+                    Section {
+                        Button("Edit City") {
+                            showingCitySearch = true
+                        }
+                    } footer: {
+                        Text("This entry has \(confidenceLabel.lowercased()) confidence. Tap to set the correct city.")
+                    }
+                } else {
+                    Section {
+                        Button("Edit City") {
+                            showingCitySearch = true
+                        }
                     }
                 }
             }
-            .navigationTitle("Night Details")
+            .navigationTitle("Day Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -65,20 +96,40 @@ struct DayDetailSheet: View {
             }
             .onChange(of: selectedCity) { _, newCity in
                 guard let newCity else { return }
-                log.city = newCity
-                log.state = selectedState
-                log.country = selectedCountry
-                log.latitude = selectedLatitude
-                log.longitude = selectedLongitude
-                log.source = .manual
-                if log.status == .unresolved { log.status = .manual }
+                entry.primaryCity = newCity
+                entry.primaryRegion = selectedState ?? ""
+                entry.primaryCountry = selectedCountry ?? ""
+                entry.primaryLatitude = selectedLatitude ?? 0
+                entry.primaryLongitude = selectedLongitude ?? 0
+                entry.source = .manual
+                if entry.confidence == .low {
+                    entry.confidence = .high
+                }
+                entry.updatedAt = .now
 
+                // Ensure a CityRecord exists for this city
                 let cityKey = CityDisplayFormatter.cityKey(city: newCity, state: selectedState, country: selectedCountry)
+                let existingRecords = (try? context.fetch(FetchDescriptor<CityRecord>())) ?? []
+                if !existingRecords.contains(where: { $0.cityKey == cityKey }) {
+                    let nextIndex = (existingRecords.map(\.colorIndex).max() ?? -1) + 1
+                    let newRecord = CityRecord()
+                    newRecord.cityName = newCity
+                    newRecord.region = selectedState ?? ""
+                    newRecord.country = selectedCountry ?? ""
+                    newRecord.colorIndex = nextIndex
+                    newRecord.totalDays = 1
+                    newRecord.firstVisitedDate = entry.date
+                    newRecord.lastVisitedDate = entry.date
+                    context.insert(newRecord)
+                }
+
+                // Also update legacy CityColor for backward compatibility
                 let existingColors = (try? context.fetch(FetchDescriptor<CityColor>())) ?? []
                 if !existingColors.contains(where: { $0.cityKey == cityKey }) {
-                    let nextIndex = (existingColors.map(\.colorIndex).max() ?? -1) + 1
-                    context.insert(CityColor(cityKey: cityKey, colorIndex: nextIndex))
+                    let nextColorIndex = (existingColors.map(\.colorIndex).max() ?? -1) + 1
+                    context.insert(CityColor(cityKey: cityKey, colorIndex: nextColorIndex))
                 }
+
                 try? context.save()
             }
         }

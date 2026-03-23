@@ -3,7 +3,7 @@ import Charts
 
 struct MonthlyBreakdownChart: View {
     let breakdown: [MonthlyBreakdown]
-    let cityColors: [CityColor]
+    let cityRecords: [CityRecord]
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animatedMonths: Set<Int> = []
@@ -20,14 +20,14 @@ struct MonthlyBreakdownChart: View {
                 guard !seen.contains(entry.cityKey) else { continue }
                 seen.insert(entry.cityKey)
 
-                if let cc = cityColors.first(where: { $0.cityKey == entry.cityKey }),
-                   cc.colorIndex < ColorPalette.maxColoredCities {
+                if let record = cityRecords.first(where: { $0.cityKey == entry.cityKey }),
+                   record.colorIndex < ColorPalette.maxColoredCities {
                     let parts = entry.cityKey.split(separator: "|")
                     let city = parts.first.map(String.init)
                     let state = parts.count > 1 ? String(parts[1]) : nil
                     let country = parts.count > 2 ? String(parts[2]) : nil
                     let label = CityDisplayFormatter.format(city: city, state: state, country: country)
-                    entries.append((key: entry.cityKey, label: label, color: ColorPalette.color(for: cc.colorIndex)))
+                    entries.append((key: entry.cityKey, label: label, color: ColorPalette.color(for: record.colorIndex)))
                 } else {
                     hasOther = true
                 }
@@ -36,8 +36,8 @@ struct MonthlyBreakdownChart: View {
 
         // Sort by color index for consistent ordering
         entries.sort { a, b in
-            let aIndex = cityColors.first(where: { $0.cityKey == a.key })?.colorIndex ?? Int.max
-            let bIndex = cityColors.first(where: { $0.cityKey == b.key })?.colorIndex ?? Int.max
+            let aIndex = cityRecords.first(where: { $0.cityKey == a.key })?.colorIndex ?? Int.max
+            let bIndex = cityRecords.first(where: { $0.cityKey == b.key })?.colorIndex ?? Int.max
             return aIndex < bIndex
         }
 
@@ -106,9 +106,9 @@ struct MonthlyBreakdownChart: View {
     }
 
     private func colorForCity(_ key: String) -> Color {
-        guard let cc = cityColors.first(where: { $0.cityKey == key }) else {
+        guard let record = cityRecords.first(where: { $0.cityKey == key }) else {
             return .gray
         }
-        return ColorPalette.color(for: cc.colorIndex)
+        return ColorPalette.color(for: record.colorIndex)
     }
 }

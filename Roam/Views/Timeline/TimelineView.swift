@@ -8,12 +8,12 @@ enum TimelineMode {
 
 struct TimelineView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \NightLog.date) private var allLogs: [NightLog]
-    @Query private var cityColors: [CityColor]
+    @Query(sort: \DailyEntry.date) private var allEntries: [DailyEntry]
+    @Query private var cityRecords: [CityRecord]
 
     @State private var displayedMonth = Calendar.current.component(.month, from: Date())
     @State private var displayedYear = Calendar.current.component(.year, from: Date())
-    @State private var selectedLog: NightLog?
+    @State private var selectedEntry: DailyEntry?
     @State private var mode: TimelineMode = .month
     @State private var navigatingForward = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -22,12 +22,12 @@ struct TimelineView: View {
         reduceMotion ? .easeInOut(duration: 0.15) : .spring(duration: 0.35)
     }
 
-    private var currentViewHasLogs: Bool {
+    private var currentViewHasEntries: Bool {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        return allLogs.contains { log in
-            cal.component(.year, from: log.date) == displayedYear &&
-            (mode == .year || cal.component(.month, from: log.date) == displayedMonth)
+        return allEntries.contains { entry in
+            cal.component(.year, from: entry.date) == displayedYear &&
+            (mode == .year || cal.component(.month, from: entry.date) == displayedMonth)
         }
     }
 
@@ -57,8 +57,8 @@ struct TimelineView: View {
                     }
                 }
 
-                if !currentViewHasLogs {
-                    Text("No nights logged")
+                if !currentViewHasEntries {
+                    Text("No days logged")
                         .font(.subheadline)
                         .foregroundStyle(RoamTheme.textSecondary)
                         .frame(maxWidth: .infinity)
@@ -72,8 +72,8 @@ struct TimelineView: View {
         .navigationTitle("Timeline")
         .navigationBarTitleDisplayMode(.large)
         .grainBackground()
-        .sheet(item: $selectedLog) { log in
-            DayDetailSheet(log: log)
+        .sheet(item: $selectedEntry) { entry in
+            DayDetailSheet(entry: entry)
         }
     }
 
@@ -116,16 +116,19 @@ struct TimelineView: View {
             CalendarGridView(
                 year: displayedYear,
                 month: displayedMonth,
-                logs: allLogs,
-                cityColors: cityColors
-            ) { log, date in
-                if let log {
-                    selectedLog = log
+                entries: allEntries,
+                cityRecords: cityRecords
+            ) { entry, date in
+                if let entry {
+                    selectedEntry = entry
                 } else {
-                    let newLog = NightLog(date: date, capturedAt: .now, source: .manual, status: .unresolved)
-                    context.insert(newLog)
+                    let newEntry = DailyEntry()
+                    newEntry.date = date
+                    newEntry.source = .manual
+                    newEntry.confidence = .low
+                    context.insert(newEntry)
                     try? context.save()
-                    selectedLog = newLog
+                    selectedEntry = newEntry
                 }
             }
             .id("\(displayedYear)-\(displayedMonth)")
@@ -184,8 +187,8 @@ struct TimelineView: View {
 
             YearDotGridView(
                 year: displayedYear,
-                logs: allLogs,
-                cityColors: cityColors
+                entries: allEntries,
+                cityRecords: cityRecords
             ) { month in
                 displayedMonth = month
                 HapticService.medium()
@@ -263,31 +266,31 @@ struct TimelineView: View {
 
     // MARK: - Legend
 
-    private var legendLogs: [NightLog] {
+    private var legendEntries: [DailyEntry] {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        return allLogs.filter {
+        return allEntries.filter {
             cal.component(.year, from: $0.date) == displayedYear
         }
     }
 
     private var legend: some View {
         var keyCounts: [String: Int] = [:]
-        for log in legendLogs where log.status != .unresolved {
-            let key = CityDisplayFormatter.cityKey(city: log.city, state: log.state, country: log.country)
-            keyCounts[key, default: 0] += 1
+        let lowRaw = EntryConfidence.lowRaw
+        for entry in legendEntries where entry.confidenceRaw != lowRaw {
+            keyCounts[entry.cityKey, default: 0] += 1
         }
-        let sorted = cityColors
+        let sorted = cityRecords
             .filter { keyCounts[$0.cityKey] != nil }
             .sorted { keyCounts[$0.cityKey, default: 0] > keyCounts[$1.cityKey, default: 0] }
 
         return FlowLayout(spacing: 8) {
-                ForEach(sorted, id: \.cityKey) { cc in
+                ForEach(sorted, id: \.cityKey) { record in
                     HStack(spacing: 4) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(ColorPalette.color(for: cc.colorIndex))
+                            .fill(ColorPalette.color(for: record.colorIndex))
                             .frame(width: 10, height: 10)
-                        let parts = cc.cityKey.split(separator: "|")
+                        let parts = record.cityKey.split(separator: "|")
                         let city = parts.first.map(String.init)
                         let state = parts.count > 1 ? String(parts[1]) : nil
                         let country = parts.count > 2 ? String(parts[2]) : nil
@@ -304,7 +307,7 @@ struct TimelineView: View {
                                 .strokeBorder(RoamTheme.unresolvedBorder, style: StrokeStyle(lineWidth: 1, dash: [2]))
                         )
                         .frame(width: 10, height: 10)
-                    Text("Unresolved")
+                    Text("Low confidence")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }

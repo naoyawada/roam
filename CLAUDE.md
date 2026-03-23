@@ -1,12 +1,13 @@
 # Roam
 
-An iOS app that automatically tracks which city you sleep in each night. Background location capture at 2 AM, rich analytics, iCloud sync.
+An iOS app that automatically tracks which city you spend each night in. CLVisit-based passive monitoring with last-known-city propagation, confidence levels, travel day detection, and iCloud sync.
 
 ## Stack
 
 - **Swift 6**, **SwiftUI**, **SwiftData** (with CloudKit sync)
-- **Core Location** for background capture
-- **BGTaskScheduler** for nightly background tasks
+- **Core Location** — CLVisit monitoring for passive location tracking
+- **BGTaskScheduler** — lightweight daily trigger for pipeline catch-up
+- **CLGeocoder** for reverse geocoding (coordinate cache to avoid rate limits)
 - **Swift Charts** for visualizations
 - **MapKit** (`MKLocalSearchCompleter`) for city search
 - **XcodeGen** for project generation (`project.yml` → `Roam.xcodeproj`)
@@ -16,33 +17,56 @@ An iOS app that automatically tracks which city you sleep in each night. Backgro
 
 ```
 Roam/
-  Models/       — SwiftData @Model classes and enums (NightLog, CityColor, UserSettings)
-  Services/     — Business logic (DateNormalization, LocationCaptureService, BackgroundTaskService, BackfillService, AnalyticsService, CityDisplayFormatter)
+  Models/       — SwiftData @Model classes and enums (DailyEntry, RawVisit, CityRecord, PipelineEvent, UserSettings; legacy: NightLog, CityColor)
+  Services/     — Pipeline services (VisitPipeline, DailyAggregator, CityResolver, PipelineLogger, LocationProvider, LegacyMigrator, AnalyticsService, CityDisplayFormatter)
   Views/        — SwiftUI views organized by tab (Dashboard/, Timeline/, Insights/, Settings/, Onboarding/, Shared/)
-  Utilities/    — ColorPalette
-RoamTests/      — Unit tests for pure logic (date normalization, analytics, display formatting, location validation, backfill)
+  Utilities/    — ColorPalette, RoamTheme, HapticService
+RoamTests/      — Unit tests (DailyAggregator, CityPropagation, CityResolver, VisitPipeline, LegacyMigrator, Analytics, Deduplication, Export/Import)
 ```
 
 ## Key Concepts
 
-- **NightLog**: One entry per calendar night. The `date` field is normalized to noon UTC. Captures before 6 AM roll back to the previous calendar day.
-- **CityColor**: Persistent city-to-color-index mapping. Colors are assigned in order of first appearance and never change.
-- **CaptureSource**: `.automatic` (background) or `.manual` (user-entered)
-- **LogStatus**: `.confirmed`, `.unresolved` (capture failed), `.manual` (user-resolved)
-- **City key format**: `"City|State|Country"` (pipe-delimited), used as the stable identifier for city color lookups and analytics.
+- **DailyEntry**: One entry per calendar day. The `date` field is stored as noon UTC. Primary data record — what the UI reads, what analytics query.
+- **RawVisit**: Every CLVisit event received from iOS, stored locally (not synced). Raw input to the aggregation pipeline.
+- **CityRecord**: Per-city aggregate stats with `colorIndex` for stable color assignment. Synced via CloudKit.
+- **PipelineEvent**: Structured log of pipeline activity for debugging. Local only, auto-pruned after 7 days.
+- **Confidence levels**: `high` (CLVisit data), `medium` (propagated from last known city), `low` (fallback/needs attention)
+- **EntrySource**: `visit`, `manual`, `propagated`, `fallback`, `migrated`, `debug`
+- **Last-known-city propagation**: When no CLVisit fires (stationary user), the pipeline carries forward the last known city with `medium` confidence.
+- **Travel day detection**: Multiple cities above a 2-hour threshold in one day → `isTravelDay = true`
+- **City key format**: `"City|State|Country"` (pipe-delimited), used as the stable identifier for color lookups and analytics.
+
+## Pipeline Architecture
+
+```
+CLVisit received by iOS
+  → LiveLocationProvider fires callback
+  → VisitPipeline.handleVisit()
+    → Filter by accuracy (reject > 1000m)
+    → Save RawVisit
+    → CityResolver.resolve() (geocode or cache hit)
+    → DailyAggregator.aggregate() for affected date(s)
+    → Upsert DailyEntry + update CityRecord
+    → PipelineLogger logs each step
+
+Daily trigger (BGTask / push / foreground)
+  → VisitPipeline.runCatchup()
+    → Retry unresolved geocoding
+    → Find missing dates
+    → Aggregate from RawVisits, or propagate last known city
+```
 
 ## Working with SwiftData Predicates
 
 SwiftData `#Predicate` macros cannot compare enum cases directly. Always compare against raw value strings:
 
 ```swift
-// WRONG — will crash at runtime (computed property in #Predicate)
-#Predicate<NightLog> { $0.status != .unresolved }
-#Predicate<NightLog> { $0.status.rawValue != unresolvedRaw }
+// WRONG — will crash at runtime
+#Predicate<DailyEntry> { $0.confidence != .low }
 
 // CORRECT — use the stored String property directly
-let unresolvedRaw = LogStatus.unresolvedRaw
-#Predicate<NightLog> { $0.statusRaw != unresolvedRaw }
+let lowRaw = EntryConfidence.lowRaw
+#Predicate<DailyEntry> { $0.confidenceRaw != lowRaw }
 ```
 
 ## Build & Test
@@ -58,20 +82,22 @@ xcodebuild build -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 1
 xcodebuild test -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -quiet
 
 # Run specific test class
-xcodebuild test -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:RoamTests/DateNormalizationTests -quiet
+xcodebuild test -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:RoamTests/DailyAggregatorTests -quiet
 ```
 
 ## Testing Strategy
 
-- **Unit test** pure logic: DateNormalization, AnalyticsService, CityDisplayFormatter, BackfillService, location validation
+- **Unit test** pure logic: DailyAggregator, CityPropagation, CityResolver (coordinate cache), VisitPipeline, LegacyMigrator, AnalyticsService, CityDisplayFormatter, DataExport/Import, Deduplication
 - **Use in-memory SwiftData containers** for service tests (`ModelConfiguration(isStoredInMemoryOnly: true)`)
+- **Debug tooling** for integration testing: scenario injection, pipeline inspector, log viewer (Settings → Debug Tools in DEBUG builds)
 - **No automated UI tests** — SwiftUI views are verified visually in the simulator
 - TDD for all service/logic code: write failing test first, then implement
 
 ## Docs
 
-- **Design spec**: `docs/superpowers/specs/2026-03-16-roam-design.md`
-- **Implementation plan**: `docs/superpowers/plans/2026-03-16-roam-implementation.md`
+- **Original design spec**: `docs/superpowers/specs/2026-03-16-roam-design.md`
+- **Location tracking redesign spec**: `docs/superpowers/specs/2026-03-22-location-tracking-redesign.md`
+- **Location tracking redesign plan**: `docs/superpowers/plans/2026-03-22-location-tracking-redesign.md`
 
 ## Rules
 
