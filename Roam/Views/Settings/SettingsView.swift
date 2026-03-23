@@ -55,11 +55,11 @@ struct SettingsView: View {
                 Section("Appearance") {
                     Picker("Color Theme", selection: selectedTheme) {
                         ForEach(ColorTheme.allCases) { theme in
-                            HStack(spacing: 6) {
+                            HStack(spacing: 4) {
                                 ForEach(0..<5, id: \.self) { i in
                                     Circle()
                                         .fill(theme.colors[i])
-                                        .frame(width: 12, height: 12)
+                                        .frame(width: 10, height: 10)
                                 }
                                 Text(theme.displayName)
                             }
