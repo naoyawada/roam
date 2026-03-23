@@ -1,15 +1,15 @@
 # Roam
 
-An iOS app that automatically tracks which city you sleep in each night. Background location capture, rich analytics, and a warm minimal design.
+An iOS app that automatically tracks which city you are in each day. Background location capture, rich analytics, and a warm minimal design.
 
 ## Features
 
-- **Automatic nightly capture** — logs your city at 2 AM via background location
+- **Automatic daily capture** — logs your city at 2 AM via background location
 - **Dashboard** — current city, streak, year summary bar, top cities
-- **Timeline** — color-coded calendar view of your nights
+- **Timeline** — color-coded calendar view of your days
 - **Insights** — monthly breakdown charts, streaks, home vs. away ratio, year-over-year comparisons
 - **All Cities** — ranked list with drill-down for cities beyond the top 5
-- **Unresolved nights** — prompts you to fill in missed captures
+- **Unresolved days** — prompts you to fill in missed captures
 - **Data export** — CSV or JSON with optional year filtering
 - **Dark mode** — fully adaptive warm design
 
