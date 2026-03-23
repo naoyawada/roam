@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>City Grid — Roam Palette</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f0efed;
+    color: #26251e;
+    min-height: 100vh;
+    padding: 48px 24px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #26251e;
+    margin-bottom: 6px;
+  }
+
+  .header p {
+    font-size: 13px;
+    color: rgba(38,37,30,0.45);
+    letter-spacing: 0.03em;
+  }
+
+  .variants {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 56px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .variant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .icon-frame {
+    width: 128px;
+    height: 128px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    transition: transform 0.3s ease;
+  }
+
+  .icon-frame:hover {
+    transform: scale(1.06);
+  }
+
+  .icon-frame svg {
+    width: 72px;
+    height: 72px;
+  }
+
+  .light-frame {
+    background: #f7f7f4;
+    box-shadow: 0 1px 3px rgba(38,37,30,0.05), 0 8px 28px rgba(38,37,30,0.08);
+  }
+
+  .dark-frame {
+    background: #191816;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 28px rgba(0,0,0,0.3);
+  }
+
+  .variant h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #26251e;
+    margin-bottom: 4px;
+  }
+
+  .variant p {
+    font-size: 12px;
+    color: rgba(38,37,30,0.45);
+    max-width: 200px;
+    line-height: 1.45;
+  }
+
+  .section-label {
+    text-align: center;
+    margin: 8px auto 36px;
+  }
+
+  .section-label span {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(38,37,30,0.3);
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(38,37,30,0.12);
+    margin: 48px auto;
+  }
+
+  .color-ref {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 48px;
+  }
+
+  .swatch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: rgba(38,37,30,0.45);
+  }
+
+  .swatch .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>City Grid — Roam Palette</h1>
+  <p>Using your app's color tokens</p>
+</div>
+
+<div class="section-label"><span>Light Mode Variations</span></div>
+
+<div class="variants">
+
+  <!-- V1: City colors only -->
+  <div class="variant">
+    <div class="icon-frame light-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <!-- Row 1 -->
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#9A7E64"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" fill="#5E7D6E"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" fill="#B09A86"/>
+          <!-- Row 2 -->
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#8B6B5A"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#9A7E64"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" fill="#5E7D6E"/>
+          <!-- Row 3 -->
+          <rect x="10" y="36" width="10" height="10" rx="2.5" fill="#B09A86"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#5E7D6E"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <!-- Row 4 -->
+          <rect x="10" y="49" width="10" height="10" rx="2.5" fill="#9A7E64"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>City Colors</h3>
+    <p>Each filled square uses a city color from the palette — Leather, Tan, Sage, Sand, Umber.</p>
+  </div>
+
+  <!-- V2: Monochrome with accent highlight -->
+  <div class="variant">
+    <div class="icon-frame light-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <!-- Row 1 -->
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#26251e"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#26251e"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" fill="#26251e"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <!-- Row 2 -->
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#26251e"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#26251e"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <!-- Row 3 -->
+          <rect x="10" y="36" width="10" height="10" rx="2.5" fill="#26251e"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#26251e"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <!-- Row 4 -->
+          <rect x="10" y="49" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Mono + Accent</h3>
+    <p>Primary text color with Leather accent highlights. Sharp and restrained.</p>
+  </div>
+
+  <!-- V3: Gradient fill progression -->
+  <div class="variant">
+    <div class="icon-frame light-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <!-- Row 1 — darkest -->
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#26251e"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#26251e" opacity="0.85"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" fill="#26251e" opacity="0.7"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" fill="#26251e" opacity="0.55"/>
+          <!-- Row 2 -->
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#26251e" opacity="0.7"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" fill="#26251e" opacity="0.55"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#26251e" opacity="0.4"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.6"/>
+          <!-- Row 3 -->
+          <rect x="10" y="36" width="10" height="10" rx="2.5" fill="#26251e" opacity="0.4"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.4"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.1)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <!-- Row 4 -->
+          <rect x="10" y="49" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.3"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.06)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.04)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Fade Grid</h3>
+    <p>Opacity fades from filled to empty — suggests a journey in progress.</p>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+
+<div class="section-label"><span>Dark Mode Variations</span></div>
+
+<div class="variants">
+
+  <!-- Dark V1: City colors -->
+  <div class="variant">
+    <div class="icon-frame dark-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#B29075"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#9A7E64"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" fill="#5E7D6E"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" fill="#B09A86"/>
+
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#8B6B5A"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" fill="#B29075"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#9A7E64"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" fill="#5E7D6E"/>
+
+          <rect x="10" y="36" width="10" height="10" rx="2.5" fill="#B09A86"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#5E7D6E"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" fill="#B29075"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+
+          <rect x="10" y="49" width="10" height="10" rx="2.5" fill="#9A7E64"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>City Colors — Dark</h3>
+    <p>Dark mode accent (#B29075) with city colors on #191816 background.</p>
+  </div>
+
+  <!-- Dark V2: Mono accent -->
+  <div class="variant">
+    <div class="icon-frame dark-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#e8e6e0"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#e8e6e0"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" fill="#e8e6e0"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" fill="#B29075"/>
+
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#e8e6e0"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" fill="#B29075"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#e8e6e0"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+
+          <rect x="10" y="36" width="10" height="10" rx="2.5" fill="#e8e6e0"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#e8e6e0"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+
+          <rect x="10" y="49" width="10" height="10" rx="2.5" fill="#B29075"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Mono + Accent — Dark</h3>
+    <p>Light text color with dark accent highlights on the dark background.</p>
+  </div>
+
+  <!-- Dark V3: Sage dominant -->
+  <div class="variant">
+    <div class="icon-frame dark-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#5E7D6E"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.8"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.6"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" fill="#B29075"/>
+
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.8"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" fill="#B29075"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.5"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+
+          <rect x="10" y="36" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.6"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.4"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+
+          <rect x="10" y="49" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.3"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Sage Fade — Dark</h3>
+    <p>Sage green with fading opacity and warm accent pops.</p>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+
+<div class="color-ref">
+  <div class="swatch"><div class="dot" style="background:#7A5C44;"></div>Leather #7A5C44</div>
+  <div class="swatch"><div class="dot" style="background:#9A7E64;"></div>Tan #9A7E64</div>
+  <div class="swatch"><div class="dot" style="background:#5E7D6E;"></div>Sage #5E7D6E</div>
+  <div class="swatch"><div class="dot" style="background:#B09A86;"></div>Sand #B09A86</div>
+  <div class="swatch"><div class="dot" style="background:#8B6B5A;"></div>Umber #8B6B5A</div>
+  <div class="swatch"><div class="dot" style="background:#B29075;"></div>Dark Accent #B29075</div>
+</div>
+
+</body>
+</html>

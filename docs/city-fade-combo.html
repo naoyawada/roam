@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>City Grid — City Fade Combo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f0efed;
+    color: #26251e;
+    min-height: 100vh;
+    padding: 48px 24px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #26251e;
+    margin-bottom: 6px;
+  }
+
+  .header p {
+    font-size: 13px;
+    color: rgba(38,37,30,0.45);
+    letter-spacing: 0.03em;
+  }
+
+  /* Hero display */
+  .hero {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+
+  .hero-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-frame {
+    width: 192px;
+    height: 192px;
+    border-radius: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    transition: transform 0.3s ease;
+  }
+
+  .hero-frame:hover {
+    transform: scale(1.04);
+  }
+
+  .hero-frame svg {
+    width: 108px;
+    height: 108px;
+  }
+
+  .hero-light {
+    background: #f7f7f4;
+    box-shadow: 0 1px 4px rgba(38,37,30,0.05), 0 12px 40px rgba(38,37,30,0.10);
+  }
+
+  .hero-dark {
+    background: #191816;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2), 0 12px 40px rgba(0,0,0,0.35);
+  }
+
+  .hero-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: #26251e;
+    margin-bottom: 4px;
+  }
+
+  .hero-card p {
+    font-size: 12px;
+    color: rgba(38,37,30,0.45);
+    max-width: 220px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* Smaller variants */
+  .section-label {
+    text-align: center;
+    margin: 8px auto 36px;
+  }
+
+  .section-label span {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(38,37,30,0.3);
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(38,37,30,0.12);
+    margin: 48px auto;
+  }
+
+  .variants {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 48px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .variant {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .icon-frame {
+    width: 128px;
+    height: 128px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    transition: transform 0.3s ease;
+  }
+
+  .icon-frame:hover {
+    transform: scale(1.06);
+  }
+
+  .icon-frame svg {
+    width: 72px;
+    height: 72px;
+  }
+
+  .light-frame {
+    background: #f7f7f4;
+    box-shadow: 0 1px 3px rgba(38,37,30,0.05), 0 8px 28px rgba(38,37,30,0.08);
+  }
+
+  .dark-frame {
+    background: #191816;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 8px 28px rgba(0,0,0,0.3);
+  }
+
+  .variant h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #26251e;
+    margin-bottom: 4px;
+  }
+
+  .variant p {
+    font-size: 12px;
+    color: rgba(38,37,30,0.45);
+    max-width: 200px;
+    line-height: 1.45;
+  }
+
+  .color-ref {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 48px;
+  }
+
+  .swatch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: rgba(38,37,30,0.45);
+  }
+
+  .swatch .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>City Fade — Final Direction</h1>
+  <p>City colors with fading opacity · Light & Dark</p>
+</div>
+
+<!-- ==================== HERO: Large preview ==================== -->
+
+<div class="hero">
+
+  <!-- LIGHT hero -->
+  <div class="hero-card">
+    <div class="hero-frame hero-light">
+      <svg viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <!-- Row 1: full opacity — oldest cities -->
+          <rect x="12" y="12" width="16" height="16" rx="4" fill="#7A5C44"/>
+          <rect x="33" y="12" width="16" height="16" rx="4" fill="#5E7D6E"/>
+          <rect x="54" y="12" width="16" height="16" rx="4" fill="#9A7E64"/>
+          <rect x="75" y="12" width="16" height="16" rx="4" fill="#8B6B5A"/>
+          <!-- Row 2: slightly faded -->
+          <rect x="12" y="33" width="16" height="16" rx="4" fill="#5E7D6E" opacity="0.82"/>
+          <rect x="33" y="33" width="16" height="16" rx="4" fill="#B09A86" opacity="0.82"/>
+          <rect x="54" y="33" width="16" height="16" rx="4" fill="#7A5C44" opacity="0.75"/>
+          <rect x="75" y="33" width="16" height="16" rx="4" fill="#5E7D6E" opacity="0.65"/>
+          <!-- Row 3: more faded, trailing off -->
+          <rect x="12" y="54" width="16" height="16" rx="4" fill="#9A7E64" opacity="0.55"/>
+          <rect x="33" y="54" width="16" height="16" rx="4" fill="#7A5C44" opacity="0.4"/>
+          <rect x="54" y="54" width="16" height="16" rx="4" fill="#5E7D6E" opacity="0.25"/>
+          <rect x="75" y="54" width="16" height="16" rx="4" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <!-- Row 4: mostly empty — cities yet to visit -->
+          <rect x="12" y="75" width="16" height="16" rx="4" fill="#B09A86" opacity="0.2"/>
+          <rect x="33" y="75" width="16" height="16" rx="4" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="54" y="75" width="16" height="16" rx="4" stroke="rgba(38,37,30,0.06)" stroke-width="1.2" fill="none"/>
+          <rect x="75" y="75" width="16" height="16" rx="4" stroke="rgba(38,37,30,0.04)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Light Mode</h3>
+    <p>City colors fading to empty slots on #f7f7f4</p>
+  </div>
+
+  <!-- DARK hero -->
+  <div class="hero-card">
+    <div class="hero-frame hero-dark">
+      <svg viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <!-- Row 1: full opacity -->
+          <rect x="12" y="12" width="16" height="16" rx="4" fill="#B29075"/>
+          <rect x="33" y="12" width="16" height="16" rx="4" fill="#5E7D6E"/>
+          <rect x="54" y="12" width="16" height="16" rx="4" fill="#9A7E64"/>
+          <rect x="75" y="12" width="16" height="16" rx="4" fill="#8B6B5A"/>
+          <!-- Row 2 -->
+          <rect x="12" y="33" width="16" height="16" rx="4" fill="#5E7D6E" opacity="0.82"/>
+          <rect x="33" y="33" width="16" height="16" rx="4" fill="#B09A86" opacity="0.82"/>
+          <rect x="54" y="33" width="16" height="16" rx="4" fill="#B29075" opacity="0.75"/>
+          <rect x="75" y="33" width="16" height="16" rx="4" fill="#5E7D6E" opacity="0.65"/>
+          <!-- Row 3 -->
+          <rect x="12" y="54" width="16" height="16" rx="4" fill="#9A7E64" opacity="0.55"/>
+          <rect x="33" y="54" width="16" height="16" rx="4" fill="#B29075" opacity="0.4"/>
+          <rect x="54" y="54" width="16" height="16" rx="4" fill="#5E7D6E" opacity="0.25"/>
+          <rect x="75" y="54" width="16" height="16" rx="4" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <!-- Row 4 -->
+          <rect x="12" y="75" width="16" height="16" rx="4" fill="#B09A86" opacity="0.2"/>
+          <rect x="33" y="75" width="16" height="16" rx="4" stroke="rgba(232,230,224,0.10)" stroke-width="1.2" fill="none"/>
+          <rect x="54" y="75" width="16" height="16" rx="4" stroke="rgba(232,230,224,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="75" y="75" width="16" height="16" rx="4" stroke="rgba(232,230,224,0.05)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Dark Mode</h3>
+    <p>Dark accent colors fading on #191816</p>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+
+<!-- ==================== Sub-variations ==================== -->
+
+<div class="section-label"><span>Alternate Fade Patterns</span></div>
+
+<div class="variants">
+
+  <!-- Alt 1: Diagonal fade -->
+  <div class="variant">
+    <div class="icon-frame light-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <!-- Diagonal fade: top-left strongest, bottom-right empty -->
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.9"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" fill="#9A7E64" opacity="0.7"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" fill="#B09A86" opacity="0.5"/>
+
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#8B6B5A" opacity="0.9"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.75"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.5"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" fill="#9A7E64" opacity="0.25"/>
+
+          <rect x="10" y="36" width="10" height="10" rx="2.5" fill="#9A7E64" opacity="0.65"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#B09A86" opacity="0.4"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.2"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+
+          <rect x="10" y="49" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.35"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.15"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.06)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.04)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Diagonal Fade</h3>
+    <p>Opacity fades diagonally — every square still a unique city color.</p>
+  </div>
+
+  <!-- Alt 2: Scattered fill (more organic) -->
+  <div class="variant">
+    <div class="icon-frame light-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.85"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" fill="#9A7E64" opacity="0.6"/>
+
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#B09A86" opacity="0.7"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#8B6B5A" opacity="0.9"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.4"/>
+
+          <rect x="10" y="36" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.08)" stroke-width="1.2" fill="none"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.5"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" fill="#9A7E64" opacity="0.3"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.06)" stroke-width="1.2" fill="none"/>
+
+          <rect x="10" y="49" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.25"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.06)" stroke-width="1.2" fill="none"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.04)" stroke-width="1.2" fill="none"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" fill="#B09A86" opacity="0.15"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Scattered</h3>
+    <p>Empty slots mixed in — feels like a real map with gaps between visited places.</p>
+  </div>
+
+  <!-- Alt 3: Radial fade from center -->
+  <div class="variant">
+    <div class="icon-frame light-frame">
+      <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <!-- Corners are faintest, center is strongest -->
+          <rect x="10" y="10" width="10" height="10" rx="2.5" fill="#B09A86" opacity="0.2"/>
+          <rect x="23" y="10" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.45"/>
+          <rect x="36" y="10" width="10" height="10" rx="2.5" fill="#9A7E64" opacity="0.45"/>
+          <rect x="49" y="10" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.06)" stroke-width="1.2" fill="none"/>
+
+          <rect x="10" y="23" width="10" height="10" rx="2.5" fill="#9A7E64" opacity="0.5"/>
+          <rect x="23" y="23" width="10" height="10" rx="2.5" fill="#7A5C44"/>
+          <rect x="36" y="23" width="10" height="10" rx="2.5" fill="#8B6B5A" opacity="0.9"/>
+          <rect x="49" y="23" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.4"/>
+
+          <rect x="10" y="36" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.55"/>
+          <rect x="23" y="36" width="10" height="10" rx="2.5" fill="#5E7D6E" opacity="0.9"/>
+          <rect x="36" y="36" width="10" height="10" rx="2.5" fill="#B09A86" opacity="0.85"/>
+          <rect x="49" y="36" width="10" height="10" rx="2.5" fill="#9A7E64" opacity="0.3"/>
+
+          <rect x="10" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.06)" stroke-width="1.2" fill="none"/>
+          <rect x="23" y="49" width="10" height="10" rx="2.5" fill="#8B6B5A" opacity="0.35"/>
+          <rect x="36" y="49" width="10" height="10" rx="2.5" fill="#7A5C44" opacity="0.25"/>
+          <rect x="49" y="49" width="10" height="10" rx="2.5" stroke="rgba(38,37,30,0.04)" stroke-width="1.2" fill="none"/>
+        </g>
+      </svg>
+    </div>
+    <h3>Radial</h3>
+    <p>Strongest at center, fading outward — like a home base radiating into the world.</p>
+  </div>
+
+</div>
+
+<div class="divider"></div>
+
+<div class="color-ref">
+  <div class="swatch"><div class="dot" style="background:#7A5C44;"></div>Leather #7A5C44</div>
+  <div class="swatch"><div class="dot" style="background:#9A7E64;"></div>Tan #9A7E64</div>
+  <div class="swatch"><div class="dot" style="background:#5E7D6E;"></div>Sage #5E7D6E</div>
+  <div class="swatch"><div class="dot" style="background:#B09A86;"></div>Sand #B09A86</div>
+  <div class="swatch"><div class="dot" style="background:#8B6B5A;"></div>Umber #8B6B5A</div>
+  <div class="swatch"><div class="dot" style="background:#B29075;"></div>Dark Accent #B29075</div>
+</div>
+
+</body>
+</html>
