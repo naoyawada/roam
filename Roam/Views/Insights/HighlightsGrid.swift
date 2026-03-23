@@ -61,7 +61,7 @@ private struct HighlightCard: View {
     var detail: String = ""
     var largeValue: String = ""
 
-    private let cardHeight: CGFloat = 110
+    private let cardHeight: CGFloat = 90
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
