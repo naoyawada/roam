@@ -24,6 +24,10 @@ final class ColorPaletteTests: XCTestCase {
         XCTAssertEqual(ColorTheme.moody.colors.count, 5)
     }
 
+    func testBotanicalThemeHasFiveColors() {
+        XCTAssertEqual(ColorTheme.botanical.colors.count, 5)
+    }
+
     func testColorForIndexWithinRange() {
         for theme in ColorTheme.allCases {
             for i in 0..<5 {
