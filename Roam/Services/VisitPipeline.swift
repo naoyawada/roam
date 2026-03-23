@@ -42,12 +42,19 @@ final class VisitPipeline {
 
     func runCatchup() async {
         let context = ModelContext(modelContainer)
+        let today = DateHelpers.noonUTC(from: Date())
+        let lastEntry = fetchLastEntry(context: context)
+
+        // Skip entirely if last entry is today with high confidence — nothing to do
+        let highRaw = EntryConfidence.highRaw
+        if let last = lastEntry, last.date == today, last.confidenceRaw == highRaw {
+            return
+        }
+
         await logger.log(category: "trigger", event: "trigger_foreground")
         await retryUnresolvedGeocoding(context: context)
-        let lastEntry = fetchLastEntry(context: context)
-        let today = DateHelpers.noonUTC(from: Date())
-        // Don't propagate for today — wait for actual CLVisit data.
-        // Only propagate for past dates where we missed capture.
+
+        // Propagate for past dates only (not today)
         let yesterday = DateHelpers.noonUTC(
             from: Calendar.current.date(byAdding: .day, value: -1, to: Date())!
         )
@@ -72,7 +79,6 @@ final class VisitPipeline {
                     await logger.log(category: "aggregation", event: "city_propagated",
                                    detail: propagated.primaryCity, dailyEntryID: propagated.id)
                 } else {
-                    // Departure detected but no arrival — create low-confidence fallback
                     let fallback = DailyEntry()
                     fallback.date = date
                     fallback.sourceRaw = EntrySource.fallbackRaw
@@ -94,7 +100,7 @@ final class VisitPipeline {
             }
         }
 
-        // For today: only create an entry if we have actual RawVisit data (no propagation)
+        // For today: only aggregate if we have actual RawVisit data (no propagation)
         let todayVisits = fetchVisits(for: today, context: context)
         if !todayVisits.isEmpty {
             if let entry = aggregator.aggregate(visits: todayVisits, for: today) {
