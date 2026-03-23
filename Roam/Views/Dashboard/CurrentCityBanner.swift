@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct CurrentCityBanner: View {
+    @Environment(\.colorTheme) private var colorTheme
     let cityName: String
     let pingsToday: Int
 
@@ -22,7 +23,7 @@ struct CurrentCityBanner: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(RoamTheme.bannerBackground)
+        .background(colorTheme.bannerBackground)
         .clipShape(RoundedRectangle(cornerRadius: RoamTheme.cornerRadius))
     }
 }

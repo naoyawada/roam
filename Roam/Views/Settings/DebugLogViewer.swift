@@ -74,6 +74,7 @@ struct DebugLogViewer: View {
 // MARK: - Filter Chip
 
 private struct FilterChip: View {
+    @Environment(\.colorTheme) private var colorTheme
     let label: String
     let isSelected: Bool
     let action: () -> Void
@@ -86,10 +87,10 @@ private struct FilterChip: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
                 .background(
-                    isSelected ? RoamTheme.accentLight : Color.secondary.opacity(0.1),
+                    isSelected ? colorTheme.accentLight : Color.secondary.opacity(0.1),
                     in: RoundedRectangle(cornerRadius: 20)
                 )
-                .foregroundStyle(isSelected ? RoamTheme.accent : .secondary)
+                .foregroundStyle(isSelected ? colorTheme.accent : .secondary)
         }
         .buttonStyle(.plain)
     }
@@ -98,6 +99,7 @@ private struct FilterChip: View {
 // MARK: - Pipeline Event Row
 
 private struct PipelineEventRow: View {
+    @Environment(\.colorTheme) private var colorTheme
     let event: PipelineEvent
     let isExpanded: Bool
     let onTap: () -> Void
@@ -218,7 +220,7 @@ private struct PipelineEventRow: View {
         switch category {
         case "visit_delivery":  return ("location.fill", .blue)
         case "geocoding":       return ("mappin", .purple)
-        case "aggregation":     return ("chart.bar.fill", RoamTheme.accent)
+        case "aggregation":     return ("chart.bar.fill", colorTheme.accent)
         case "trigger":         return ("bolt.fill", .yellow)
         case "background":      return ("moon.fill", .indigo)
         case "error":           return ("exclamationmark.triangle.fill", .red)

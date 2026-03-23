@@ -8,6 +8,7 @@ struct TopCitiesList: View {
     let allCities: [(name: String, days: Int)]
 
     @State private var showingAllCities = false
+    @Environment(\.colorTheme) private var colorTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animatedRows: Set<Int> = []
 
@@ -59,7 +60,7 @@ struct TopCitiesList: View {
                     Text("See all \(allCities.count) cities \u{2192}")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundStyle(RoamTheme.accent)
+                        .foregroundStyle(colorTheme.accent)
                         .frame(maxWidth: .infinity)
                         .padding(.top, 12)
                 }

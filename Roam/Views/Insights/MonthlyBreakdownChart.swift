@@ -5,6 +5,7 @@ struct MonthlyBreakdownChart: View {
     let breakdown: [MonthlyBreakdown]
     let cityRecords: [CityRecord]
 
+    @Environment(\.colorTheme) private var colorTheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var animatedMonths: Set<Int> = []
 
@@ -27,7 +28,7 @@ struct MonthlyBreakdownChart: View {
                     let state = parts.count > 1 ? String(parts[1]) : nil
                     let country = parts.count > 2 ? String(parts[2]) : nil
                     let label = CityDisplayFormatter.format(city: city, state: state, country: country)
-                    entries.append((key: entry.cityKey, label: label, color: ColorPalette.color(for: record.colorIndex)))
+                    entries.append((key: entry.cityKey, label: label, color: ColorPalette.color(for: record.colorIndex, theme: colorTheme)))
                 } else {
                     hasOther = true
                 }
@@ -109,6 +110,6 @@ struct MonthlyBreakdownChart: View {
         guard let record = cityRecords.first(where: { $0.cityKey == key }) else {
             return .gray
         }
-        return ColorPalette.color(for: record.colorIndex)
+        return ColorPalette.color(for: record.colorIndex, theme: colorTheme)
     }
 }

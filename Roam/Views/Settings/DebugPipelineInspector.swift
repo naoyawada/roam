@@ -138,6 +138,7 @@ private struct RawVisitRow: View {
 }
 
 private struct DailyEntryRow: View {
+    @Environment(\.colorTheme) private var colorTheme
     let entry: DailyEntry
 
     var body: some View {
@@ -151,7 +152,7 @@ private struct DailyEntryRow: View {
                 if entry.isTravelDay {
                     Label("Travel", systemImage: "airplane")
                         .font(.caption2)
-                        .foregroundStyle(RoamTheme.accent)
+                        .foregroundStyle(colorTheme.accent)
                 }
             }
             HStack(spacing: 4) {
@@ -201,6 +202,7 @@ private struct DailyEntryRow: View {
 }
 
 private struct CityRecordRow: View {
+    @Environment(\.colorTheme) private var colorTheme
     let record: CityRecord
 
     var body: some View {
@@ -236,7 +238,7 @@ private struct CityRecordRow: View {
     }
 
     private func colorIndexDot(index: Int) -> some View {
-        let color = ColorPalette.color(for: index)
+        let color = ColorPalette.color(for: index, theme: colorTheme)
         return Circle()
             .fill(color)
             .frame(width: 16, height: 16)

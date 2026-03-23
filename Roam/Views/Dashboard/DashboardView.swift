@@ -3,6 +3,7 @@ import SwiftData
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.colorTheme) private var colorTheme
     @Query(sort: \DailyEntry.date, order: .reverse) private var allEntries: [DailyEntry]
     @Query private var cityRecords: [CityRecord]
     @Query private var settings: [UserSettings]
@@ -67,7 +68,7 @@ struct DashboardView: View {
                         cityDays: sortedCities.map { entry in
                             let parts = entry.key.split(separator: "|")
                             let idx = colorIndex(for: entry.key)
-                            return (name: String(parts.first ?? ""), days: entry.value, color: ColorPalette.color(for: idx))
+                            return (name: String(parts.first ?? ""), days: entry.value, color: ColorPalette.color(for: idx, theme: colorTheme))
                         },
                         totalDays: totalDays
                     )
@@ -92,7 +93,7 @@ struct DashboardView: View {
                             let country = parts.count > 2 ? String(parts[2]) : nil
                             let displayName = CityDisplayFormatter.format(city: city, state: state, country: country, deviceRegion: deviceRegion)
                             let idx = colorIndex(for: entry.key)
-                            return (name: displayName, days: entry.value, percentage: totalDays > 0 ? Double(entry.value) / Double(totalDays) : 0, color: ColorPalette.color(for: idx))
+                            return (name: displayName, days: entry.value, percentage: totalDays > 0 ? Double(entry.value) / Double(totalDays) : 0, color: ColorPalette.color(for: idx, theme: colorTheme))
                         },
                         otherCount: others.count,
                         otherDays: otherDaysCount,
@@ -125,7 +126,7 @@ struct DashboardView: View {
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
-                                .background(RoamTheme.accent, in: Capsule())
+                                .background(colorTheme.accent, in: Capsule())
                         }
                     }
                     Button {

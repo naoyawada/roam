@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct YearPicker: View {
+    @Environment(\.colorTheme) private var colorTheme
     let years: [Int]
     @Binding var selectedYear: Int
 
@@ -23,11 +24,11 @@ struct YearPicker: View {
                 .fontWeight(.medium)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .foregroundStyle(isSelected ? RoamTheme.accent : RoamTheme.textSecondary)
-                .background(isSelected ? RoamTheme.accentLight : Color.clear)
+                .foregroundStyle(isSelected ? colorTheme.accent : RoamTheme.textSecondary)
+                .background(isSelected ? colorTheme.accentLight : Color.clear)
                 .clipShape(Capsule())
                 .overlay(
-                    Capsule().stroke(isSelected ? RoamTheme.accentBorder : RoamTheme.border, lineWidth: 1)
+                    Capsule().stroke(isSelected ? colorTheme.accentBorder : RoamTheme.border, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)

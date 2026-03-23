@@ -54,6 +54,7 @@ struct HighlightsGrid: View {
 }
 
 private struct HighlightCard: View {
+    @Environment(\.colorTheme) private var colorTheme
     let icon: String
     let label: String
     var value: String = ""
@@ -64,7 +65,7 @@ private struct HighlightCard: View {
         VStack(alignment: .leading, spacing: 0) {
             Image(systemName: icon)
                 .font(.system(size: 18, weight: .light))
-                .foregroundStyle(RoamTheme.accent)
+                .foregroundStyle(colorTheme.accent)
                 .padding(.bottom, 12)
 
             Text(label)

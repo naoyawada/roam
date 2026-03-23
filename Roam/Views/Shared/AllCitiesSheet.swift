@@ -4,6 +4,7 @@ struct AllCitiesSheet: View {
     let cities: [(name: String, days: Int)]
     let totalDays: Int
 
+    @Environment(\.colorTheme) private var colorTheme
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -72,7 +73,7 @@ struct AllCitiesSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
-                        .foregroundStyle(RoamTheme.accent)
+                        .foregroundStyle(colorTheme.accent)
                 }
             }
             .grainBackground()

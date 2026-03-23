@@ -5,6 +5,7 @@ import SwiftData
 @MainActor
 struct DebugScreen: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.colorTheme) private var colorTheme
 
     private var pipeline: VisitPipeline? { AppDelegate.visitPipeline }
 
@@ -68,8 +69,8 @@ struct DebugScreen: View {
                             .fontWeight(.medium)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
-                            .background(RoamTheme.accentLight, in: RoundedRectangle(cornerRadius: 8))
-                            .foregroundStyle(RoamTheme.accent)
+                            .background(colorTheme.accentLight, in: RoundedRectangle(cornerRadius: 8))
+                            .foregroundStyle(colorTheme.accent)
                     }
                     .buttonStyle(.plain)
                     .disabled(isInjecting || pipeline == nil)
@@ -99,7 +100,7 @@ struct DebugScreen: View {
                     }
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundStyle(RoamTheme.accent)
+                    .foregroundStyle(colorTheme.accent)
                     .disabled(isInjecting || pipeline == nil)
                 }
             }
@@ -126,19 +127,19 @@ struct DebugScreen: View {
             Button("Re-aggregate All") {
                 Task { await reaggregateAll() }
             }
-            .foregroundStyle(RoamTheme.accent)
+            .foregroundStyle(colorTheme.accent)
             .disabled(isInjecting || pipeline == nil)
 
             Button("Export Pipeline Log as JSON") {
                 exportPipelineLog()
             }
-            .foregroundStyle(RoamTheme.accent)
+            .foregroundStyle(colorTheme.accent)
 
             Button("Infer Travel Days") {
                 DataImportService.inferTravelDays(context: context)
                 withAnimation { lastAction = "Travel days inferred from city transitions" }
             }
-            .foregroundStyle(RoamTheme.accent)
+            .foregroundStyle(colorTheme.accent)
 
             Button("Wipe All Data", role: .destructive) {
                 showWipeConfirm = true

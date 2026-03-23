@@ -7,6 +7,7 @@ import os
 struct RoamApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("colorTheme") private var colorThemeRaw: String = ColorTheme.default.rawValue
 
     let modelContainer: ModelContainer
     let locationProvider: LiveLocationProvider
@@ -109,6 +110,7 @@ struct RoamApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.colorTheme, ColorTheme(rawValue: colorThemeRaw) ?? .earthy)
         }
         .modelContainer(modelContainer)
         .onChange(of: scenePhase) { _, newPhase in
