@@ -1,6 +1,7 @@
 // Roam/Services/PipelineLogger.swift
 import Foundation
 import SwiftData
+import UIKit
 import os
 
 @ModelActor
@@ -12,16 +13,17 @@ actor PipelineLogger {
         event: String,
         detail: String = "",
         metadata: [String: String] = [:],
-        appState: String = "foreground",
+        appState: String? = nil,
         rawVisitID: UUID? = nil,
         dailyEntryID: UUID? = nil
     ) {
+        let resolvedState = appState ?? Self.currentAppState()
         let entry = PipelineEvent(
             category: category,
             event: event,
             detail: detail,
             metadata: Self.encodeMetadata(metadata),
-            appState: appState,
+            appState: resolvedState,
             rawVisitID: rawVisitID,
             dailyEntryID: dailyEntryID
         )
@@ -42,6 +44,18 @@ actor PipelineLogger {
             }
             try? modelContext.save()
         }
+    }
+
+    private static func currentAppState() -> String {
+        if Thread.isMainThread {
+            switch UIApplication.shared.applicationState {
+            case .active: return "foreground"
+            case .background: return "background"
+            case .inactive: return "foreground"
+            @unknown default: return "foreground"
+            }
+        }
+        return "background"
     }
 
     private static func encodeMetadata(_ metadata: [String: String]) -> String {
