@@ -31,6 +31,28 @@ enum DeduplicationService {
         }
     }
 
+    // MARK: - Invalid entry cleanup
+
+    /// Delete DailyEntry records with dates before 2020 — these are entries with
+    /// uninitialized or default Date() values that should never exist.
+    @MainActor
+    static func removeInvalidEntries(context: ModelContext) {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let cutoff = cal.date(from: DateComponents(year: 2020, month: 1, day: 1))!
+
+        let descriptor = FetchDescriptor<DailyEntry>(
+            predicate: #Predicate<DailyEntry> { $0.date < cutoff }
+        )
+        guard let invalid = try? context.fetch(descriptor), !invalid.isEmpty else { return }
+
+        for entry in invalid {
+            context.delete(entry)
+        }
+        try? context.save()
+        logger.info("Removed \(invalid.count) invalid DailyEntry records with dates before 2020")
+    }
+
     // MARK: - CityRecord deduplication
 
     /// Remove duplicate CityRecord entries that share the same cityName + region + country.

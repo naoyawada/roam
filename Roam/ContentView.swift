@@ -77,6 +77,7 @@ struct ContentView: View {
             DayDetailSheet(entry: entry)
         }
         .task {
+            DeduplicationService.removeInvalidEntries(context: context)
             DeduplicationService.deduplicateDailyEntries(context: context)
             DeduplicationService.deduplicateCityRecords(context: context)
         }
