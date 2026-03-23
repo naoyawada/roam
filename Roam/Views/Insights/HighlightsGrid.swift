@@ -5,6 +5,8 @@ struct HighlightsGrid: View {
     let longestStreak: StreakInfo
     let newCityCount: Int
     let homeAwayRatio: HomeAwayRatio
+    let travelDays: Int
+    let trips: (count: Int, avgDays: Double)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -35,6 +37,16 @@ struct HighlightsGrid: View {
                     icon: "suitcase",
                     label: "Away",
                     largeValue: "\(Int(homeAwayRatio.awayPercentage * 100))%"
+                )
+                HighlightCard(
+                    icon: "airplane",
+                    label: "Travel Days",
+                    largeValue: "\(travelDays)"
+                )
+                HighlightCard(
+                    icon: "map",
+                    label: "Trips",
+                    largeValue: "\(trips.count)"
                 )
             }
         }

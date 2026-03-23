@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CurrentCityBanner: View {
     let cityName: String
-    let streakDays: Int
+    let pingsToday: Int
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -16,7 +16,7 @@ struct CurrentCityBanner: View {
                 .fontWeight(.medium)
                 .tracking(RoamTheme.headingTracking)
                 .foregroundStyle(.white)
-            Text("Day \(streakDays) of current streak")
+            Text("\(pingsToday) ping\(pingsToday == 1 ? "" : "s") today")
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.7))
         }

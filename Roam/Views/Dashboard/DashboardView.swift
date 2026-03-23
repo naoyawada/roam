@@ -19,6 +19,14 @@ struct DashboardView: View {
         cityRecords.first(where: { $0.cityKey == cityKey })?.colorIndex ?? 0
     }
 
+    private func todayRawVisitCount() -> Int {
+        let startOfDay = Calendar.current.startOfDay(for: .now)
+        let descriptor = FetchDescriptor<RawVisit>(
+            predicate: #Predicate<RawVisit> { $0.createdAt >= startOfDay }
+        )
+        return (try? context.fetchCount(descriptor)) ?? 0
+    }
+
     var body: some View {
         let analytics = AnalyticsService(context: context)
         ScrollView {
@@ -34,10 +42,21 @@ struct DashboardView: View {
             } else {
                 VStack(alignment: .leading, spacing: 20) {
                     let streak = analytics.currentStreak(asOf: DateHelpers.noonUTC(from: .now))
+                    let pingsToday = todayRawVisitCount()
+
+                    let latestCityKey = allEntries.first?.cityKey ?? ""
+                    let cityParts = latestCityKey.split(separator: "|")
+                    let bannerCity = cityParts.count > 0 ? String(cityParts[0]) : ""
+                    let bannerState = cityParts.count > 1 ? String(cityParts[1]) : nil
+                    let bannerCountry = cityParts.count > 2 ? String(cityParts[2]) : nil
+                    let deviceRegion = Locale.current.region?.identifier
+                    let bannerName = bannerCity.isEmpty
+                        ? "No data yet"
+                        : CityDisplayFormatter.format(city: bannerCity, state: bannerState, country: bannerCountry, deviceRegion: deviceRegion)
 
                     CurrentCityBanner(
-                        cityName: streak.city.isEmpty ? "No data yet" : streak.city,
-                        streakDays: streak.days
+                        cityName: bannerName,
+                        pingsToday: pingsToday
                     )
 
                     let cityDaysMap = analytics.daysPerCity(year: currentYear)
@@ -53,7 +72,6 @@ struct DashboardView: View {
                         totalDays: totalDays
                     )
 
-                    let deviceRegion = Locale.current.region?.identifier
                     let top5 = sortedCities.prefix(5)
                     let others = sortedCities.dropFirst(5)
                     let otherDaysCount = others.reduce(0) { $0 + $1.value }
@@ -83,13 +101,12 @@ struct DashboardView: View {
                     )
 
                     let homeCityKey = settings.first?.homeCityKey ?? ""
-                    let longestStreak = analytics.longestStreak(year: currentYear)
                     let ratio = analytics.homeAwayRatio(year: currentYear, homeCityKey: homeCityKey)
 
                     QuickStatsRow(
                         citiesVisited: analytics.uniqueCitiesCount(year: currentYear),
-                        longestStreak: longestStreak.days,
-                        homeRatio: Int(ratio.homePercentage * 100)
+                        currentStreak: streak.days,
+                        awayRatio: Int(ratio.awayPercentage * 100)
                     )
                 }
                 .padding()
