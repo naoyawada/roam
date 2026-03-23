@@ -5,7 +5,7 @@ Last updated: March 16, 2026
 
 ## Overview
 
-Roam is a personal location logging app that records which city you are in each night to build a travel history over time. Your privacy is important to us, and this policy explains how Roam handles your data.
+Roam is a personal location logging app that records which city you are in each day to build a travel history over time. Your privacy is important to us, and this policy explains how Roam handles your data.
 
 ## Data Collection
 
