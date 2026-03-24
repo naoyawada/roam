@@ -92,14 +92,11 @@ final class NotificationServiceTests: XCTestCase {
         context.insert(entry)
         try! context.save()
 
-        // Fire twice for the same entry
-        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
-        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
+        // Fire twice for the same entry — New City evaluator fires on first call
+        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: true)
+        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: true)
 
-        // TODO: Once New City evaluator is added (Task 5), pass isNewCity: true here
-        // and assert count == 1 (dedup prevents the second call).
-        // For now, Welcome Home and Trip Summary won't fire without a home city set.
-        XCTAssertEqual(mockCenter.addedRequests.count, 0, "No home city set — no evaluator fires; dedup infra should not crash")
+        XCTAssertEqual(mockCenter.addedRequests.count, 1, "Dedup should prevent second notification")
     }
 
     func testWelcomeHomeNotification() async {
@@ -180,6 +177,62 @@ final class NotificationServiceTests: XCTestCase {
 
         let welcomeHome = mockCenter.addedRequests.filter { $0.content.body.contains("Welcome home") }
         XCTAssertTrue(welcomeHome.isEmpty, "Welcome Home should no-op without home city")
+    }
+
+    func testNewCityNotification() async {
+        let entry = makeEntry(city: "Denver", region: "CO", country: "US")
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
+
+        XCTAssertEqual(mockCenter.addedRequests.count, 1)
+        let body = mockCenter.addedRequests.first?.content.body ?? ""
+        XCTAssertTrue(body.contains("First time in"), "Expected new city notification, got: \(body)")
+    }
+
+    func testWelcomeBackNotification() async {
+        // Create CityRecord for Denver (visited before)
+        let record = CityRecord()
+        record.cityName = "Denver"
+        record.region = "CO"
+        record.country = "US"
+        record.totalDays = 3
+        context.insert(record)
+        try! context.save()
+
+        let entry = makeEntry(city: "Denver", region: "CO", country: "US")
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: false)
+
+        XCTAssertEqual(mockCenter.addedRequests.count, 1)
+        let body = mockCenter.addedRequests.first?.content.body ?? ""
+        XCTAssertTrue(body.contains("Welcome back"), "Expected welcome back notification, got: \(body)")
+    }
+
+    func testWelcomeBackDoesNotFireForHomeCity() async {
+        let settings = try! context.fetch(FetchDescriptor<UserSettings>()).first!
+        settings.homeCityKey = "Portland|OR|US"
+        try! context.save()
+
+        let record = CityRecord()
+        record.cityName = "Portland"
+        record.region = "OR"
+        record.country = "US"
+        record.totalDays = 50
+        context.insert(record)
+        try! context.save()
+
+        let entry = makeEntry(city: "Portland", region: "OR", country: "US")
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true, isNewCity: false)
+
+        let welcomeBack = mockCenter.addedRequests.filter { $0.content.body.contains("Welcome back") }
+        XCTAssertTrue(welcomeBack.isEmpty, "Welcome Back should not fire for home city")
     }
 
     // MARK: - Helpers

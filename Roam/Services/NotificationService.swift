@@ -33,6 +33,8 @@ final class NotificationService {
         let evaluators: [() -> UNNotificationRequest?] = [
             { self.evaluateWelcomeHome(entry: entry, settings: settings, dateString: dateString, context: context) },
             { self.evaluateTripSummary(entry: entry, settings: settings, dateString: dateString, context: context) },
+            { self.evaluateNewCity(entry: entry, settings: settings, dateString: dateString, isNewCity: isNewCity) },
+            { self.evaluateWelcomeBack(entry: entry, settings: settings, dateString: dateString, previousCityKey: previousCityKey, isNewCity: isNewCity, context: context) },
         ]
 
         for evaluate in evaluators {
@@ -120,6 +122,48 @@ final class NotificationService {
         content.sound = .default
         content.threadIdentifier = "tripSummary"
         return UNNotificationRequest(identifier: "notif-tripSummary-\(dateString)", content: content, trigger: nil)
+    }
+
+    // MARK: - New City (Priority 3)
+
+    private func evaluateNewCity(entry: DailyEntry, settings: UserSettings, dateString: String, isNewCity: Bool) -> UNNotificationRequest? {
+        guard settings.notifyNewCity, isNewCity else { return nil }
+
+        let displayName = CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
+        let content = UNMutableNotificationContent()
+        content.title = "Roam"
+        content.body = "First time in \(displayName)! Welcome."
+        content.sound = .default
+        content.threadIdentifier = "newCity"
+        return UNNotificationRequest(identifier: "notif-newCity-\(dateString)", content: content, trigger: nil)
+    }
+
+    // MARK: - Welcome Back (Priority 4)
+
+    private func evaluateWelcomeBack(entry: DailyEntry, settings: UserSettings, dateString: String, previousCityKey: String?, isNewCity: Bool, context: ModelContext) -> UNNotificationRequest? {
+        guard settings.notifyWelcomeBack,
+              !isNewCity,
+              previousCityKey != entry.cityKey,
+              entry.cityKey != settings.homeCityKey else { return nil }
+
+        let cityName = entry.primaryCity
+        let region = entry.primaryRegion
+        let country = entry.primaryCountry
+        let descriptor = FetchDescriptor<CityRecord>(
+            predicate: #Predicate<CityRecord> {
+                $0.cityName == cityName && $0.region == region && $0.country == country
+            }
+        )
+        guard let record = try? context.fetch(descriptor).first else { return nil }
+
+        let displayName = CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
+        let visitCount = record.totalDays + 1
+        let content = UNMutableNotificationContent()
+        content.title = "Roam"
+        content.body = "Welcome back to \(displayName)! Your \(ordinal(visitCount)) visit."
+        content.sound = .default
+        content.threadIdentifier = "welcomeBack"
+        return UNNotificationRequest(identifier: "notif-welcomeBack-\(dateString)", content: content, trigger: nil)
     }
 
     // MARK: - Helpers
