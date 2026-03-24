@@ -45,6 +45,7 @@ final class VisitPipeline {
     func runCatchup(trigger: String = "trigger_foreground") async {
         // Throttle: skip if catch-up ran less than 10 minutes ago
         if let last = lastCatchupDate, Date().timeIntervalSince(last) < 600 {
+            await logger.log(category: "trigger", event: "\(trigger)_throttled")
             return
         }
 

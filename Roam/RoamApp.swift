@@ -122,6 +122,7 @@ struct RoamApp: App {
             Task { @MainActor in
                 await pipeline.runCatchup(trigger: "trigger_bgtask")
                 refreshTask.setTaskCompleted(success: true)
+                Self.scheduleDailyAggregation()
             }
         }
         Self.scheduleDailyAggregation()
