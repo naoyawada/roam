@@ -1,30 +1,30 @@
 # Roam
 
-An iOS app that automatically tracks which city you are in each day. Background location capture, rich analytics, and a warm minimal design.
+An iOS app that automatically tracks which city you spend each day in. Passive CLVisit-based location monitoring, rich analytics, and a warm minimal design.
 
 ## Features
 
-- **Automatic daily capture** — logs your city at 2 AM via background location
+- **Passive location tracking** — CLVisit monitoring detects city arrivals/departures with no manual input
+- **Last-known-city propagation** — stationary days are filled in automatically with medium confidence
+- **Travel day detection** — multiple cities in one day are flagged with departure/arrival details
 - **Dashboard** — current city, streak, year summary bar, top cities
-- **Timeline** — color-coded calendar view of your days
-- **Insights** — monthly breakdown charts, streaks, home vs. away ratio, year-over-year comparisons
-- **All Cities** — ranked list with drill-down for cities beyond the top 5
-- **Unresolved days** — prompts you to fill in missed captures
-- **Data export** — CSV or JSON with optional year filtering
-- **Dark mode** — fully adaptive warm design
-
-## Design
-
-Cursor-inspired warm minimalism with a leather brown accent (`#7A5C44`), earthy city color palette, paper grain texture, and border-only cards. Top 5 cities get distinct colors; the rest collapse to a neutral "Other" with a detail view.
+- **Timeline** — color-coded calendar view with spatial zoom transitions
+- **Insights** — monthly breakdown charts, streaks, home vs. away ratio, travel stats
+- **Local notifications** — 8 types (new city, welcome back, welcome home, trip summary, travel day, streak milestones, monthly recap, new year) with per-type toggles
+- **Color themes** — 5 palettes (Earthy, Cool, Warm, Botanical, Mono)
+- **Data export/import** — CSV or JSON with duplicate detection
+- **iCloud sync** — DailyEntry and CityRecord sync via CloudKit
 
 ## Stack
 
 - Swift 6 / SwiftUI / iOS 26
-- SwiftData with iCloud sync (CloudKit)
-- Core Location (background)
-- BGTaskScheduler
+- SwiftData with CloudKit sync
+- Core Location (CLVisit monitoring + significant location changes)
+- BGTaskScheduler (daily catch-up)
+- UserNotifications (local push)
 - Swift Charts
-- MapKit (MKLocalSearchCompleter)
+- MapKit (MKLocalSearchCompleter for city search)
+- XcodeGen (project.yml → Roam.xcodeproj)
 
 ## Building
 
@@ -44,12 +44,16 @@ xcodebuild test -scheme Roam -destination 'platform=iOS Simulator,name=iPhone 17
 
 ```
 Roam/
-  Models/       — SwiftData models (NightLog, CityColor, UserSettings)
-  Services/     — Business logic (location capture, analytics, backfill, date normalization)
-  Views/        — SwiftUI views by tab (Dashboard, Timeline, Insights, Settings, Onboarding)
-  Utilities/    — Design system (RoamTheme, ColorPalette)
-RoamTests/      — Unit tests (28 tests)
+  Models/       — SwiftData models (DailyEntry, RawVisit, CityRecord, UserSettings, PipelineEvent)
+  Services/     — Pipeline (VisitPipeline, DailyAggregator, CityResolver, NotificationService, AnalyticsService, LocationProvider)
+  Views/        — SwiftUI views by tab (Dashboard, Timeline, Insights, Settings, Onboarding, Shared)
+  Utilities/    — Design system (RoamTheme, ColorPalette, HapticService)
+RoamTests/      — Unit tests (79 tests)
 ```
+
+## Privacy
+
+Location data is stored on-device (raw coordinates) and at the city level in iCloud. Your data is never shared with third parties. See [PRIVACY.md](PRIVACY.md) for details.
 
 ## License
 
