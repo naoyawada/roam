@@ -1,6 +1,7 @@
 // Roam/Services/LocationProvider.swift
 import Foundation
 import CoreLocation
+import UIKit
 
 @MainActor
 protocol LocationProvider: AnyObject {
@@ -13,16 +14,20 @@ protocol LocationProvider: AnyObject {
 final class LiveLocationProvider: NSObject, LocationProvider {
     private let manager = CLLocationManager()
     var onVisitReceived: (@Sendable (VisitData) -> Void)?
+    /// Called when significant location change is detected — use as a pipeline trigger
+    var onSignificantLocationChange: (@Sendable () -> Void)?
 
     func startMonitoring() {
         manager.delegate = self
         manager.requestAlwaysAuthorization()
         manager.allowsBackgroundLocationUpdates = true
         manager.startMonitoringVisits()
+        manager.startMonitoringSignificantLocationChanges()
     }
 
     func stopMonitoring() {
         manager.stopMonitoringVisits()
+        manager.stopMonitoringSignificantLocationChanges()
     }
 
     var authorizationStatus: CLAuthorizationStatus {
@@ -41,6 +46,14 @@ extension LiveLocationProvider: CLLocationManagerDelegate {
         )
         Task { @MainActor [weak self] in
             self?.onVisitReceived?(data)
+        }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        // Only expected from significant location changes. Do NOT call requestLocation()
+        // or startUpdatingLocation() on this manager — those would also trigger this callback.
+        Task { @MainActor [weak self] in
+            self?.onSignificantLocationChange?()
         }
     }
 }

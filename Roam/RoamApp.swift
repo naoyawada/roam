@@ -77,7 +77,29 @@ struct RoamApp: App {
                 await pipeline.handleVisit(visitData)
             }
         }
+        provider.onSignificantLocationChange = { [pipeline] in
+            Task { @MainActor in
+                // Request extended background execution time for pipeline catch-up.
+                // iOS gives ~10s for significant location by default; this extends to ~30s.
+                let app = UIApplication.shared
+                var bgTaskID = UIBackgroundTaskIdentifier.invalid
+                bgTaskID = app.beginBackgroundTask {
+                    app.endBackgroundTask(bgTaskID)
+                    bgTaskID = .invalid
+                }
+                await pipeline.runCatchup(trigger: "trigger_significant_location")
+                if bgTaskID != .invalid {
+                    app.endBackgroundTask(bgTaskID)
+                }
+            }
+        }
         locationProvider = provider
+
+        // If app was relaunched for a location event (force-quit recovery),
+        // start monitoring immediately so the pending event is delivered.
+        if AppDelegate.launchedForLocation {
+            provider.startMonitoring()
+        }
 
         // Run legacy migration if needed
         // Note: migration reads from the "cloud" store (where old NightLog/CityColor data lives)
@@ -98,8 +120,9 @@ struct RoamApp: App {
                 return
             }
             Task { @MainActor in
-                await pipeline.runCatchup()
+                await pipeline.runCatchup(trigger: "trigger_bgtask")
                 refreshTask.setTaskCompleted(success: true)
+                Self.scheduleDailyAggregation()
             }
         }
         Self.scheduleDailyAggregation()

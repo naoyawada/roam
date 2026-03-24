@@ -40,19 +40,30 @@ final class VisitPipeline {
         }
     }
 
-    func runCatchup() async {
+    private var lastCatchupDate: Date?
+
+    func runCatchup(trigger: String = "trigger_foreground") async {
+        // Throttle: skip if catch-up ran less than 10 minutes ago
+        if let last = lastCatchupDate, Date().timeIntervalSince(last) < 600 {
+            await logger.log(category: "trigger", event: "\(trigger)_throttled")
+            return
+        }
+
         let context = ModelContext(modelContainer)
         let today = DateHelpers.noonUTC(from: Date())
         let lastEntry = fetchLastEntry(context: context)
 
-        // Always log the trigger so the log viewer shows activity
-        await logger.log(category: "trigger", event: "trigger_foreground")
+        // Always log the actual trigger source
+        await logger.log(category: "trigger", event: trigger)
 
         // Skip aggregation if last entry is today with high confidence — nothing to do
         let highRaw = EntryConfidence.highRaw
         if let last = lastEntry, last.date == today, last.confidenceRaw == highRaw {
             return
         }
+
+        // Only update throttle timestamp after we've confirmed real work is needed
+        lastCatchupDate = Date()
         await retryUnresolvedGeocoding(context: context)
 
         // Propagate for past dates only (not today)
