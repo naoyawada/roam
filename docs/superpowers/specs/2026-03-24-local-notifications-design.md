@@ -24,9 +24,12 @@ A `@MainActor` class that owns all notification decision logic, deduplication, a
 func handleEntryCommitted(
     entry: DailyEntry,
     previousCityKey: String?,
-    isNewEntry: Bool
+    isNewEntry: Bool,
+    isNewCity: Bool
 )
 ```
+
+The `isNewCity` flag is determined by the pipeline **before** `updateCityRecord` creates the CityRecord, then passed to the service. This avoids a race condition where the service would check for CityRecord existence after the pipeline already created it.
 
 This method:
 1. Checks `UserSettings.notificationsEnabled` — returns early if off
@@ -38,7 +41,8 @@ This method:
 ### NotificationScheduling Protocol
 
 ```swift
-protocol NotificationScheduling: Sendable {
+@MainActor
+protocol NotificationScheduling {
     func add(_ request: UNNotificationRequest) async throws
     func pendingNotificationRequests() async -> [UNNotificationRequest]
     func removeDeliveredNotifications(withIdentifiers: [String])
