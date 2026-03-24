@@ -235,6 +235,68 @@ final class NotificationServiceTests: XCTestCase {
         XCTAssertTrue(welcomeBack.isEmpty, "Welcome Back should not fire for home city")
     }
 
+    func testTravelDayNotification() async {
+        let entry = makeEntry(
+            city: "Seattle",
+            region: "WA",
+            country: "US",
+            isTravelDay: true,
+            citiesVisitedJSON: "[{\"city\":\"Portland\",\"region\":\"OR\",\"country\":\"US\"},{\"city\":\"Seattle\",\"region\":\"WA\",\"country\":\"US\"}]"
+        )
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: false)
+
+        XCTAssertEqual(mockCenter.addedRequests.count, 1)
+        let body = mockCenter.addedRequests.first?.content.body ?? ""
+        XCTAssertTrue(body.contains("Travel day"), "Expected travel day notification, got: \(body)")
+    }
+
+    func testStreakMilestoneNotification() async {
+        // Build a 7-day streak in Portland
+        for day in 18...24 {
+            let e = makeEntry(city: "Portland", region: "OR", country: "US", date: noonUTC(2026, 3, day))
+            context.insert(e)
+        }
+        try! context.save()
+
+        // Fetch the entry for March 24 (today)
+        let targetDate = noonUTC(2026, 3, 24)
+        let entry = try! context.fetch(
+            FetchDescriptor<DailyEntry>(
+                predicate: #Predicate<DailyEntry> { $0.date == targetDate }
+            )
+        ).first!
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: false, isNewCity: false)
+
+        XCTAssertEqual(mockCenter.addedRequests.count, 1)
+        let body = mockCenter.addedRequests.first?.content.body ?? ""
+        XCTAssertTrue(body.contains("streak") || body.contains("7 days"), "Expected streak notification, got: \(body)")
+    }
+
+    func testStreakDoesNotFireAtNonMilestone() async {
+        // Build a 5-day streak (not a milestone)
+        for day in 20...24 {
+            let e = makeEntry(city: "Portland", region: "OR", country: "US", date: noonUTC(2026, 3, day))
+            context.insert(e)
+        }
+        try! context.save()
+
+        let targetDate = noonUTC(2026, 3, 24)
+        let entry = try! context.fetch(
+            FetchDescriptor<DailyEntry>(
+                predicate: #Predicate<DailyEntry> { $0.date == targetDate }
+            )
+        ).first!
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: false, isNewCity: false)
+
+        let streakNotifs = mockCenter.addedRequests.filter { $0.content.body.lowercased().contains("streak") }
+        XCTAssertTrue(streakNotifs.isEmpty, "5 days is not a milestone — should not fire streak notification")
+    }
+
     // MARK: - Helpers
 
     func makeEntry(

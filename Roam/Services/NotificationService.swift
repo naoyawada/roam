@@ -35,6 +35,8 @@ final class NotificationService {
             { self.evaluateTripSummary(entry: entry, settings: settings, dateString: dateString, context: context) },
             { self.evaluateNewCity(entry: entry, settings: settings, dateString: dateString, isNewCity: isNewCity) },
             { self.evaluateWelcomeBack(entry: entry, settings: settings, dateString: dateString, previousCityKey: previousCityKey, isNewCity: isNewCity, context: context) },
+            { self.evaluateTravelDay(entry: entry, settings: settings, dateString: dateString) },
+            { self.evaluateStreakMilestone(entry: entry, settings: settings, dateString: dateString, context: context) },
         ]
 
         for evaluate in evaluators {
@@ -164,6 +166,48 @@ final class NotificationService {
         content.sound = .default
         content.threadIdentifier = "welcomeBack"
         return UNNotificationRequest(identifier: "notif-welcomeBack-\(dateString)", content: content, trigger: nil)
+    }
+
+    // MARK: - Travel Day (Priority 5)
+
+    private func evaluateTravelDay(entry: DailyEntry, settings: UserSettings, dateString: String) -> UNNotificationRequest? {
+        guard settings.notifyTravelDay, entry.isTravelDay else { return nil }
+
+        var body = "Travel day."
+        if let data = entry.citiesVisitedJSON.data(using: .utf8),
+           let cities = try? JSONDecoder().decode([[String: String]].self, from: data),
+           cities.count >= 2,
+           let first = cities.first?["city"],
+           let last = cities.last?["city"] {
+            body = "Travel day: \(first) → \(last)."
+        }
+
+        let content = UNMutableNotificationContent()
+        content.title = "Roam"
+        content.body = body
+        content.sound = .default
+        content.threadIdentifier = "travelDay"
+        return UNNotificationRequest(identifier: "notif-travelDay-\(dateString)", content: content, trigger: nil)
+    }
+
+    // MARK: - Streak Milestone (Priority 6)
+
+    private static let streakMilestones: Set<Int> = [7, 14, 30, 60, 90]
+
+    private func evaluateStreakMilestone(entry: DailyEntry, settings: UserSettings, dateString: String, context: ModelContext) -> UNNotificationRequest? {
+        guard settings.notifyStreakMilestone else { return nil }
+
+        let analytics = AnalyticsService(context: context)
+        let streak = analytics.currentStreak(asOf: entry.date)
+        guard Self.streakMilestones.contains(streak.days) else { return nil }
+
+        let displayName = CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
+        let content = UNMutableNotificationContent()
+        content.title = "Roam"
+        content.body = "\(streak.days) days in \(displayName) — nice streak."
+        content.sound = .default
+        content.threadIdentifier = "streakMilestone"
+        return UNNotificationRequest(identifier: "notif-streak-\(dateString)-\(streak.days)", content: content, trigger: nil)
     }
 
     // MARK: - Helpers
