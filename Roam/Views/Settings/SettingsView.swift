@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -20,6 +21,7 @@ struct SettingsView: View {
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled: Bool = true
     @State private var showSyncRestartAlert = false
     @State private var aboutTapCount = 0
+    @State private var systemNotificationsDenied = false
 
     private var settings: UserSettings {
         if let existing = settingsArray.first {
@@ -67,6 +69,74 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.navigationLink)
+                }
+
+                Section("Notifications") {
+                    Toggle("Notifications", isOn: Binding(
+                        get: { settings.notificationsEnabled },
+                        set: { newValue in
+                            settings.notificationsEnabled = newValue
+                            try? context.save()
+                            if newValue {
+                                Task {
+                                    let center = UNUserNotificationCenter.current()
+                                    let granted = try? await center.requestAuthorization(options: [.alert, .sound])
+                                    if granted == false {
+                                        await MainActor.run {
+                                            systemNotificationsDenied = true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ))
+
+                    if systemNotificationsDenied {
+                        Text("Notifications are disabled in System Settings.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        .font(.caption)
+                    }
+
+                    if settings.notificationsEnabled {
+                        Toggle("New City", isOn: Binding(
+                            get: { settings.notifyNewCity },
+                            set: { settings.notifyNewCity = $0; try? context.save() }
+                        ))
+                        Toggle("Welcome Back", isOn: Binding(
+                            get: { settings.notifyWelcomeBack },
+                            set: { settings.notifyWelcomeBack = $0; try? context.save() }
+                        ))
+                        Toggle("Welcome Home", isOn: Binding(
+                            get: { settings.notifyWelcomeHome },
+                            set: { settings.notifyWelcomeHome = $0; try? context.save() }
+                        ))
+                        Toggle("Streak Milestones", isOn: Binding(
+                            get: { settings.notifyStreakMilestone },
+                            set: { settings.notifyStreakMilestone = $0; try? context.save() }
+                        ))
+                        Toggle("Travel Day", isOn: Binding(
+                            get: { settings.notifyTravelDay },
+                            set: { settings.notifyTravelDay = $0; try? context.save() }
+                        ))
+                        Toggle("Trip Summary", isOn: Binding(
+                            get: { settings.notifyTripSummary },
+                            set: { settings.notifyTripSummary = $0; try? context.save() }
+                        ))
+                        Toggle("Monthly Recap", isOn: Binding(
+                            get: { settings.notifyMonthlyRecap },
+                            set: { settings.notifyMonthlyRecap = $0; try? context.save() }
+                        ))
+                        Toggle("New Year", isOn: Binding(
+                            get: { settings.notifyNewYear },
+                            set: { settings.notifyNewYear = $0; try? context.save() }
+                        ))
+                    }
                 }
 
                 Section("Tracking Status") {
