@@ -39,18 +39,18 @@ final class NotificationService {
             { self.evaluateStreakMilestone(entry: entry, settings: settings, dateString: dateString, context: context) },
         ]
 
+        // Evaluate priority-based types (first non-nil wins)
         for evaluate in evaluators {
             if let request = evaluate() {
-                // Check dedup
                 let dedupKey = request.identifier
-                guard !isDuplicate(key: dedupKey) else { return }
+                guard !isDuplicate(key: dedupKey) else { break }
                 markFired(key: dedupKey)
                 try? await notificationCenter.add(request)
-                return
+                break
             }
         }
 
-        // Also evaluate new year (does not compete with entry-driven priority types)
+        // New Year fires independently (does not compete with entry-driven priority types)
         if let request = evaluateNewYear(entry: entry, settings: settings, context: context) {
             let dedupKey = request.identifier
             if !isDuplicate(key: dedupKey) {
@@ -70,15 +70,25 @@ final class NotificationService {
         UserDefaults.standard.set(Date(), forKey: key)
     }
 
-    private func dedupDateString(for date: Date) -> String {
+    private static let dedupDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter.string(from: date)
+        return formatter
+    }()
+
+    private func dedupDateString(for date: Date) -> String {
+        Self.dedupDateFormatter.string(from: date)
     }
 
     private func pruneOldDedupKeys() {
         let defaults = UserDefaults.standard
+        // Only prune once per day to avoid iterating UserDefaults on every notification
+        let lastPruneKey = "notif-lastPruneDate"
+        if let lastPrune = defaults.object(forKey: lastPruneKey) as? Date,
+           Date().timeIntervalSince(lastPrune) < 86400 { return }
+        defaults.set(Date(), forKey: lastPruneKey)
+
         let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date())!
         let allKeys = defaults.dictionaryRepresentation().keys.filter { $0.hasPrefix("notif-") }
         for key in allKeys {
@@ -123,13 +133,9 @@ final class NotificationService {
         let analytics = AnalyticsService(context: context)
         let tripInfo = analytics.tripCount(year: year, homeCityKey: homeCityKey)
 
-        // Find the most-visited away city during this trip for the copy
-        let tripCityName = lastAwayCityName(before: entry.date, homeCityKey: homeCityKey, context: context)
-        let tripCityDisplay = tripCityName ?? "your trip"
-
         let content = UNMutableNotificationContent()
         content.title = "Roam"
-        content.body = "Back from \(daysAway) days away — your \(ordinal(tripInfo.count)) trip to \(tripCityDisplay) this year."
+        content.body = "Back from \(daysAway) days away — your \(ordinal(max(tripInfo.count, 1))) trip this year."
         content.sound = .default
         content.threadIdentifier = "tripSummary"
         return UNNotificationRequest(identifier: "notif-tripSummary-\(dateString)", content: content, trigger: nil)
@@ -168,10 +174,10 @@ final class NotificationService {
         guard let record = try? context.fetch(descriptor).first else { return nil }
 
         let displayName = CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
-        let visitCount = record.totalDays + 1
+        let visitCount = record.totalDays  // totalDays already includes this entry (updateCityRecord ran first)
         let content = UNMutableNotificationContent()
         content.title = "Roam"
-        content.body = "Welcome back to \(displayName)! Your \(ordinal(visitCount)) visit."
+        content.body = "Welcome back to \(displayName)! Your \(ordinal(visitCount)) day here."
         content.sound = .default
         content.threadIdentifier = "welcomeBack"
         return UNNotificationRequest(identifier: "notif-welcomeBack-\(dateString)", content: content, trigger: nil)
@@ -262,21 +268,22 @@ final class NotificationService {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
         let now = Date()
-        let currentMonth = cal.component(.month, from: now)
-        let currentYear = cal.component(.year, from: now)
-        let prevMonth = currentMonth == 1 ? 12 : currentMonth - 1
-        let prevYear = currentMonth == 1 ? currentYear - 1 : currentYear
+        // Compute stats for the current month (the one about to end).
+        // The notification fires on the 1st of next month, so it recaps the month that just finished.
+        let recapMonth = cal.component(.month, from: now)
+        let recapYear = cal.component(.year, from: now)
 
         let analytics = AnalyticsService(context: context)
-        let breakdown = analytics.monthlyBreakdown(year: prevYear)
-        guard prevMonth >= 1, prevMonth <= 12 else { return }
-        let monthData = breakdown[prevMonth - 1]
+        let breakdown = analytics.monthlyBreakdown(year: recapYear)
+        let monthData = breakdown[recapMonth - 1]
         let uniqueCities = monthData.cityDays.count
-        let monthName = cal.monthSymbols[prevMonth - 1]
+        let monthName = cal.monthSymbols[recapMonth - 1]
 
         // Count travel days for the specific month
-        let monthStart = cal.date(from: DateComponents(year: prevYear, month: prevMonth, day: 1, hour: 0))!
-        let monthEnd = cal.date(from: DateComponents(year: prevMonth == 12 ? prevYear + 1 : prevYear, month: prevMonth == 12 ? 1 : prevMonth + 1, day: 1, hour: 0))!
+        let monthStart = cal.date(from: DateComponents(year: recapYear, month: recapMonth, day: 1, hour: 0))!
+        let nextMonth = recapMonth == 12 ? 1 : recapMonth + 1
+        let nextMonthYear = recapMonth == 12 ? recapYear + 1 : recapYear
+        let monthEnd = cal.date(from: DateComponents(year: nextMonthYear, month: nextMonth, day: 1, hour: 0))!
         let monthDescriptor = FetchDescriptor<DailyEntry>(
             predicate: #Predicate<DailyEntry> {
                 $0.date >= monthStart && $0.date < monthEnd
@@ -317,10 +324,11 @@ final class NotificationService {
     // MARK: - Helpers
 
     private func countConsecutiveDaysAway(before date: Date, homeCityKey: String, context: ModelContext) -> Int {
-        let descriptor = FetchDescriptor<DailyEntry>(
+        var descriptor = FetchDescriptor<DailyEntry>(
             predicate: #Predicate<DailyEntry> { $0.date < date },
             sortBy: [SortDescriptor(\.date, order: .reverse)]
         )
+        descriptor.fetchLimit = 365
         guard let entries = try? context.fetch(descriptor) else { return 0 }
         var count = 0
         for entry in entries {
@@ -328,19 +336,6 @@ final class NotificationService {
             count += 1
         }
         return count
-    }
-
-    private func lastAwayCityName(before date: Date, homeCityKey: String, context: ModelContext) -> String? {
-        let descriptor = FetchDescriptor<DailyEntry>(
-            predicate: #Predicate<DailyEntry> { $0.date < date },
-            sortBy: [SortDescriptor(\.date, order: .reverse)]
-        )
-        guard let entries = try? context.fetch(descriptor) else { return nil }
-        for entry in entries {
-            if entry.cityKey == homeCityKey { break }
-            return CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
-        }
-        return nil
     }
 
     private func ordinal(_ n: Int) -> String {
