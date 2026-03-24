@@ -49,6 +49,15 @@ final class NotificationService {
                 return
             }
         }
+
+        // Also evaluate new year (does not compete with entry-driven priority types)
+        if let request = evaluateNewYear(entry: entry, settings: settings, context: context) {
+            let dedupKey = request.identifier
+            if !isDuplicate(key: dedupKey) {
+                markFired(key: dedupKey)
+                try? await notificationCenter.add(request)
+            }
+        }
     }
 
     // MARK: - Deduplication
@@ -208,6 +217,101 @@ final class NotificationService {
         content.sound = .default
         content.threadIdentifier = "streakMilestone"
         return UNNotificationRequest(identifier: "notif-streak-\(dateString)-\(streak.days)", content: content, trigger: nil)
+    }
+
+    // MARK: - New Year Milestone
+
+    private func evaluateNewYear(entry: DailyEntry, settings: UserSettings, context: ModelContext) -> UNNotificationRequest? {
+        guard settings.notifyNewYear else { return nil }
+
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let entryYear = cal.component(.year, from: entry.date)
+
+        let entryDate = entry.date
+        var descriptor = FetchDescriptor<DailyEntry>(
+            predicate: #Predicate<DailyEntry> { $0.date < entryDate },
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        descriptor.fetchLimit = 1
+        guard let previousEntry = try? context.fetch(descriptor).first else { return nil }
+        let previousYear = cal.component(.year, from: previousEntry.date)
+
+        guard entryYear > previousYear else { return nil }
+
+        let displayName = CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
+        let content = UNMutableNotificationContent()
+        content.title = "Roam"
+        content.body = "First city of \(entryYear): \(displayName). Happy new year."
+        content.sound = .default
+        content.threadIdentifier = "newYear"
+        return UNNotificationRequest(identifier: "notif-newYear-\(entryYear)", content: content, trigger: nil)
+    }
+
+    // MARK: - Monthly Recap Scheduling
+
+    func scheduleMonthlyRecap() async {
+        let context = ModelContext(modelContainer)
+        guard let settings = try? context.fetch(FetchDescriptor<UserSettings>()).first,
+              settings.notificationsEnabled,
+              settings.notifyMonthlyRecap else { return }
+
+        // Cancel existing
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: ["notif-monthlyRecap"])
+
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let now = Date()
+        let currentMonth = cal.component(.month, from: now)
+        let currentYear = cal.component(.year, from: now)
+        let prevMonth = currentMonth == 1 ? 12 : currentMonth - 1
+        let prevYear = currentMonth == 1 ? currentYear - 1 : currentYear
+
+        let analytics = AnalyticsService(context: context)
+        let breakdown = analytics.monthlyBreakdown(year: prevYear)
+        guard prevMonth >= 1, prevMonth <= 12 else { return }
+        let monthData = breakdown[prevMonth - 1]
+        let uniqueCities = monthData.cityDays.count
+        let monthName = cal.monthSymbols[prevMonth - 1]
+
+        // Count travel days for the specific month
+        let monthStart = cal.date(from: DateComponents(year: prevYear, month: prevMonth, day: 1, hour: 0))!
+        let monthEnd = cal.date(from: DateComponents(year: prevMonth == 12 ? prevYear + 1 : prevYear, month: prevMonth == 12 ? 1 : prevMonth + 1, day: 1, hour: 0))!
+        let monthDescriptor = FetchDescriptor<DailyEntry>(
+            predicate: #Predicate<DailyEntry> {
+                $0.date >= monthStart && $0.date < monthEnd
+            }
+        )
+        let monthEntries = (try? context.fetch(monthDescriptor)) ?? []
+        let travelDays = monthEntries.filter { $0.isTravelDay }.count
+        let totalMonthDays = monthEntries.count
+
+        var bodyParts = ["\(monthName): \(uniqueCities) \(uniqueCities == 1 ? "city" : "cities")"]
+        if travelDays > 0 {
+            bodyParts.append("\(travelDays) travel \(travelDays == 1 ? "day" : "days")")
+        }
+        if let homeCityKey = settings.homeCityKey, totalMonthDays > 0 {
+            let homeDays = monthEntries.filter { $0.cityKey == homeCityKey }.count
+            let awayPct = Int(Double(totalMonthDays - homeDays) / Double(totalMonthDays) * 100)
+            if awayPct > 0 {
+                bodyParts.append("\(awayPct)% away")
+            }
+        }
+
+        let content = UNMutableNotificationContent()
+        content.title = "Roam"
+        content.body = bodyParts.joined(separator: ", ") + "."
+        content.sound = .default
+        content.threadIdentifier = "monthlyRecap"
+
+        var triggerComponents = DateComponents()
+        triggerComponents.day = 1
+        triggerComponents.hour = 9
+        triggerComponents.minute = 0
+        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: false)
+
+        let request = UNNotificationRequest(identifier: "notif-monthlyRecap", content: content, trigger: trigger)
+        try? await notificationCenter.add(request)
     }
 
     // MARK: - Helpers
