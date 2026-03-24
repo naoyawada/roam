@@ -20,9 +20,11 @@
 		213F2B12E2918C88B3355403 /* ConfidenceBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA2C97E3F80B3FBD6462299 /* ConfidenceBanner.swift */; };
 		257C9005F6C1998BAA2CA774 /* DataExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B83452B970024E3BA1C1E06 /* DataExportTests.swift */; };
 		2710B99F9426F221581461E0 /* DayDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FC6EF82EA5D64961C0618FD /* DayDetailSheet.swift */; };
+		27213E3B5CB2B0A4EA513767 /* NotificationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F3760EAB5DC6F20D99CFE65 /* NotificationServiceTests.swift */; };
 		29F8ACBE4A70258A45943901 /* DailyAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C5E000F59699741E3313EE /* DailyAggregatorTests.swift */; };
 		2BDB80F5992B0B95C9EDA389 /* DebugPipelineInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0B6898CA6FF9F8685423BF0 /* DebugPipelineInspector.swift */; };
 		2F659E3163F4DA42C65301DB /* DebugScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47753628580C5FA8BF643D23 /* DebugScenarios.swift */; };
+		369BFB8CC1E268D08354B266 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DFAA99D827693BFFA4E3A14 /* NotificationService.swift */; };
 		387D97B9C9C5FADEE96010F6 /* MiniMonthGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85746F2EC5BF766F57464131 /* MiniMonthGridView.swift */; };
 		41DDC3A8C08DD7E13A473248 /* AnimatingNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D1DFDD0307FCAD8E5F7FFB /* AnimatingNumber.swift */; };
 		45FEA24C9A0F3D0977A94A82 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 161355E300E961AC6947F70E /* InsightsView.swift */; };
@@ -80,6 +82,7 @@
 		F480F4976E853181D845E873 /* CurrentCityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4155DEDC8A5F93BAE9BA02 /* CurrentCityBanner.swift */; };
 		F70BA9613B02ADCA70D6528F /* DailyAggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 421ED44C540BCA4CEDF1E03D /* DailyAggregator.swift */; };
 		F8120078911A78B2E7FC73CC /* CityResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27FE59CC1B72D27399DDF0AE /* CityResolver.swift */; };
+		FB634A17A3EADC0FBE4CF399 /* NotificationScheduling.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8B60D5990F215313C1F7F1F /* NotificationScheduling.swift */; };
 		FC46431181C16C4A53FA0C73 /* LegacyMigratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC3FE5FABBDB030AC3E48795 /* LegacyMigratorTests.swift */; };
 		FD13B6EA9BA7279CE5A2849A /* ColorThemeEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3885A544248359A3405BB0 /* ColorThemeEnvironment.swift */; };
 /* End PBXBuildFile section */
@@ -103,6 +106,7 @@
 		14D1DFDD0307FCAD8E5F7FFB /* AnimatingNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimatingNumber.swift; sourceTree = "<group>"; };
 		161355E300E961AC6947F70E /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		1DD109414C1745F93BA247B9 /* OnboardingLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLocationManager.swift; sourceTree = "<group>"; };
+		1DFAA99D827693BFFA4E3A14 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		1E7743148F503481970D52BA /* DataImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataImportServiceTests.swift; sourceTree = "<group>"; };
 		213B5349FB94E1A2C401CC74 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		23864012AE9AA4481A21698F /* AllCitiesSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllCitiesSheet.swift; sourceTree = "<group>"; };
@@ -137,6 +141,7 @@
 		67200A60234C96471025090B /* DataExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportService.swift; sourceTree = "<group>"; };
 		6A213BAED4F9C9F8BD6F08F1 /* CityRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityRecord.swift; sourceTree = "<group>"; };
 		6D050F4B9DC635F3333C47DA /* Roam.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Roam.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6F3760EAB5DC6F20D99CFE65 /* NotificationServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationServiceTests.swift; sourceTree = "<group>"; };
 		719771AC1C85B53C0402CC82 /* RawVisit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RawVisit.swift; sourceTree = "<group>"; };
 		73B468CC1768479756B40354 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7627FC571437D796D019472E /* CityDisplayFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityDisplayFormatter.swift; sourceTree = "<group>"; };
@@ -153,6 +158,7 @@
 		A24B7CDA85945C212A2CD117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		A3A2A7C4151752D78F68C182 /* CityResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityResolverTests.swift; sourceTree = "<group>"; };
 		A7BAFFC74671722BE97B2D34 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A8B60D5990F215313C1F7F1F /* NotificationScheduling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationScheduling.swift; sourceTree = "<group>"; };
 		A9AF33526A2A15F22EA0FD5C /* RoamApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoamApp.swift; sourceTree = "<group>"; };
 		AECD3C287711CA628B9824D9 /* YearSummaryBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearSummaryBar.swift; sourceTree = "<group>"; };
 		AF39C2158CBE3D292C1000AC /* LegacyMigrator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyMigrator.swift; sourceTree = "<group>"; };
@@ -191,6 +197,7 @@
 				1E7743148F503481970D52BA /* DataImportServiceTests.swift */,
 				43C11F9644281708616F2268 /* DeduplicationServiceTests.swift */,
 				FC3FE5FABBDB030AC3E48795 /* LegacyMigratorTests.swift */,
+				6F3760EAB5DC6F20D99CFE65 /* NotificationServiceTests.swift */,
 				DCB87FA04018026E1981F420 /* RoamTests.swift */,
 				2A77CB213F28ECFED373CFBE /* VisitPipelineTests.swift */,
 			);
@@ -210,6 +217,8 @@
 				7E07135CDB115BE04D02FD04 /* DeduplicationService.swift */,
 				AF39C2158CBE3D292C1000AC /* LegacyMigrator.swift */,
 				42849DD7827CDCDEAA77DE7F /* LocationProvider.swift */,
+				A8B60D5990F215313C1F7F1F /* NotificationScheduling.swift */,
+				1DFAA99D827693BFFA4E3A14 /* NotificationService.swift */,
 				1DD109414C1745F93BA247B9 /* OnboardingLocationManager.swift */,
 				27C08EA73C1237AE5D3467AD /* PipelineLogger.swift */,
 				5DA5E71147A7E2787D29A309 /* VisitPipeline.swift */,
@@ -479,6 +488,7 @@
 				5481C098BC3D13AC24D7EBC3 /* DataImportServiceTests.swift in Sources */,
 				F3AD6860617159F9D6F8FFF3 /* DeduplicationServiceTests.swift in Sources */,
 				FC46431181C16C4A53FA0C73 /* LegacyMigratorTests.swift in Sources */,
+				27213E3B5CB2B0A4EA513767 /* NotificationServiceTests.swift in Sources */,
 				57C6A2A2F4154CFF796A4F06 /* RoamTests.swift in Sources */,
 				12DAC09129D993E9E1343F4A /* VisitPipelineTests.swift in Sources */,
 			);
@@ -533,6 +543,8 @@
 				387D97B9C9C5FADEE96010F6 /* MiniMonthGridView.swift in Sources */,
 				EAAF522E19A47CE945C3D35C /* MonthlyBreakdownChart.swift in Sources */,
 				0DE13100F7E1CDD4A848244C /* NightLog.swift in Sources */,
+				FB634A17A3EADC0FBE4CF399 /* NotificationScheduling.swift in Sources */,
+				369BFB8CC1E268D08354B266 /* NotificationService.swift in Sources */,
 				A449DC44619F6C72E4F80551 /* OnboardingLocationManager.swift in Sources */,
 				4AB82FA66BB533444D897559 /* OnboardingView.swift in Sources */,
 				F3A4D6BB07935BB913E1801B /* PipelineEvent.swift in Sources */,

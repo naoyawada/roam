@@ -7,13 +7,15 @@ import CoreLocation
 final class VisitPipeline {
     private let modelContainer: ModelContainer
     private let logger: PipelineLogger
+    private let notificationService: NotificationService?
     private let aggregator = DailyAggregator()
     private let cityResolver = CityResolver()
     private let accuracyThreshold: Double = 1000.0
 
-    init(modelContainer: ModelContainer, logger: PipelineLogger) {
+    init(modelContainer: ModelContainer, logger: PipelineLogger, notificationService: NotificationService? = nil) {
         self.modelContainer = modelContainer
         self.logger = logger
+        self.notificationService = notificationService
     }
 
     func handleVisit(_ visitData: VisitData) async {
@@ -116,10 +118,17 @@ final class VisitPipeline {
         let todayVisits = fetchVisits(for: today, context: context)
         if !todayVisits.isEmpty {
             if let entry = aggregator.aggregate(visits: todayVisits, for: today) {
-                let _ = upsertEntry(entry, context: context)
+                let result = upsertEntry(entry, context: context)
+                let isNewCity = !cityRecordExists(for: entry, context: context)
                 updateCityRecord(for: entry, context: context)
                 await logger.log(category: "aggregation", event: "entry_created",
                                detail: "today: \(entry.primaryCity)", dailyEntryID: entry.id)
+                await notificationService?.handleEntryCommitted(
+                    entry: entry,
+                    previousCityKey: result.oldCityKey,
+                    isNewEntry: result.wasInsert,
+                    isNewCity: isNewCity
+                )
             }
         }
     }
@@ -138,16 +147,42 @@ final class VisitPipeline {
 
     // MARK: - Private
 
+    private struct UpsertResult {
+        let oldCityKey: String?
+        let wasInsert: Bool
+    }
+
     private func aggregateDates(for visit: RawVisit, context: ModelContext) {
         let affectedDates = determineDates(for: visit)
+        var lastEntry: DailyEntry?
+        var lastResult: UpsertResult?
+        var lastOldCityKey: String?
+        var anyIsNewCity = false
         for date in affectedDates {
             let allVisits = fetchVisits(for: date, context: context)
             if let entry = aggregator.aggregate(visits: allVisits, for: date) {
-                let oldCityKey = upsertEntry(entry, context: context)
+                let result = upsertEntry(entry, context: context)
+                let isNewCity = !cityRecordExists(for: entry, context: context)
+                if isNewCity { anyIsNewCity = true }
                 updateCityRecord(for: entry, context: context)
-                if let oldKey = oldCityKey {
+                if let oldKey = result.oldCityKey {
                     decrementCityRecord(cityKey: oldKey, context: context)
                 }
+                lastEntry = entry
+                lastResult = result
+                if result.oldCityKey != nil {
+                    lastOldCityKey = result.oldCityKey
+                }
+            }
+        }
+        if let entry = lastEntry, let result = lastResult {
+            Task {
+                await notificationService?.handleEntryCommitted(
+                    entry: entry,
+                    previousCityKey: lastOldCityKey,
+                    isNewEntry: result.wasInsert,
+                    isNewCity: anyIsNewCity
+                )
             }
         }
     }
@@ -164,14 +199,14 @@ final class VisitPipeline {
         return dates
     }
 
-    /// Returns the old city key if the entry's primary city changed, for CityRecord stat adjustment.
     @discardableResult
-    private func upsertEntry(_ entry: DailyEntry, context: ModelContext) -> String? {
+    private func upsertEntry(_ entry: DailyEntry, context: ModelContext) -> UpsertResult {
         let targetDate = entry.date
         let descriptor = FetchDescriptor<DailyEntry>(
             predicate: #Predicate<DailyEntry> { $0.date == targetDate }
         )
         var oldCityKey: String? = nil
+        var wasInsert = false
         if let existing = try? context.fetch(descriptor).first {
             if existing.primaryCity != entry.primaryCity || existing.primaryRegion != entry.primaryRegion {
                 oldCityKey = existing.cityKey
@@ -188,10 +223,23 @@ final class VisitPipeline {
             existing.confidenceRaw = entry.confidenceRaw
             existing.updatedAt = Date()
         } else {
+            wasInsert = true
             context.insert(entry)
         }
         try? context.save()
-        return oldCityKey
+        return UpsertResult(oldCityKey: oldCityKey, wasInsert: wasInsert)
+    }
+
+    private func cityRecordExists(for entry: DailyEntry, context: ModelContext) -> Bool {
+        let cityName = entry.primaryCity
+        let region = entry.primaryRegion
+        let country = entry.primaryCountry
+        let descriptor = FetchDescriptor<CityRecord>(
+            predicate: #Predicate<CityRecord> {
+                $0.cityName == cityName && $0.region == region && $0.country == country
+            }
+        )
+        return ((try? context.fetch(descriptor))?.isEmpty == false)
     }
 
     private func updateCityRecord(for entry: DailyEntry, context: ModelContext) {
