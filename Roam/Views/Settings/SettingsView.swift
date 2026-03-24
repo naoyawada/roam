@@ -21,6 +21,7 @@ struct SettingsView: View {
     @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled: Bool = true
     @State private var showSyncRestartAlert = false
     @State private var aboutTapCount = 0
+    @State private var showBuildNumber = false
     @State private var systemNotificationsDenied = false
 
     private var settings: UserSettings {
@@ -174,7 +175,14 @@ struct SettingsView: View {
                 }
 
                 Section("About") {
-                    LabeledContent("Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
+                    LabeledContent("Version") {
+                        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+                        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+                        Text(showBuildNumber ? "\(version) (\(build))" : version)
+                    }
+                    .onTapGesture(count: 3) {
+                        showBuildNumber.toggle()
+                    }
                     Text("Roam passively monitors your location to automatically track which cities you visit. Location data is stored on-device and synced via iCloud. Your data is never shared with third parties.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
