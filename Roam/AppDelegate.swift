@@ -12,6 +12,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
     /// Set by RoamApp.init() so push handler can trigger catch-up.
     @MainActor static var visitPipeline: VisitPipeline?
 
+    /// Set to true if app was relaunched for a location event (force-quit recovery).
+    @MainActor static var launchedForLocation = false
+
     @MainActor
     func application(
         _ application: UIApplication,
@@ -19,6 +22,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
     ) -> Bool {
         application.registerForRemoteNotifications()
         Self.logger.info("Registered for remote notifications")
+
+        // If app was relaunched by significant location change (e.g., after force-quit),
+        // start monitoring immediately so the pending location event is delivered.
+        // RoamApp.init() hasn't run yet at this point, so we can't use the provider —
+        // just flag it so RoamApp.init() starts monitoring immediately.
+        if launchOptions?[.location] != nil {
+            Self.logger.info("App relaunched for location event")
+            AppDelegate.launchedForLocation = true
+        }
+
         return true
     }
 
@@ -53,7 +66,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, @unchecked Sendable {
                 return
             }
 
-            await pipeline.runCatchup()
+            await pipeline.runCatchup(trigger: "trigger_push")
             completionHandler(.newData)
         }
     }

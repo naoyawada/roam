@@ -40,13 +40,21 @@ final class VisitPipeline {
         }
     }
 
-    func runCatchup() async {
+    private var lastCatchupDate: Date?
+
+    func runCatchup(trigger: String = "trigger_foreground") async {
+        // Throttle: skip if catch-up ran less than 10 minutes ago
+        if let last = lastCatchupDate, Date().timeIntervalSince(last) < 600 {
+            return
+        }
+
         let context = ModelContext(modelContainer)
         let today = DateHelpers.noonUTC(from: Date())
         let lastEntry = fetchLastEntry(context: context)
 
-        // Always log the trigger so the log viewer shows activity
-        await logger.log(category: "trigger", event: "trigger_foreground")
+        // Always log the actual trigger source
+        await logger.log(category: "trigger", event: trigger)
+        lastCatchupDate = Date()
 
         // Skip aggregation if last entry is today with high confidence — nothing to do
         let highRaw = EntryConfidence.highRaw

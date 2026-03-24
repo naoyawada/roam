@@ -49,7 +49,8 @@ extension LiveLocationProvider: CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Significant location change — just use as a trigger, don't capture GPS
+        // Only expected from significant location changes. Do NOT call requestLocation()
+        // or startUpdatingLocation() on this manager — those would also trigger this callback.
         Task { @MainActor [weak self] in
             self?.onSignificantLocationChange?()
         }

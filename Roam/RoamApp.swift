@@ -77,13 +77,18 @@ struct RoamApp: App {
                 await pipeline.handleVisit(visitData)
             }
         }
-        provider.onSignificantLocationChange = { [pipeline, logger] in
+        provider.onSignificantLocationChange = { [pipeline] in
             Task { @MainActor in
-                await logger.log(category: "trigger", event: "trigger_significant_location")
-                await pipeline.runCatchup()
+                await pipeline.runCatchup(trigger: "trigger_significant_location")
             }
         }
         locationProvider = provider
+
+        // If app was relaunched for a location event (force-quit recovery),
+        // start monitoring immediately so the pending event is delivered.
+        if AppDelegate.launchedForLocation {
+            provider.startMonitoring()
+        }
 
         // Run legacy migration if needed
         // Note: migration reads from the "cloud" store (where old NightLog/CityColor data lives)
