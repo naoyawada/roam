@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import BackgroundTasks
+import UserNotifications
 import os
 
 @main
@@ -13,6 +14,7 @@ struct RoamApp: App {
     let locationProvider: LiveLocationProvider
     let visitPipeline: VisitPipeline
     let pipelineLogger: PipelineLogger
+    let notificationService: NotificationService
 
     private static let logger = Logger(subsystem: "com.naoyawada.roam", category: "RoamApp")
     static let dailyAggregationTaskID = "com.roamapp.dailyAggregation"
@@ -63,8 +65,15 @@ struct RoamApp: App {
         let logger = PipelineLogger(modelContainer: modelContainer)
         pipelineLogger = logger
 
-        // Create pipeline
-        let pipeline = VisitPipeline(modelContainer: modelContainer, logger: logger)
+        // Create notification service
+        let notifService = NotificationService(
+            modelContainer: modelContainer,
+            notificationCenter: UNUserNotificationCenter.current()
+        )
+        notificationService = notifService
+
+        // Create pipeline — pass notification service
+        let pipeline = VisitPipeline(modelContainer: modelContainer, logger: logger, notificationService: notifService)
         visitPipeline = pipeline
 
         // Make pipeline available to AppDelegate
@@ -145,6 +154,9 @@ struct RoamApp: App {
                     Task { @MainActor in
                         await visitPipeline.runCatchup()
                         await pipelineLogger.pruneOldEvents()
+                    }
+                    Task { @MainActor in
+                        await notificationService.scheduleMonthlyRecap()
                     }
                 }
             }
