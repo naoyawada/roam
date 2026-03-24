@@ -50,7 +50,9 @@ enum BackfillService {
         return missed.reversed()  // chronological order
     }
 
-    /// Run backfill on foreground launch. Creates .unresolved entries for missed nights.
+    /// Run backfill on foreground launch. For missed nights, carries forward the
+    /// city from the most recent confirmed/manual entry. If no prior entry exists,
+    /// creates an .unresolved entry instead.
     @MainActor
     static func backfillMissedNights(context: ModelContext) {
         // Use the actual local calendar date (not normalizedNightDate) so we don't
@@ -63,16 +65,50 @@ enum BackfillService {
         let existingDates = allLogs.map(\.date)
 
         let missed = missedNights(existingDates: existingDates, today: today)
+        guard !missed.isEmpty else { return }
+
+        // Find the most recent confirmed/manual entry to carry forward
+        let confirmedRaw = LogStatus.confirmedRaw
+        let manualRaw = LogStatus.manualRaw
+        let anchor = allLogs
+            .filter { $0.statusRaw == confirmedRaw || $0.statusRaw == manualRaw }
+            .filter { $0.city != nil }
+            .max(by: { $0.date < $1.date })
 
         for nightDate in missed {
-            let log = NightLog(date: nightDate, capturedAt: .now, source: .automatic, status: .unresolved)
-            context.insert(log)
+            if let anchor {
+                let log = NightLog(
+                    date: nightDate,
+                    city: anchor.city,
+                    state: anchor.state,
+                    country: anchor.country,
+                    latitude: anchor.latitude,
+                    longitude: anchor.longitude,
+                    capturedAt: .now,
+                    source: .automatic,
+                    status: .confirmed
+                )
+                context.insert(log)
+                logger.info("Backfilled \(nightDate) with \(anchor.city ?? "unknown")")
+            } else {
+                let log = NightLog(date: nightDate, capturedAt: .now, source: .automatic, status: .unresolved)
+                context.insert(log)
+                logger.info("Backfilled \(nightDate) as unresolved (no prior entry)")
+            }
         }
 
-        if !missed.isEmpty {
-            logger.info("Backfilled \(missed.count) missed night(s)")
-            try? context.save()
+        // Ensure city color exists for the carried-forward city
+        if let anchor, let city = anchor.city {
+            let cityKey = CityDisplayFormatter.cityKey(city: city, state: anchor.state, country: anchor.country)
+            let existingColors = (try? context.fetch(FetchDescriptor<CityColor>())) ?? []
+            if !existingColors.contains(where: { $0.cityKey == cityKey }) {
+                let nextIndex = (existingColors.map(\.colorIndex).max() ?? -1) + 1
+                context.insert(CityColor(cityKey: cityKey, colorIndex: nextIndex))
+            }
         }
+
+        logger.info("Backfilled \(missed.count) missed night(s)")
+        try? context.save()
     }
 
     /// The actual calendar date at noon UTC, using the user's local timezone
