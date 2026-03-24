@@ -263,13 +263,13 @@ final class NotificationService {
     // MARK: - Monthly Recap Scheduling
 
     func scheduleMonthlyRecap() async {
+        // Always cancel existing first — if user disabled notifications, the pending recap must be removed
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: ["notif-monthlyRecap"])
+
         let context = ModelContext(modelContainer)
         guard let settings = try? context.fetch(FetchDescriptor<UserSettings>()).first,
               settings.notificationsEnabled,
               settings.notifyMonthlyRecap else { return }
-
-        // Cancel existing
-        notificationCenter.removePendingNotificationRequests(withIdentifiers: ["notif-monthlyRecap"])
 
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
