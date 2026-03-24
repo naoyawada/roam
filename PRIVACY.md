@@ -5,14 +5,16 @@ Last updated: March 24, 2026
 
 ## Overview
 
-Roam is a personal location logging app that records which city you are in each night to build a travel history over time. Your privacy is important to us, and this policy explains how Roam handles your data.
+Roam is a personal location logging app that records which city you are in each day to build a travel history over time. Your privacy is important to us, and this policy explains how Roam handles your data.
 
 ## Data Collection
 
 ### Location Data
-Roam accesses your device's location in the background to determine which city you are in. When a location fix is obtained, the coordinates are sent to Apple's servers for reverse geocoding (to convert coordinates into a city name). The developer does not receive or store your raw coordinates — they are used only in-transit to resolve a city name on your device.
+Roam accesses your device's location in the background to determine which city you are in. Location data is handled as follows:
 
-Raw location data is never stored by Roam.
+- **Raw visit data** (exact coordinates, arrival/departure times) is stored temporarily on your device for processing. This data does not sync to iCloud and is not accessible to the developer.
+- **City-level data** (city name, state, country, and representative city coordinates) is stored on your device and synced to your private iCloud account.
+- **Reverse geocoding**: Coordinates are sent to Apple's servers to resolve a city name. Apple's privacy policy governs this request. The developer does not operate any servers that receive your coordinates.
 
 ### Personal Data
 Roam does not require you to create an account or sign in. The app does not collect your name, email address, or any other personal identifiers.
@@ -21,7 +23,7 @@ Roam does not require you to create an account or sign in. The app does not coll
 
 Your city-level travel history and city statistics are stored on your device and sync to your private iCloud account via CloudKit. This data is only accessible to you — the developer has no access to your iCloud data.
 
-Raw location coordinates are never stored by the app.
+Raw visit data (exact coordinates) is stored only on your device and is not synced to iCloud. It is used for processing and can be cleared from the Debug Tools in Settings.
 
 ## iCloud Sync
 
