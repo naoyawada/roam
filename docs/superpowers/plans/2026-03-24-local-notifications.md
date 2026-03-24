@@ -49,7 +49,8 @@
 import Foundation
 import UserNotifications
 
-protocol NotificationScheduling: Sendable {
+@MainActor
+protocol NotificationScheduling {
     func add(_ request: UNNotificationRequest) async throws
     func pendingNotificationRequests() async -> [UNNotificationRequest]
     func removePendingNotificationRequests(withIdentifiers identifiers: [String])
@@ -57,7 +58,7 @@ protocol NotificationScheduling: Sendable {
     func requestAuthorization(options: UNAuthorizationOptions) async throws -> Bool
 }
 
-extension UNUserNotificationCenter: NotificationScheduling {}
+extension UNUserNotificationCenter: @retroactive NotificationScheduling {}
 ```
 
 - [ ] **Step 2: Create the test file with MockNotificationCenter**
@@ -70,7 +71,7 @@ import UserNotifications
 @testable import Roam
 
 @MainActor
-final class MockNotificationCenter: NotificationScheduling, @unchecked Sendable {
+final class MockNotificationCenter: NotificationScheduling {
     var addedRequests: [UNNotificationRequest] = []
     var pendingRequests: [UNNotificationRequest] = []
     var removedPendingIdentifiers: [String] = []
@@ -223,7 +224,7 @@ final class NotificationServiceTests: XCTestCase {
         context.insert(entry)
         try! context.save()
 
-        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true)
+        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
 
         XCTAssertTrue(mockCenter.addedRequests.isEmpty, "Propagated entries should not fire notifications")
     }
@@ -238,7 +239,7 @@ final class NotificationServiceTests: XCTestCase {
         context.insert(entry)
         try! context.save()
 
-        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true)
+        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
 
         XCTAssertTrue(mockCenter.addedRequests.isEmpty, "Disabled master toggle should skip all")
     }
@@ -249,8 +250,8 @@ final class NotificationServiceTests: XCTestCase {
         try! context.save()
 
         // Fire twice for the same entry
-        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true)
-        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true)
+        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
+        await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
 
         XCTAssertEqual(mockCenter.addedRequests.count, 1, "Dedup should prevent second notification")
     }
@@ -312,7 +313,7 @@ final class NotificationService {
         self.notificationCenter = notificationCenter
     }
 
-    func handleEntryCommitted(entry: DailyEntry, previousCityKey: String?, isNewEntry: Bool) async {
+    func handleEntryCommitted(entry: DailyEntry, previousCityKey: String?, isNewEntry: Bool, isNewCity: Bool) async {
         let context = ModelContext(modelContainer)
 
         // Gate: master toggle
@@ -432,7 +433,7 @@ func testWelcomeHomeNotification() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Seattle|WA|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Seattle|WA|US", isNewEntry: true, isNewCity: false)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     XCTAssertTrue(mockCenter.addedRequests.first?.content.body.contains("Welcome home") == true)
@@ -455,7 +456,7 @@ func testTripSummaryNotification() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true, isNewCity: false)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     XCTAssertTrue(mockCenter.addedRequests.first?.content.body.contains("Back from") == true)
@@ -477,7 +478,7 @@ func testWelcomeHomeVsTripSummaryMutualExclusion() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true, isNewCity: false)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     let body = mockCenter.addedRequests.first?.content.body ?? ""
@@ -491,7 +492,7 @@ func testWelcomeHomeNoOpWithoutHomeCity() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Seattle|WA|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Seattle|WA|US", isNewEntry: true, isNewCity: false)
 
     // Should NOT fire welcome home (no home city). Might fire New City instead.
     let welcomeHome = mockCenter.addedRequests.filter { $0.content.body.contains("Welcome home") }
@@ -553,7 +554,10 @@ private func evaluateTripSummary(entry: DailyEntry, settings: UserSettings, date
 
     let content = UNMutableNotificationContent()
     content.title = "Roam"
-    content.body = "Back from \(daysAway) days away — your \(ordinal(tripInfo.count)) trip this year."
+    // Find the most-visited away city during this trip for the copy
+    let tripCityName = lastAwayCityName(before: entry.date, homeCityKey: homeCityKey, context: context)
+    let tripCityDisplay = tripCityName ?? "your trip"
+    content.body = "Back from \(daysAway) days away — your \(ordinal(tripInfo.count)) trip to \(tripCityDisplay) this year."
     content.sound = .default
     content.threadIdentifier = "tripSummary"
     return UNNotificationRequest(identifier: "notif-tripSummary-\(dateString)", content: content, trigger: nil)
@@ -573,6 +577,20 @@ private func countConsecutiveDaysAway(before date: Date, homeCityKey: String, co
         count += 1
     }
     return count
+}
+
+private func lastAwayCityName(before date: Date, homeCityKey: String, context: ModelContext) -> String? {
+    let descriptor = FetchDescriptor<DailyEntry>(
+        predicate: #Predicate<DailyEntry> { $0.date < date },
+        sortBy: [SortDescriptor(\.date, order: .reverse)]
+    )
+    guard let entries = try? context.fetch(descriptor) else { return nil }
+    // Return the most recent away city (first non-home entry)
+    for entry in entries {
+        if entry.cityKey == homeCityKey { break }
+        return CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
+    }
+    return nil
 }
 
 private func ordinal(_ n: Int) -> String {
@@ -619,12 +637,12 @@ Priority 3 (New City) and 4 (Welcome Back). New City fires when no CityRecord ex
 
 ```swift
 func testNewCityNotification() async {
-    // No CityRecord for Denver → new city
+    // Denver is a new city (flag passed from pipeline)
     let entry = makeEntry(city: "Denver", region: "CO", country: "US")
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     let body = mockCenter.addedRequests.first?.content.body ?? ""
@@ -645,7 +663,7 @@ func testWelcomeBackNotification() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: false)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     let body = mockCenter.addedRequests.first?.content.body ?? ""
@@ -670,7 +688,7 @@ func testWelcomeBackDoesNotFireForHomeCity() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true, isNewCity: false)
 
     // Should fire Welcome Home, not Welcome Back
     let welcomeBack = mockCenter.addedRequests.filter { $0.content.body.contains("Welcome back") }
@@ -689,24 +707,13 @@ Add to `NotificationService` and wire into the evaluators array (after Trip Summ
 
 ```swift
 // Add to evaluators array in handleEntryCommitted:
-{ self.evaluateNewCity(entry: entry, settings: settings, dateString: dateString, previousCityKey: previousCityKey, context: context) },
-{ self.evaluateWelcomeBack(entry: entry, settings: settings, dateString: dateString, previousCityKey: previousCityKey, context: context) },
+{ self.evaluateNewCity(entry: entry, settings: settings, dateString: dateString, isNewCity: isNewCity) },
+{ self.evaluateWelcomeBack(entry: entry, settings: settings, dateString: dateString, previousCityKey: previousCityKey, isNewCity: isNewCity, context: context) },
 
 // MARK: - New City (Priority 3)
 
-private func evaluateNewCity(entry: DailyEntry, settings: UserSettings, dateString: String, previousCityKey: String?, context: ModelContext) -> UNNotificationRequest? {
-    guard settings.notifyNewCity,
-          previousCityKey != entry.cityKey else { return nil }
-
-    let cityName = entry.primaryCity
-    let region = entry.primaryRegion
-    let country = entry.primaryCountry
-    let descriptor = FetchDescriptor<CityRecord>(
-        predicate: #Predicate<CityRecord> {
-            $0.cityName == cityName && $0.region == region && $0.country == country
-        }
-    )
-    guard (try? context.fetch(descriptor))?.isEmpty == true else { return nil }
+private func evaluateNewCity(entry: DailyEntry, settings: UserSettings, dateString: String, isNewCity: Bool) -> UNNotificationRequest? {
+    guard settings.notifyNewCity, isNewCity else { return nil }
 
     let displayName = CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
     let content = UNMutableNotificationContent()
@@ -719,11 +726,13 @@ private func evaluateNewCity(entry: DailyEntry, settings: UserSettings, dateStri
 
 // MARK: - Welcome Back (Priority 4)
 
-private func evaluateWelcomeBack(entry: DailyEntry, settings: UserSettings, dateString: String, previousCityKey: String?, context: ModelContext) -> UNNotificationRequest? {
+private func evaluateWelcomeBack(entry: DailyEntry, settings: UserSettings, dateString: String, previousCityKey: String?, isNewCity: Bool, context: ModelContext) -> UNNotificationRequest? {
     guard settings.notifyWelcomeBack,
+          !isNewCity,  // Must be a previously visited city
           previousCityKey != entry.cityKey,
           entry.cityKey != settings.homeCityKey else { return nil }
 
+    // Fetch CityRecord for visit count enrichment
     let cityName = entry.primaryCity
     let region = entry.primaryRegion
     let country = entry.primaryCountry
@@ -781,7 +790,7 @@ func testTravelDayNotification() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: false)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     let body = mockCenter.addedRequests.first?.content.body ?? ""
@@ -796,15 +805,15 @@ func testStreakMilestoneNotification() async {
     }
     try! context.save()
 
+    let targetDate = noonUTC(2026, 3, 24)
     let entry = try! context.fetch(
         FetchDescriptor<DailyEntry>(
-            predicate: #Predicate<DailyEntry> { $0.date == self.noonUTC(2026, 3, 24) }
+            predicate: #Predicate<DailyEntry> { $0.date == targetDate }
         )
     ).first!
 
-    // Note: Need a fresh mock since previous tests may have polluted state
     // The streak evaluator checks currentStreak, which should be 7
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: false)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: false, isNewCity: false)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     let body = mockCenter.addedRequests.first?.content.body ?? ""
@@ -819,13 +828,14 @@ func testStreakDoesNotFireAtNonMilestone() async {
     }
     try! context.save()
 
+    let targetDate = noonUTC(2026, 3, 24)
     let entry = try! context.fetch(
         FetchDescriptor<DailyEntry>(
-            predicate: #Predicate<DailyEntry> { $0.date == self.noonUTC(2026, 3, 24) }
+            predicate: #Predicate<DailyEntry> { $0.date == targetDate }
         )
     ).first!
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: false)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: false, isNewCity: false)
 
     let streakNotifs = mockCenter.addedRequests.filter { $0.content.body.lowercased().contains("streak") }
     XCTAssertTrue(streakNotifs.isEmpty, "5 days is not a milestone — should not fire streak notification")
@@ -924,7 +934,7 @@ func testNewYearNotification() async {
     context.insert(jan1)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: jan1, previousCityKey: "Tokyo|Tokyo|JP", isNewEntry: true)
+    await service.handleEntryCommitted(entry: jan1, previousCityKey: "Tokyo|Tokyo|JP", isNewEntry: true, isNewCity: false)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     let body = mockCenter.addedRequests.first?.content.body ?? ""
@@ -937,7 +947,7 @@ func testNewYearNoOpForFirstTimeUser() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
 
     // Should fire New City, not New Year
     let newYear = mockCenter.addedRequests.filter { $0.content.body.contains("First city of") }
@@ -977,7 +987,7 @@ func testPriorityOrder() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
 
     XCTAssertEqual(mockCenter.addedRequests.count, 1)
     let body = mockCenter.addedRequests.first?.content.body ?? ""
@@ -994,12 +1004,43 @@ func testToggleRespected() async {
     context.insert(entry)
     try! context.save()
 
-    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true)
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
 
-    // New City is disabled, but Travel Day is not triggered (not a travel day),
-    // and no CityRecord exists so Welcome Back won't fire either.
-    // No notification should fire.
+    // New City is disabled and isNewCity is true, so Welcome Back won't fire (isNewCity blocks it).
+    // No other type triggers either. No notification should fire.
     XCTAssertTrue(mockCenter.addedRequests.isEmpty, "Disabled toggle should suppress that type")
+}
+
+func testCatchupOnlyNotifiesToday() async {
+    // Simulate catchup: entries for past dates should not trigger notifications.
+    // The NotificationService itself doesn't enforce this — the pipeline does
+    // by only calling handleEntryCommitted for today. But we can verify that
+    // if the service IS called for a past entry, dedup works per date.
+    let pastEntry = makeEntry(city: "Denver", region: "CO", country: "US", date: noonUTC(2026, 3, 20))
+    context.insert(pastEntry)
+    let todayEntry = makeEntry(city: "Seattle", region: "WA", country: "US", date: noonUTC(2026, 3, 24))
+    context.insert(todayEntry)
+    try! context.save()
+
+    // Only today's entry should produce a notification (pipeline contract)
+    await service.handleEntryCommitted(entry: todayEntry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
+
+    XCTAssertEqual(mockCenter.addedRequests.count, 1)
+    let body = mockCenter.addedRequests.first?.content.body ?? ""
+    XCTAssertTrue(body.contains("Seattle") || body.contains("First time"), "Notification should be for today's city")
+}
+
+func testMultiDateVisitSingleNotification() async {
+    // When a visit spans multiple dates, only one notification should fire.
+    // This is enforced by the pipeline (aggregateDates fires for last date only).
+    // We verify that calling handleEntryCommitted once = one notification.
+    let entry = makeEntry(city: "Denver", region: "CO", country: "US")
+    context.insert(entry)
+    try! context.save()
+
+    await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
+
+    XCTAssertEqual(mockCenter.addedRequests.count, 1, "Single handleEntryCommitted call should produce at most one notification")
 }
 ```
 
@@ -1079,16 +1120,27 @@ func scheduleMonthlyRecap() async {
     guard prevMonth >= 1, prevMonth <= 12 else { return }
     let monthData = breakdown[prevMonth - 1]
     let uniqueCities = monthData.cityDays.count
-    let travelDays = analytics.travelDayCount(year: prevYear) // Approximate: full year, but good enough
     let monthName = cal.monthSymbols[prevMonth - 1]
+
+    // Count travel days for the specific month by fetching entries directly
+    let monthStart = cal.date(from: DateComponents(year: prevYear, month: prevMonth, day: 1, hour: 0))!
+    let monthEnd = cal.date(from: DateComponents(year: prevMonth == 12 ? prevYear + 1 : prevYear, month: prevMonth == 12 ? 1 : prevMonth + 1, day: 1, hour: 0))!
+    let monthDescriptor = FetchDescriptor<DailyEntry>(
+        predicate: #Predicate<DailyEntry> {
+            $0.date >= monthStart && $0.date < monthEnd
+        }
+    )
+    let monthEntries = (try? context.fetch(monthDescriptor)) ?? []
+    let travelDays = monthEntries.filter { $0.isTravelDay }.count
+    let totalMonthDays = monthEntries.count
 
     var bodyParts = ["\(monthName): \(uniqueCities) \(uniqueCities == 1 ? "city" : "cities")"]
     if travelDays > 0 {
         bodyParts.append("\(travelDays) travel \(travelDays == 1 ? "day" : "days")")
     }
-    if let homeCityKey = settings.homeCityKey {
-        let ratio = analytics.homeAwayRatio(year: prevYear, homeCityKey: homeCityKey)
-        let awayPct = Int(ratio.awayPercentage * 100)
+    if let homeCityKey = settings.homeCityKey, totalMonthDays > 0 {
+        let homeDays = monthEntries.filter { $0.cityKey == homeCityKey }.count
+        let awayPct = Int(Double(totalMonthDays - homeDays) / Double(totalMonthDays) * 100)
         if awayPct > 0 {
             bodyParts.append("\(awayPct)% away")
         }
@@ -1144,7 +1196,7 @@ Expected: BUILD SUCCEEDED, all tests pass. Review the complete `NotificationServ
 **Files:**
 - Modify: `Roam/Services/VisitPipeline.swift`
 
-Changes: (1) Add `NotificationService?` dependency, (2) modify `upsertEntry` to return `(oldCityKey: String?, wasInsert: Bool)`, (3) call `handleEntryCommitted` from `aggregateDates` and `runCatchup`.
+Changes: (1) Add `NotificationService?` dependency, (2) modify `upsertEntry` to return `UpsertResult` with `oldCityKey` and `wasInsert`, (3) call `handleEntryCommitted` from `aggregateDates` and `runCatchup`, (4) detect `isNewCity` by checking CityRecord **before** `updateCityRecord` creates it.
 
 - [ ] **Step 1: Add NotificationService dependency to VisitPipeline**
 
@@ -1212,16 +1264,20 @@ private func aggregateDates(for visit: RawVisit, context: ModelContext) {
     var lastEntry: DailyEntry?
     var lastResult: UpsertResult?
     var lastOldCityKey: String?
+    var lastIsNewCity = false
     for date in affectedDates {
         let allVisits = fetchVisits(for: date, context: context)
         if let entry = aggregator.aggregate(visits: allVisits, for: date) {
             let result = upsertEntry(entry, context: context)
+            // Check if this is a new city BEFORE updateCityRecord creates the CityRecord
+            let isNewCity = !cityRecordExists(for: entry, context: context)
             updateCityRecord(for: entry, context: context)
             if let oldKey = result.oldCityKey {
                 decrementCityRecord(cityKey: oldKey, context: context)
             }
             lastEntry = entry
             lastResult = result
+            lastIsNewCity = isNewCity
             if result.oldCityKey != nil {
                 lastOldCityKey = result.oldCityKey
             }
@@ -1233,10 +1289,24 @@ private func aggregateDates(for visit: RawVisit, context: ModelContext) {
             await notificationService?.handleEntryCommitted(
                 entry: entry,
                 previousCityKey: lastOldCityKey,
-                isNewEntry: result.wasInsert
+                isNewEntry: result.wasInsert,
+                isNewCity: lastIsNewCity
             )
         }
     }
+}
+
+/// Check if a CityRecord already exists for this entry's city (before creating one).
+private func cityRecordExists(for entry: DailyEntry, context: ModelContext) -> Bool {
+    let cityName = entry.primaryCity
+    let region = entry.primaryRegion
+    let country = entry.primaryCountry
+    let descriptor = FetchDescriptor<CityRecord>(
+        predicate: #Predicate<CityRecord> {
+            $0.cityName == cityName && $0.region == region && $0.country == country
+        }
+    )
+    return ((try? context.fetch(descriptor))?.isEmpty == false)
 }
 ```
 
@@ -1248,6 +1318,7 @@ let todayVisits = fetchVisits(for: today, context: context)
 if !todayVisits.isEmpty {
     if let entry = aggregator.aggregate(visits: todayVisits, for: today) {
         let result = upsertEntry(entry, context: context)
+        let isNewCity = !cityRecordExists(for: entry, context: context)
         updateCityRecord(for: entry, context: context)
         await logger.log(category: "aggregation", event: "entry_created",
                        detail: "today: \(entry.primaryCity)", dailyEntryID: entry.id)
@@ -1255,7 +1326,8 @@ if !todayVisits.isEmpty {
         await notificationService?.handleEntryCommitted(
             entry: entry,
             previousCityKey: result.oldCityKey,
-            isNewEntry: result.wasInsert
+            isNewEntry: result.wasInsert,
+            isNewCity: isNewCity
         )
     }
 }
