@@ -79,7 +79,18 @@ struct RoamApp: App {
         }
         provider.onSignificantLocationChange = { [pipeline] in
             Task { @MainActor in
+                // Request extended background execution time for pipeline catch-up.
+                // iOS gives ~10s for significant location by default; this extends to ~30s.
+                let app = UIApplication.shared
+                var bgTaskID = UIBackgroundTaskIdentifier.invalid
+                bgTaskID = app.beginBackgroundTask {
+                    app.endBackgroundTask(bgTaskID)
+                    bgTaskID = .invalid
+                }
                 await pipeline.runCatchup(trigger: "trigger_significant_location")
+                if bgTaskID != .invalid {
+                    app.endBackgroundTask(bgTaskID)
+                }
             }
         }
         locationProvider = provider
@@ -109,7 +120,7 @@ struct RoamApp: App {
                 return
             }
             Task { @MainActor in
-                await pipeline.runCatchup()
+                await pipeline.runCatchup(trigger: "trigger_bgtask")
                 refreshTask.setTaskCompleted(success: true)
             }
         }

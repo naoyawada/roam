@@ -54,13 +54,15 @@ final class VisitPipeline {
 
         // Always log the actual trigger source
         await logger.log(category: "trigger", event: trigger)
-        lastCatchupDate = Date()
 
         // Skip aggregation if last entry is today with high confidence — nothing to do
         let highRaw = EntryConfidence.highRaw
         if let last = lastEntry, last.date == today, last.confidenceRaw == highRaw {
             return
         }
+
+        // Only update throttle timestamp after we've confirmed real work is needed
+        lastCatchupDate = Date()
         await retryUnresolvedGeocoding(context: context)
 
         // Propagate for past dates only (not today)

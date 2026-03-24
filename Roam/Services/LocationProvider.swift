@@ -1,6 +1,7 @@
 // Roam/Services/LocationProvider.swift
 import Foundation
 import CoreLocation
+import UIKit
 
 @MainActor
 protocol LocationProvider: AnyObject {
