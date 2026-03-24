@@ -13,16 +13,20 @@ protocol LocationProvider: AnyObject {
 final class LiveLocationProvider: NSObject, LocationProvider {
     private let manager = CLLocationManager()
     var onVisitReceived: (@Sendable (VisitData) -> Void)?
+    /// Called when significant location change is detected — use as a pipeline trigger
+    var onSignificantLocationChange: (@Sendable () -> Void)?
 
     func startMonitoring() {
         manager.delegate = self
         manager.requestAlwaysAuthorization()
         manager.allowsBackgroundLocationUpdates = true
         manager.startMonitoringVisits()
+        manager.startMonitoringSignificantLocationChanges()
     }
 
     func stopMonitoring() {
         manager.stopMonitoringVisits()
+        manager.stopMonitoringSignificantLocationChanges()
     }
 
     var authorizationStatus: CLAuthorizationStatus {
@@ -41,6 +45,13 @@ extension LiveLocationProvider: CLLocationManagerDelegate {
         )
         Task { @MainActor [weak self] in
             self?.onVisitReceived?(data)
+        }
+    }
+
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        // Significant location change — just use as a trigger, don't capture GPS
+        Task { @MainActor [weak self] in
+            self?.onSignificantLocationChange?()
         }
     }
 }

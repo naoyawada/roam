@@ -77,6 +77,12 @@ struct RoamApp: App {
                 await pipeline.handleVisit(visitData)
             }
         }
+        provider.onSignificantLocationChange = { [pipeline, logger] in
+            Task { @MainActor in
+                await logger.log(category: "trigger", event: "trigger_significant_location")
+                await pipeline.runCatchup()
+            }
+        }
         locationProvider = provider
 
         // Run legacy migration if needed
