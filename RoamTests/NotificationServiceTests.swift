@@ -377,26 +377,53 @@ final class NotificationServiceTests: XCTestCase {
         XCTAssertTrue(mockCenter.addedRequests.isEmpty, "Disabled toggle should suppress that type")
     }
 
-    func testCatchupOnlyNotifiesToday() async {
-        let todayEntry = makeEntry(city: "Seattle", region: "WA", country: "US", date: noonUTC(2026, 3, 24))
-        context.insert(todayEntry)
-        try! context.save()
-
-        await service.handleEntryCommitted(entry: todayEntry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
-
-        XCTAssertEqual(mockCenter.addedRequests.count, 1)
-        let body = mockCenter.addedRequests.first?.content.body ?? ""
-        XCTAssertTrue(body.contains("Seattle") || body.contains("First time"), "Notification should be for today's city")
-    }
-
-    func testMultiDateVisitSingleNotification() async {
-        let entry = makeEntry(city: "Denver", region: "CO", country: "US")
+    func testSingleCallProducesOneEntryDrivenNotification() async {
+        let entry = makeEntry(city: "Seattle", region: "WA", country: "US")
         context.insert(entry)
         try! context.save()
 
         await service.handleEntryCommitted(entry: entry, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
 
-        XCTAssertEqual(mockCenter.addedRequests.count, 1, "Single handleEntryCommitted call should produce at most one notification")
+        // Entry-driven priority chain produces at most 1 notification per call
+        // (catchup-only-today and multi-date coalescing are enforced by VisitPipeline, not NotificationService)
+        XCTAssertEqual(mockCenter.addedRequests.count, 1)
+    }
+
+    func testNewYearCoFiresWithPriorityType() async {
+        // Dec 31 entry in previous year
+        let dec31 = makeEntry(city: "Portland", region: "OR", country: "US", date: noonUTC(2025, 12, 31))
+        context.insert(dec31)
+        try! context.save()
+
+        // Jan 1 in a NEW city — should fire both New City AND New Year
+        let jan1 = makeEntry(city: "Denver", region: "CO", country: "US", date: noonUTC(2026, 1, 1))
+        context.insert(jan1)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: jan1, previousCityKey: "Portland|OR|US", isNewEntry: true, isNewCity: true)
+
+        XCTAssertEqual(mockCenter.addedRequests.count, 2, "New Year should co-fire with New City")
+        let bodies = mockCenter.addedRequests.map(\.content.body)
+        XCTAssertTrue(bodies.contains(where: { $0.contains("First time in") }), "Expected New City notification")
+        XCTAssertTrue(bodies.contains(where: { $0.contains("First city of 2026") }), "Expected New Year notification")
+    }
+
+    func testTripSummaryNoOpWithoutHomeCity() async {
+        // No home city set — 3 days away then "return"
+        for day in 21...23 {
+            let away = makeEntry(city: "Denver", region: "CO", country: "US", date: noonUTC(2026, 3, day))
+            context.insert(away)
+        }
+        try! context.save()
+
+        let entry = makeEntry(city: "Portland", region: "OR", country: "US", date: noonUTC(2026, 3, 24))
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true, isNewCity: false)
+
+        let tripSummary = mockCenter.addedRequests.filter { $0.content.body.contains("Back from") }
+        XCTAssertTrue(tripSummary.isEmpty, "Trip Summary should no-op without home city")
     }
 
     // MARK: - Helpers

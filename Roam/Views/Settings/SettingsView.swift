@@ -104,7 +104,7 @@ struct SettingsView: View {
                     }
 
                 }
-                Section {
+                Section("Notification Types") {
                     Toggle("New City", isOn: Binding(
                         get: { settings.notifyNewCity },
                         set: { settings.notifyNewCity = $0; try? context.save() }

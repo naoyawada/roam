@@ -157,19 +157,19 @@ final class VisitPipeline {
         var lastEntry: DailyEntry?
         var lastResult: UpsertResult?
         var lastOldCityKey: String?
-        var lastIsNewCity = false
+        var anyIsNewCity = false
         for date in affectedDates {
             let allVisits = fetchVisits(for: date, context: context)
             if let entry = aggregator.aggregate(visits: allVisits, for: date) {
                 let result = upsertEntry(entry, context: context)
                 let isNewCity = !cityRecordExists(for: entry, context: context)
+                if isNewCity { anyIsNewCity = true }
                 updateCityRecord(for: entry, context: context)
                 if let oldKey = result.oldCityKey {
                     decrementCityRecord(cityKey: oldKey, context: context)
                 }
                 lastEntry = entry
                 lastResult = result
-                lastIsNewCity = isNewCity
                 if result.oldCityKey != nil {
                     lastOldCityKey = result.oldCityKey
                 }
@@ -181,7 +181,7 @@ final class VisitPipeline {
                     entry: entry,
                     previousCityKey: lastOldCityKey,
                     isNewEntry: result.wasInsert,
-                    isNewCity: lastIsNewCity
+                    isNewCity: anyIsNewCity
                 )
             }
         }

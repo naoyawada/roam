@@ -133,9 +133,15 @@ final class NotificationService {
         let analytics = AnalyticsService(context: context)
         let tripInfo = analytics.tripCount(year: year, homeCityKey: homeCityKey)
 
+        let awayCityName = lastAwayCityName(before: entry.date, homeCityKey: homeCityKey, context: context)
+
         let content = UNMutableNotificationContent()
         content.title = "Roam"
-        content.body = "Back from \(daysAway) days away — your \(ordinal(max(tripInfo.count, 1))) trip this year."
+        if let cityName = awayCityName {
+            content.body = "Back from \(daysAway) days in \(cityName) — your \(ordinal(max(tripInfo.count, 1))) trip this year."
+        } else {
+            content.body = "Back from \(daysAway) days away — your \(ordinal(max(tripInfo.count, 1))) trip this year."
+        }
         content.sound = .default
         content.threadIdentifier = "tripSummary"
         return UNNotificationRequest(identifier: "notif-tripSummary-\(dateString)", content: content, trigger: nil)
@@ -177,7 +183,7 @@ final class NotificationService {
         let visitCount = record.totalDays  // totalDays already includes this entry (updateCityRecord ran first)
         let content = UNMutableNotificationContent()
         content.title = "Roam"
-        content.body = "Welcome back to \(displayName)! Your \(ordinal(visitCount)) day here."
+        content.body = "Welcome back to \(displayName)! \(visitCount) days and counting."
         content.sound = .default
         content.threadIdentifier = "welcomeBack"
         return UNNotificationRequest(identifier: "notif-welcomeBack-\(dateString)", content: content, trigger: nil)
@@ -248,7 +254,7 @@ final class NotificationService {
         let displayName = CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
         let content = UNMutableNotificationContent()
         content.title = "Roam"
-        content.body = "First city of \(entryYear): \(displayName). Happy new year."
+        content.body = "First city of \(entryYear): \(displayName). Happy New Year."
         content.sound = .default
         content.threadIdentifier = "newYear"
         return UNNotificationRequest(identifier: "notif-newYear-\(entryYear)", content: content, trigger: nil)
@@ -336,6 +342,20 @@ final class NotificationService {
             count += 1
         }
         return count
+    }
+
+    private func lastAwayCityName(before date: Date, homeCityKey: String, context: ModelContext) -> String? {
+        var descriptor = FetchDescriptor<DailyEntry>(
+            predicate: #Predicate<DailyEntry> { $0.date < date },
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        descriptor.fetchLimit = 30
+        guard let entries = try? context.fetch(descriptor) else { return nil }
+        for entry in entries {
+            if entry.cityKey == homeCityKey { break }
+            return CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
+        }
+        return nil
     }
 
     private func ordinal(_ n: Int) -> String {
