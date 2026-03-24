@@ -27,13 +27,12 @@ final class NotificationService {
         pruneOldDedupKeys()
 
         // Evaluate notification types in priority order
-        let _dateString = dedupDateString(for: entry.date)
-        _ = _dateString // Will be used by evaluators in Tasks 4-7
+        let dateString = dedupDateString(for: entry.date)
 
-        // Priority 1-6 evaluated here (later tasks will add the actual evaluations)
         // Each type returns a UNNotificationRequest? — first non-nil wins
         let evaluators: [() -> UNNotificationRequest?] = [
-            // Will be populated in Tasks 4-7
+            { self.evaluateWelcomeHome(entry: entry, settings: settings, dateString: dateString, context: context) },
+            { self.evaluateTripSummary(entry: entry, settings: settings, dateString: dateString, context: context) },
         ]
 
         for evaluate in evaluators {
@@ -74,5 +73,98 @@ final class NotificationService {
                 defaults.removeObject(forKey: key)
             }
         }
+    }
+
+    // MARK: - Welcome Home (Priority 1)
+
+    private func evaluateWelcomeHome(entry: DailyEntry, settings: UserSettings, dateString: String, context: ModelContext) -> UNNotificationRequest? {
+        guard settings.notifyWelcomeHome,
+              let homeCityKey = settings.homeCityKey,
+              entry.cityKey == homeCityKey else { return nil }
+
+        let daysAway = countConsecutiveDaysAway(before: entry.date, homeCityKey: homeCityKey, context: context)
+        guard daysAway == 1 else { return nil }
+
+        let content = UNMutableNotificationContent()
+        content.title = "Roam"
+        content.body = "Welcome home. Good to be back."
+        content.sound = .default
+        content.threadIdentifier = "welcomeHome"
+        return UNNotificationRequest(identifier: "notif-welcomeHome-\(dateString)", content: content, trigger: nil)
+    }
+
+    // MARK: - Trip Summary (Priority 2)
+
+    private func evaluateTripSummary(entry: DailyEntry, settings: UserSettings, dateString: String, context: ModelContext) -> UNNotificationRequest? {
+        guard settings.notifyTripSummary,
+              let homeCityKey = settings.homeCityKey,
+              entry.cityKey == homeCityKey else { return nil }
+
+        let daysAway = countConsecutiveDaysAway(before: entry.date, homeCityKey: homeCityKey, context: context)
+        guard daysAway >= 2 else { return nil }
+
+        // Get trip count for enrichment
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let year = cal.component(.year, from: entry.date)
+        let analytics = AnalyticsService(context: context)
+        let tripInfo = analytics.tripCount(year: year, homeCityKey: homeCityKey)
+
+        // Find the most-visited away city during this trip for the copy
+        let tripCityName = lastAwayCityName(before: entry.date, homeCityKey: homeCityKey, context: context)
+        let tripCityDisplay = tripCityName ?? "your trip"
+
+        let content = UNMutableNotificationContent()
+        content.title = "Roam"
+        content.body = "Back from \(daysAway) days away — your \(ordinal(tripInfo.count)) trip to \(tripCityDisplay) this year."
+        content.sound = .default
+        content.threadIdentifier = "tripSummary"
+        return UNNotificationRequest(identifier: "notif-tripSummary-\(dateString)", content: content, trigger: nil)
+    }
+
+    // MARK: - Helpers
+
+    private func countConsecutiveDaysAway(before date: Date, homeCityKey: String, context: ModelContext) -> Int {
+        let descriptor = FetchDescriptor<DailyEntry>(
+            predicate: #Predicate<DailyEntry> { $0.date < date },
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        guard let entries = try? context.fetch(descriptor) else { return 0 }
+        var count = 0
+        for entry in entries {
+            if entry.cityKey == homeCityKey { break }
+            count += 1
+        }
+        return count
+    }
+
+    private func lastAwayCityName(before date: Date, homeCityKey: String, context: ModelContext) -> String? {
+        let descriptor = FetchDescriptor<DailyEntry>(
+            predicate: #Predicate<DailyEntry> { $0.date < date },
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        guard let entries = try? context.fetch(descriptor) else { return nil }
+        for entry in entries {
+            if entry.cityKey == homeCityKey { break }
+            return CityDisplayFormatter.format(city: entry.primaryCity, state: entry.primaryRegion, country: entry.primaryCountry)
+        }
+        return nil
+    }
+
+    private func ordinal(_ n: Int) -> String {
+        let suffix: String
+        let ones = n % 10
+        let tens = (n / 10) % 10
+        if tens == 1 {
+            suffix = "th"
+        } else {
+            switch ones {
+            case 1: suffix = "st"
+            case 2: suffix = "nd"
+            case 3: suffix = "rd"
+            default: suffix = "th"
+            }
+        }
+        return "\(n)\(suffix)"
     }
 }

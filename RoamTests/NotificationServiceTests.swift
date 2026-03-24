@@ -96,10 +96,90 @@ final class NotificationServiceTests: XCTestCase {
         await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
         await service.handleEntryCommitted(entry: entry, previousCityKey: nil, isNewEntry: true, isNewCity: false)
 
-        // No evaluators are registered yet (Tasks 4-7), so no notifications fire.
-        // This validates the dedup infrastructure doesn't crash.
-        // Once evaluators are added, this should assert count == 1 (dedup prevents second).
-        XCTAssertEqual(mockCenter.addedRequests.count, 0, "No evaluators registered yet — dedup infra should not crash")
+        // TODO: Once New City evaluator is added (Task 5), pass isNewCity: true here
+        // and assert count == 1 (dedup prevents the second call).
+        // For now, Welcome Home and Trip Summary won't fire without a home city set.
+        XCTAssertEqual(mockCenter.addedRequests.count, 0, "No home city set — no evaluator fires; dedup infra should not crash")
+    }
+
+    func testWelcomeHomeNotification() async {
+        let settings = try! context.fetch(FetchDescriptor<UserSettings>()).first!
+        settings.homeCityKey = "Portland|OR|US"
+        try! context.save()
+
+        // Yesterday was away
+        let yesterday = makeEntry(city: "Seattle", region: "WA", country: "US", date: noonUTC(2026, 3, 23))
+        context.insert(yesterday)
+        try! context.save()
+
+        // Today: back home (1 day away)
+        let entry = makeEntry(city: "Portland", region: "OR", country: "US", date: noonUTC(2026, 3, 24))
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Seattle|WA|US", isNewEntry: true, isNewCity: false)
+
+        XCTAssertEqual(mockCenter.addedRequests.count, 1)
+        XCTAssertTrue(mockCenter.addedRequests.first?.content.body.contains("Welcome home") == true)
+    }
+
+    func testTripSummaryNotification() async {
+        let settings = try! context.fetch(FetchDescriptor<UserSettings>()).first!
+        settings.homeCityKey = "Portland|OR|US"
+        try! context.save()
+
+        // 3 days away in Denver
+        for day in 21...23 {
+            let away = makeEntry(city: "Denver", region: "CO", country: "US", date: noonUTC(2026, 3, day))
+            context.insert(away)
+        }
+        try! context.save()
+
+        // Today: back home (3 days away -> trip summary, not welcome home)
+        let entry = makeEntry(city: "Portland", region: "OR", country: "US", date: noonUTC(2026, 3, 24))
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true, isNewCity: false)
+
+        XCTAssertEqual(mockCenter.addedRequests.count, 1)
+        XCTAssertTrue(mockCenter.addedRequests.first?.content.body.contains("Back from") == true)
+    }
+
+    func testWelcomeHomeVsTripSummaryMutualExclusion() async {
+        let settings = try! context.fetch(FetchDescriptor<UserSettings>()).first!
+        settings.homeCityKey = "Portland|OR|US"
+        try! context.save()
+
+        // 2 days away -> should be Trip Summary (not Welcome Home)
+        for day in 22...23 {
+            let away = makeEntry(city: "Denver", region: "CO", country: "US", date: noonUTC(2026, 3, day))
+            context.insert(away)
+        }
+        try! context.save()
+
+        let entry = makeEntry(city: "Portland", region: "OR", country: "US", date: noonUTC(2026, 3, 24))
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Denver|CO|US", isNewEntry: true, isNewCity: false)
+
+        XCTAssertEqual(mockCenter.addedRequests.count, 1)
+        let body = mockCenter.addedRequests.first?.content.body ?? ""
+        XCTAssertTrue(body.contains("Back from"), "2+ days away should trigger Trip Summary, got: \(body)")
+        XCTAssertFalse(body.contains("Welcome home"), "Welcome Home should not fire for 2+ days away")
+    }
+
+    func testWelcomeHomeNoOpWithoutHomeCity() async {
+        // No home city set
+        let entry = makeEntry(city: "Portland", region: "OR", country: "US", date: noonUTC(2026, 3, 24))
+        context.insert(entry)
+        try! context.save()
+
+        await service.handleEntryCommitted(entry: entry, previousCityKey: "Seattle|WA|US", isNewEntry: true, isNewCity: false)
+
+        let welcomeHome = mockCenter.addedRequests.filter { $0.content.body.contains("Welcome home") }
+        XCTAssertTrue(welcomeHome.isEmpty, "Welcome Home should no-op without home city")
     }
 
     // MARK: - Helpers
