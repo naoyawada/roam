@@ -1,11 +1,17 @@
 // send-push: Query devices whose local time matches their capture schedule
-// and send silent APNs push. Called hourly by pg_cron.
+// and send a silent APNs push. Called every minute by pg_cron so that
+// arbitrary user-configured times (any hour:minute) are supported.
+// The function exits fast when no devices match the current minute.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { loadAPNsConfig, sendSilentPush } from "../_shared/apns.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+// Minimum gap between pushes to the same device (minutes).
+// Prevents duplicate sends if cron fires twice in the same minute.
+const DEDUP_MINUTES = 30;
 
 interface Device {
   device_id: string;
@@ -36,7 +42,7 @@ Deno.serve(async (req) => {
       return Response.json({ message: "No devices registered", sent: 0 });
     }
 
-    // Filter to devices where local time matches their primary or retry hour
+    // Filter to devices where local time matches their primary or retry schedule
     const now = new Date();
     const targetDevices = (devices as Device[]).filter((d) => {
       try {
@@ -69,12 +75,35 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Dedup: skip devices that already received a push recently
+    const cutoff = new Date(now.getTime() - DEDUP_MINUTES * 60_000).toISOString();
+    const deviceIds = targetDevices.map((d) => d.device_id);
+    const { data: recentPushes } = await supabase
+      .from("push_log")
+      .select("device_id")
+      .in("device_id", deviceIds)
+      .eq("status", "sent")
+      .gte("created_at", cutoff);
+
+    const recentlyPushed = new Set((recentPushes ?? []).map((r) => r.device_id));
+    const devicesToSend = targetDevices.filter((d) => !recentlyPushed.has(d.device_id));
+
+    if (devicesToSend.length === 0) {
+      return Response.json({
+        message: "All matched devices already received a push recently",
+        total: devices.length,
+        matched: targetDevices.length,
+        deduped: targetDevices.length,
+        sent: 0,
+      });
+    }
+
     // Stale token reasons that mean the device should be removed
     const staleReasons = new Set(["BadDeviceToken", "Unregistered", "DeviceTokenNotForTopic"]);
 
     // Send push to each target device
     const results = await Promise.allSettled(
-      targetDevices.map(async (d) => {
+      devicesToSend.map(async (d) => {
         const result = await sendSilentPush(d.token, d.device_id, config);
 
         // Log to push_log table
@@ -104,7 +133,8 @@ Deno.serve(async (req) => {
 
     return Response.json({
       total: devices.length,
-      targeted: targetDevices.length,
+      matched: targetDevices.length,
+      deduped: recentlyPushed.size,
       sent,
       results: results.map((r) =>
         r.status === "fulfilled" ? r.value : { error: String(r.reason) }
