@@ -2,6 +2,34 @@
 
 An iOS app that automatically tracks which city you spend each night in. CLVisit-based passive monitoring with last-known-city propagation, confidence levels, travel day detection, and iCloud sync.
 
+## Project memory
+
+There are two memory tiers; both are worth a look at session start.
+
+1. **`MEMORY.md` in this repo** (if present) — versioned gotchas and rules that travel with
+   the code. Anyone may add to it; keep entries short and commit them with the change.
+2. **`~/agent-memory/roam/MEMORY.md`** — Naoya's personal, cross-agent working memory
+   (a private git repo outside this one). It is a short index that points at topic files
+   worth opening for the task at hand. Claude Code writes there automatically. **Other agents
+   (Codex included) may write too.** When you learn something durable — a gotcha, a decision,
+   a rule Naoya stated, the state of an in-flight project — record it before you finish:
+   - Create `~/agent-memory/roam/<type>-<slug>.md` where `<type>` is `feedback`,
+     `project`, or `reference`, with YAML frontmatter `name`, `description` (one line), and
+     `metadata: {type: <type>, source: <agent>, date: <YYYY-MM-DD>}`, then a short body: the fact,
+     **Why**, **How to apply**.
+   - Add one line to `MEMORY.md` for a new topic file: `- [Title](file.md) — hook`, at the
+     end, with the hook at most 200 characters (details belong in the topic file). When a
+     topic changes, reread its current index line and update only that line's hook in place;
+     keep its title, link and position. Never regenerate the index from a cached copy, and
+     never remove another entry, with one exception: keep the index under 200 lines and
+     25,000 bytes, and when it nears either cap, ask Naoya first (it restructures the index),
+     then move a group of related entries, unchanged, into a topic file that lists them and
+     leave one entry pointing to that file in their place, so every topic stays reachable
+     from `MEMORY.md`.
+   - Update an existing topic file in place when the fact changes; don't fork it.
+   - No secrets, ever: store the name of the 1Password item or env var, not the value.
+   Commits are automatic (a hook commits and pushes the memory repo); don't run git there.
+
 ## Stack
 
 - **Swift 6**, **SwiftUI**, **SwiftData** (with CloudKit sync)
